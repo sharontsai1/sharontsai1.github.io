@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>小島生活手帳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Iansui&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{
@@ -10,7 +10,7 @@
   --shadow:0 8px 0 #bd9b6a18,0 13px 27px #4e403015;
 }
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#c8e5e5 0 225px,#f7eedf 225px);color:var(--ink);font-family:"Iansui","Noto Sans TC","Microsoft JhengHei",sans-serif;min-height:100vh}
+body{margin:0;background:linear-gradient(180deg,#c8e5e5 0 225px,#f7eedf 225px);color:var(--ink);font-family:"Huninn","Noto Sans TC","Microsoft JhengHei",sans-serif;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{border:0;cursor:pointer}
 .page{width:min(1120px,calc(100% - 26px));margin:auto;padding:22px 0 48px}
@@ -555,7 +555,7 @@ async function monthDocs(m){
 
 // ---------- charts ----------
 function draw(el,type,chartData,opt={}){
-  return new Chart($(el),{type,data:chartData,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{family:"Iansui",size:10}}}},...opt}});
+  return new Chart($(el),{type,data:chartData,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{family:"Huninn",size:10}}}},...opt}});
 }
 
 async function insights(){
