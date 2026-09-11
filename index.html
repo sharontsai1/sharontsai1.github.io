@@ -509,15 +509,24 @@ function schedule(){totals();clearTimeout(saveTimer);saveTimer=setTimeout(save,6
 
 async function loadGoals(){
   if(!user)return;
-  const s=await getDoc(doc(db,"users",user.uid,"settings","goals"));
-  goals=normGoals(s.exists()?s.data():{});
+  try{
+    const s=await getDoc(doc(db,"users",user.uid,"settings","goals"));
+    goals=normGoals(s.exists()?s.data():{});
+  }catch(e){
+    goals=normGoals({});
+    status("目標讀取失敗，請確認 Firestore Rules 已加入 settings 集合");
+  }
   $("goalCalorie").value=goals.calorie; $("goalProtein").value=goals.protein;
   $("goalWater").value=goals.water; $("goalSleep").value=goals.sleep;
 }
 async function saveGoals(){
   if(!user)return;
   goals=normGoals({calorie:$("goalCalorie").value,protein:$("goalProtein").value,water:$("goalWater").value,sleep:$("goalSleep").value});
-  await setDoc(doc(db,"users",user.uid,"settings","goals"),{...goals,updatedAt:serverTimestamp()},{merge:true});
+  try{
+    await setDoc(doc(db,"users",user.uid,"settings","goals"),{...goals,updatedAt:serverTimestamp()},{merge:true});
+  }catch(e){
+    status("目標儲存失敗，請確認 Firestore Rules 已加入 settings 集合");
+  }
   totals(); insights();
 }
 
