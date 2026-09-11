@@ -1,6 +1,6 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>小島生活手帳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{
@@ -13,7 +13,6 @@
 body{margin:0;background:linear-gradient(180deg,#c8e5e5 0 225px,#f7eedf 225px);color:var(--ink);font-family:"Zen Maru Gothic","Microsoft JhengHei",sans-serif;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{border:0;cursor:pointer}
-h1,h2,.heading,.brand h1{font-family:"Klee One","Zen Maru Gothic",sans-serif}
 .page{width:min(1120px,calc(100% - 26px));margin:auto;padding:22px 0 48px}
 .top{display:flex;justify-content:space-between;align-items:center;padding:5px 4px 25px;gap:14px}
 .brand{display:flex;gap:11px;align-items:center}
@@ -110,23 +109,32 @@ textarea{min-height:80px;resize:vertical}
 .ring i{width:58px;height:58px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;font-style:normal;text-align:center;line-height:1.15}
 
 /* small-multiple weekly charts */
-.week-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.week-mini{background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:8px;text-align:center}
+.week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.week-mini{min-width:0;background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:8px;text-align:center}
 .week-mini h3{font-size:11px;margin:0 0 6px;font-weight:700;color:#8a7460}
-.week-mini .chart{height:110px}
+.week-mini .chart{height:110px;min-width:0}
 
 .chart-card h2{font-size:16px;margin:0}
 .chart-card p{font-size:11px;margin:3px 0 11px;color:#958170}
 .chart{height:220px;position:relative}
-.budget-grid,.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.budget-grid,.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .goals-grid{grid-template-columns:repeat(4,1fr)}
 .budget-box,.goal-box{background:#f8efe1;border-radius:14px;padding:12px}
+.budget-box{padding:18px}
+.budget-box>b{font-size:15px}
 .goal-box b{font-size:12px;display:block;margin-bottom:6px}
-.line{display:flex;gap:7px;margin:7px 0}
-.progress{height:8px;background:#e2d6c4;border-radius:9px;overflow:hidden}
+.line{display:flex;gap:8px;margin:9px 0}
+.line input{font-size:16px;font-weight:700}
+.progress{height:14px;background:#e2d6c4;border-radius:9px;overflow:hidden}
 .progress i{display:block;height:100%;background:var(--leaf)}
 .progress.over i{background:var(--coral)}
-.budget-stat{font-size:11px;margin-top:7px}
+.budget-stat{font-size:14px;margin-top:9px;font-weight:700;color:#6b5a49}
+
+/* month summary list */
+.summary-list{display:grid;gap:0}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px dashed var(--line);font-size:13px}
+.summary-row:last-child{border-bottom:0}
+.summary-row b{font-size:15px;color:var(--deep)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .dow{text-align:center;font-size:10px;color:#9a8673}
 .cal-day{min-height:71px;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:7px;text-align:left}
@@ -155,7 +163,6 @@ textarea{min-height:80px;resize:vertical}
   .expense .expense-note{grid-column:span 3}
   .exercise-main{grid-template-columns:1fr 90px 30px}
   .chart{height:195px}
-  .week-grid{grid-template-columns:repeat(2,1fr)}
   .goals-grid{grid-template-columns:repeat(2,1fr)}
   .cal-day{min-height:58px;padding:5px}
   .face{font-size:17px;margin-top:3px}
@@ -248,7 +255,7 @@ textarea{min-height:80px;resize:vertical}
   <div class="controls"><b>📊 生活洞察</b><input type="month" id="insightMonth" class="month-picker"></div>
   <div class="insights">
     <section class="card tape-sea chart-card wide">
-      <h2>🌿 本週生活節奏</h2><p>每項指標用自己的比例呈現，不再互相擠壓</p>
+      <h2>🌿 本週生活節奏</h2>
       <div class="week-grid">
         <div class="week-mini"><h3>🍙 熱量</h3><div class="chart"><canvas id="weekCalChart"></canvas></div></div>
         <div class="week-mini"><h3>🥚 蛋白質</h3><div class="chart"><canvas id="weekProteinChart"></canvas></div></div>
@@ -259,7 +266,7 @@ textarea{min-height:80px;resize:vertical}
     </section>
     <section class="card chart-card"><h2>🌙 本月睡眠與運動</h2><p>虛線是 7 小時睡眠目標</p><div class="chart"><canvas id="lifeChart"></canvas></div></section>
     <section class="card chart-card"><h2>📖 本月支出地圖</h2><p>依分類查看每月花費</p><div class="chart"><canvas id="expenseChart"></canvas></div></section>
-    <section class="card chart-card"><h2>🌼 本月摘要</h2><p id="monthSummary">—</p></section>
+    <section class="card chart-card"><h2>🌼 本月摘要</h2><div id="monthSummary" class="summary-list">—</div></section>
 
     <section class="card tape-coral goalsbox"><h2 class="heading">🎯 每日目標 <small>套用在每一天的進度條上</small></h2>
       <div class="goals-grid">
@@ -594,7 +601,13 @@ async function insights(){
     datasets:[{data:catKeys.length?Object.values(cats):[1],backgroundColor:catKeys.length?["#f2b461","#8ebd88","#96c7cd","#e98772","#ba9bc8","#d8c371"]:["#e7decf"]}]
   },{plugins:{legend:{position:"bottom",labels:{boxWidth:10}}}});
 
-  $("monthSummary").innerHTML=`平均睡眠：<b>${sd?(ts/sd).toFixed(1)+" 小時":"—"}</b><br>累積運動：<b>${te} 分鐘</b><br>累積蛋白質：<b>${tp} g</b><br>平均心情：<b>${md?(mo/md).toFixed(1)+" / 5":"—"}</b><br>本月支出：<b>$${(buck.need+buck.want).toLocaleString()}</b>`;
+  $("monthSummary").innerHTML=[
+    ["🌙 平均睡眠",sd?(ts/sd).toFixed(1)+" 小時":"—"],
+    ["🏃 累積運動",te+" 分鐘"],
+    ["🥚 累積蛋白質",tp+" g"],
+    ["🌼 平均心情",md?(mo/md).toFixed(1)+" / 5":"—"],
+    ["🧺 本月支出","$"+(buck.need+buck.want).toLocaleString()]
+  ].map(([label,value])=>`<div class="summary-row"><span>${label}</span><b>${value}</b></div>`).join("");
   budget(m,buck);
 }
 
