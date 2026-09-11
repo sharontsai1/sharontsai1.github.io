@@ -109,14 +109,17 @@ textarea{min-height:80px;resize:vertical}
 .ring i{width:58px;height:58px;border-radius:50%;background:var(--paper);display:flex;align-items:center;justify-content:center;font-style:normal;text-align:center;line-height:1.15}
 
 /* small-multiple weekly charts */
-.week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.week-mini{min-width:0;background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:8px;text-align:center}
-.week-mini h3{font-size:11px;margin:0 0 6px;font-weight:700;color:#8a7460}
-.week-mini .chart{height:110px;min-width:0}
+.week-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.week-mini{min-width:0;background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:12px;text-align:center}
+.week-mini h3{font-size:12px;margin:0 0 4px;font-weight:700;color:#8a7460}
+.week-mini .week-cap{font-size:13px;font-weight:700;color:var(--deep);margin:0 0 8px}
+.week-mini .chart{height:150px;min-width:0}
 
 .chart-card h2{font-size:16px;margin:0}
 .chart-card p{font-size:11px;margin:3px 0 11px;color:#958170}
 .chart{height:220px;position:relative}
+.chart-card.wide .chart{height:260px}
+.legend-note{font-size:11px;color:#9a8673;margin:2px 0 12px}
 .budget-grid,.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .goals-grid{grid-template-columns:repeat(4,1fr)}
 .budget-box,.goal-box{background:#f8efe1;border-radius:14px;padding:12px}
@@ -143,7 +146,8 @@ textarea{min-height:80px;resize:vertical}
 .cal-day.selected{outline:2px solid var(--sun)}
 .number{font-size:11px;font-weight:700}
 .face{display:block;font-size:20px;margin-top:7px}
-.calendar-mark{display:block;font-size:12px;line-height:1;margin-top:2px}
+.marks{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
+.calendar-mark{display:block;font-size:12px;line-height:1}
 .entry-preview{margin-top:14px;background:#f7efe1;border-radius:15px;padding:13px;font-size:13px;line-height:1.7}
 .footer{text-align:center;font-size:11px;opacity:.6;margin:19px}
 .empty{font-size:12px;color:#9b8877;padding:5px 0}
@@ -257,14 +261,19 @@ textarea{min-height:80px;resize:vertical}
     <section class="card tape-sea chart-card wide">
       <h2>🌿 本週生活節奏</h2>
       <div class="week-grid">
-        <div class="week-mini"><h3>🍙 熱量</h3><div class="chart"><canvas id="weekCalChart"></canvas></div></div>
-        <div class="week-mini"><h3>🥚 蛋白質</h3><div class="chart"><canvas id="weekProteinChart"></canvas></div></div>
-        <div class="week-mini"><h3>🌙 睡眠</h3><div class="chart"><canvas id="weekSleepChart"></canvas></div></div>
-        <div class="week-mini"><h3>🏃 運動次數</h3><div class="chart"><canvas id="weekExerciseChart"></canvas></div></div>
-        <div class="week-mini"><h3>🧺 支出</h3><div class="chart"><canvas id="weekExpenseChart"></canvas></div></div>
+        <div class="week-mini">
+          <h3>🍙 熱量與蛋白質</h3>
+          <p class="week-cap" id="weekCPCap">—</p>
+          <div class="chart"><canvas id="weekCalProteinChart"></canvas></div>
+        </div>
+        <div class="week-mini">
+          <h3>🌙 睡眠</h3>
+          <p class="week-cap" id="weekSleepCap">—</p>
+          <div class="chart"><canvas id="weekSleepChart"></canvas></div>
+        </div>
       </div>
     </section>
-    <section class="card chart-card"><h2>🌙 本月睡眠與運動</h2><p>虛線是 7 小時睡眠目標</p><div class="chart"><canvas id="lifeChart"></canvas></div></section>
+    <section class="card chart-card wide"><h2>🌙 本月睡眠與熱量</h2><p>長條為熱量，虛線為 7 小時睡眠目標</p><div class="chart"><canvas id="lifeChart"></canvas></div></section>
     <section class="card chart-card"><h2>📖 本月支出地圖</h2><p>依分類查看每月花費</p><div class="chart"><canvas id="expenseChart"></canvas></div></section>
     <section class="card chart-card"><h2>🌼 本月摘要</h2><div id="monthSummary" class="summary-list">—</div></section>
 
@@ -289,6 +298,7 @@ textarea{min-height:80px;resize:vertical}
 
 <div class="pane" id="calendarPane">
   <div class="calendar-head"><button class="nav" id="prevMonth">‹</button><h2 id="calendarTitle">日記曆</h2><button class="nav" id="nextMonth">›</button></div>
+  <p class="legend-note">🏃 有運動・🌙 睡眠達標・🥗 熱量達標</p>
   <div id="calendar" class="cal-grid"></div>
   <div class="entry-preview" id="entryPreview">點選日期回顧那天的小日記。</div>
 </div>
@@ -314,7 +324,7 @@ const WEEKDAYS=["一","二","三","四","五","六","日"];
 const DEFAULT_GOALS={calorie:2000,protein:100,water:2000,sleep:7};
 
 let auth,db,user,data,goals=DEFAULT_GOALS,calendarMonth=new Date(),saveTimer;
-let weekCharts={},lifeChart,expenseChart;
+let weekCPChart,weekSleepChart,lifeChart,expenseChart;
 
 const id=()=>crypto.randomUUID();
 const esc=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
@@ -523,21 +533,16 @@ function moveDay(n){
   d.setDate(d.getDate()+n);
   $("date").value=key(d); day();
 }
+async function rangeDocs(startKey,endKey){
+  const s=await getDocs(query(collection(db,"users",user.uid,"journal"),where("date",">=",startKey),where("date","<=",endKey)));
+  return s.docs.map(x=>norm(x.data()));
+}
 async function monthDocs(m){
   const d=new Date(m+"-01T12:00:00"),end=key(new Date(d.getFullYear(),d.getMonth()+1,0));
-  const s=await getDocs(query(collection(db,"users",user.uid,"journal"),where("date",">=",m+"-01"),where("date","<=",end)));
-  return s.docs.map(x=>norm(x.data()));
+  return rangeDocs(m+"-01",end);
 }
 
 // ---------- charts ----------
-function miniChart(canvasId,type,labels,values,color,extra={}){
-  weekCharts[canvasId]?.destroy();
-  weekCharts[canvasId]=new Chart($(canvasId),{
-    type,
-    data:{labels,datasets:[{data:values,backgroundColor:color,borderColor:color,tension:.35,pointRadius:2,borderRadius:4,...extra}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:9}}},x:{ticks:{font:{size:9}}}}}
-  });
-}
 function draw(el,type,chartData,opt={}){
   return new Chart($(el),{type,data:chartData,options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{boxWidth:10,font:{family:"Zen Maru Gothic",size:10}}}},...opt}});
 }
@@ -548,31 +553,54 @@ async function insights(){
   const all=await monthDocs(m);
   const mp=Object.fromEntries(all.map(x=>[x.date,x]));
   const d=new Date(m+"-01T12:00:00");
-  const ws=new Date(d); ws.setDate(ws.getDate()-((ws.getDay()+6)%7));
 
-  const labs=[],cal=[],pro=[],sl=[],exCount=[],sp=[];
+  const now=new Date(today()+"T12:00:00");
+  const ws=new Date(now); ws.setDate(ws.getDate()-((ws.getDay()+6)%7));
+  const we=new Date(ws); we.setDate(we.getDate()+6);
+  const weekAll=await rangeDocs(key(ws),key(we));
+  const weekMp=Object.fromEntries(weekAll.map(x=>[x.date,x]));
+
+  const labs=[],cal=[],pro=[],sl=[];
   for(let i=0;i<7;i++){
     const z=new Date(ws); z.setDate(z.getDate()+i);
-    const x=mp[key(z)]||norm({});
+    const x=weekMp[key(z)]||norm({});
     labs.push(WEEKDAYS[i]);
     cal.push(x.foods.reduce((a,v)=>a+(+v.cal||0),0));
     pro.push(x.foods.reduce((a,v)=>a+(+v.protein||0),0));
-    sl.push(x.sleep);
-    exCount.push(x.exercises.length);
-    sp.push(x.expenses.reduce((a,v)=>a+(+v.amount||0),0));
+    sl.push(x.sleep||0);
   }
-  miniChart("weekCalChart","bar",labs,cal,"#f4bd59");
-  miniChart("weekProteinChart","bar",labs,pro,"#a98cc9");
-  miniChart("weekSleepChart","line",labs,sl,"#579c9b",{fill:false});
-  miniChart("weekExerciseChart","bar",labs,exCount,"#75a66a");
-  miniChart("weekExpenseChart","bar",labs,sp,"#e98d78");
+  const activeCal=cal.filter(v=>v>0),activePro=pro.filter(v=>v>0),activeSl=sl.filter(v=>v>0);
+  const avg=arr=>arr.length?Math.round(arr.reduce((a,v)=>a+v,0)/arr.length):0;
+  $("weekCPCap").textContent=activeCal.length?`平均 ${avg(activeCal)} kcal・${avg(activePro)} g`:"本週還沒有紀錄";
+  $("weekSleepCap").textContent=activeSl.length?`平均 ${(activeSl.reduce((a,v)=>a+v,0)/activeSl.length).toFixed(1)} 小時`:"本週還沒有紀錄";
+
+  weekCPChart?.destroy();
+  weekCPChart=draw("weekCalProteinChart","bar",{
+    labels:labs,
+    datasets:[
+      {label:"熱量 kcal",data:cal,backgroundColor:"#f4bd59",borderRadius:4,yAxisID:"a"},
+      {label:"蛋白質 g",data:pro,backgroundColor:"#a98cc9",borderRadius:4,yAxisID:"b"}
+    ]
+  },{plugins:{legend:{display:true,position:"bottom",labels:{boxWidth:8,font:{size:9}}}},scales:{
+    a:{beginAtZero:true,ticks:{font:{size:9}}},
+    b:{position:"right",beginAtZero:true,grid:{drawOnChartArea:false},ticks:{font:{size:9}}}
+  }});
+
+  weekSleepChart?.destroy();
+  weekSleepChart=draw("weekSleepChart","line",{
+    labels:labs,
+    datasets:[
+      {label:"睡眠 小時",data:sl,borderColor:"#579c9b",backgroundColor:"#579c9b",tension:.35,pointRadius:3},
+      {label:"目標",data:Array(7).fill(goals.sleep||7),borderColor:"#c9b28f",borderDash:[4,4],pointRadius:0}
+    ]
+  },{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:12,ticks:{font:{size:9}}}}});
 
   const n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
-  const dl=[],ms=[],mm=[],target=[],cats={},buck={need:0,want:0};
+  const dl=[],ms=[],mc=[],target=[],cats={},buck={need:0,want:0};
   let ts=0,sd=0,te=0,mo=0,md=0,tp=0;
   for(let i=1;i<=n;i++){
     const x=mp[m+"-"+String(i).padStart(2,"0")]||norm({});
-    dl.push(i); ms.push(x.sleep); mm.push(x.exercises.reduce((a,v)=>a+(+v.minutes||0),0)); target.push(goals.sleep||7);
+    dl.push(i); ms.push(x.sleep); mc.push(x.foods.reduce((a,v)=>a+(+v.cal||0),0)); target.push(goals.sleep||7);
   }
   all.forEach(x=>{
     if(x.sleep){ts+=x.sleep;sd++}
@@ -589,11 +617,15 @@ async function insights(){
   lifeChart=draw("lifeChart","bar",{
     labels:dl,
     datasets:[
-      {label:"運動 分鐘",data:mm,backgroundColor:"#8dbd88",yAxisID:"a"},
+      {label:"熱量 kcal",data:mc,backgroundColor:"#f4bd59",borderRadius:3,yAxisID:"a"},
       {label:"睡眠 小時",data:ms,type:"line",borderColor:"#579c9b",pointRadius:2,yAxisID:"b"},
       {label:"睡眠目標",data:target,type:"line",borderColor:"#c9b28f",borderDash:[4,4],pointRadius:0,yAxisID:"b"}
     ]
-  },{scales:{a:{beginAtZero:true},b:{position:"right",beginAtZero:true,max:12,grid:{drawOnChartArea:false}}}});
+  },{scales:{
+    a:{beginAtZero:true},
+    b:{position:"right",beginAtZero:true,max:12,grid:{drawOnChartArea:false}},
+    x:{ticks:{autoSkip:false,maxRotation:0,minRotation:0,font:{size:8}}}
+  }});
 
   expenseChart?.destroy();
   const catKeys=Object.keys(cats);
@@ -641,10 +673,13 @@ async function calendar(){
   for(let i=0;i<o;i++)h+='<div class="cal-day muted"></div>';
   for(let i=1;i<=days;i++){
     const k=m+"-"+String(i).padStart(2,"0"),x=mp[k],active=x&&(x.note||x.mood||x.exercises.length);
+    const dayCal=x?x.foods.reduce((a,v)=>a+(+v.cal||0),0):0;
+    const sleepMet=x&&x.sleep>0&&x.sleep>=(goals.sleep||7);
+    const dietMet=x&&dayCal>0&&dayCal<=goals.calorie;
     h+=`<button class="cal-day ${active?"has-note":""} ${k===$("date").value?"selected":""}" data-k="${k}">
       <span class="number">${i}</span>
       ${x?.mood?`<span class="face">${FACE[x.mood]}</span>`:""}
-      ${x?.exercises.length?`<span class="calendar-mark">🏃</span>`:""}
+      <span class="marks">${x?.exercises.length?'<span class="calendar-mark">🏃</span>':""}${sleepMet?'<span class="calendar-mark">🌙</span>':""}${dietMet?'<span class="calendar-mark">🥗</span>':""}</span>
     </button>`;
   }
   $("calendar").innerHTML=h;
