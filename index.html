@@ -512,6 +512,7 @@ async function saveGoals(){
 }
 
 async function day(){
+  if(!user)return;
   const s=await getDoc(doc(db,"users",user.uid,"journal",$("date").value));
   data=norm(s.exists()?s.data():{});
   render();
@@ -622,6 +623,7 @@ async function budget(m,b){
   });
 }
 async function saveBudget(){
+  if(!user)return;
   const m=$("insightMonth").value;
   await setDoc(doc(db,"users",user.uid,"budget",m),{need:+$("needBudget").value||0,want:+$("wantBudget").value||0,updatedAt:serverTimestamp()},{merge:true});
   insights();
@@ -629,6 +631,7 @@ async function saveBudget(){
 
 // ---------- calendar ----------
 async function calendar(){
+  if(!user)return;
   const m=month(calendarMonth),all=await monthDocs(m),mp=Object.fromEntries(all.map(x=>[x.date,x]));
   const f=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth(),1);
   const days=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()+1,0).getDate();
