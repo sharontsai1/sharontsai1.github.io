@@ -832,10 +832,11 @@ $("addLedgerExpense").onclick=async()=>{
   entry.expenses.push(normExpense({
     amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value
   }));
-  const sameMonth=month(date)===($("ledgerMonth").value||month(new Date()));
+  const dateMonth=date.slice(0,7);
+  const sameMonth=dateMonth===($("ledgerMonth").value||month(new Date()));
   await saveLedgerDay(date);
   $("ledgerAmount").value=""; $("ledgerNote").value="";
-  if(!sameMonth)status(`已新增到 ${month(date)} 的紀錄`,true);
+  if(!sameMonth)status(`已新增到 ${dateMonth} 的紀錄`,true);
 };
 
 $("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"};
