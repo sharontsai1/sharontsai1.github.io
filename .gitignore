@@ -1,0 +1,4 @@
+.auth/
+.playwright-cli/
+.claude/
+png/

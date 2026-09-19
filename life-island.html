@@ -1,22 +1,23 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>小島生活手帳</title>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>矮袋鼠小手帳</title>
+<link rel="icon" href="quokka-heart.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --ink:#50443b; --paper:#fffaf0; --cream:#f6eddd;
-  --leaf:#75a66a; --deep:#4f7f50; --sun:#f4bd59; --coral:#e98d78; --sea:#579c9b;
-  --line:#e8d9c4; --tape1:#f6c98a; --tape2:#a9cfc7; --tape3:#e6a6a1;
-  --shadow:0 8px 0 #bd9b6a18,0 13px 27px #4e403015;
+  --ink:#5b4632; --paper:#fffaf5; --cream:#f7ecd4;
+  --leaf:#8ea766; --deep:#6b8049; --sun:#e8c26a; --coral:#e0453c; --sea:#579c9b;
+  --line:#ecdcb8; --sky:#8fd4f2; --skylight:#cdedfb;
+  --shadow:0 8px 0 #c9a86d18,0 13px 27px #6b502515;
 }
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,#c8e5e5 0 225px,#f7eedf 225px);color:var(--ink);font-family:"Huninn","Noto Sans TC","Microsoft JhengHei",sans-serif;min-height:100vh}
+body{margin:0;background:linear-gradient(180deg,var(--skylight) 0 225px,#faf1de 225px);color:var(--ink);font-family:"Huninn","Noto Sans TC","Microsoft JhengHei",sans-serif;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{border:0;cursor:pointer}
 .page{width:min(1120px,calc(100% - 26px));margin:auto;padding:22px 0 48px}
 .top{display:flex;justify-content:space-between;align-items:center;padding:5px 4px 25px;gap:14px}
 .brand{display:flex;gap:11px;align-items:center}
-.island{font-size:39px}
+.mascot{width:54px;height:54px;object-fit:cover;object-position:50% 8%;flex:none;border-radius:50%;background:var(--skylight);box-shadow:0 0 0 3px #fff,0 3px 8px #0002}
 h1{font-size:clamp(21px,4vw,29px);margin:0}
 .subtitle{font-size:12px;margin:3px 0 0;opacity:.67}
 .user{display:flex;align-items:center;gap:8px;font-size:12px}
@@ -26,14 +27,13 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .ghost{background:#ffffffaa;color:var(--deep);border:1px solid white}
 .hidden{display:none!important}
 
-/* techo paper card with washi-tape corner */
+/* sticker-sheet style card with a little round sticker dot in the corner */
 .card{position:relative;background:var(--paper);
-  border:2px solid #fffdfa;border-radius:23px;box-shadow:var(--shadow);padding:19px;overflow:hidden}
-.card::before{content:"";position:absolute;top:-9px;left:26px;width:64px;height:26px;
-  background:repeating-linear-gradient(-45deg,var(--tape1) 0 6px,#f7d9a8 6px 12px);
-  opacity:.75;transform:rotate(-7deg);border-radius:2px;box-shadow:0 2px 4px #0002}
-.card.tape-sea::before{background:repeating-linear-gradient(-45deg,var(--tape2) 0 6px,#c3e2db 6px 12px)}
-.card.tape-coral::before{background:repeating-linear-gradient(-45deg,var(--tape3) 0 6px,#f2c1bd 6px 12px)}
+  border:2px solid #fffdfa;border-radius:23px;box-shadow:var(--shadow);padding:19px 19px 19px 26px}
+.card::before{content:"";position:absolute;top:17px;left:-6px;width:15px;height:15px;
+  background:var(--sun);border-radius:50%;box-shadow:0 0 0 3px var(--paper)}
+.card.tape-sea::before{background:var(--sky)}
+.card.tape-coral::before{background:var(--coral)}
 
 .tabs{display:flex;gap:7px;margin-bottom:15px;padding:5px;background:#eee2cf;border-radius:17px;width:max-content}
 .tab{background:transparent;padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700}
@@ -152,7 +152,7 @@ textarea{min-height:80px;resize:vertical}
 .footer{text-align:center;font-size:11px;opacity:.6;margin:19px}
 .empty{font-size:12px;color:#9b8877;padding:5px 0}
 @media(max-width:720px){
-  body{background:linear-gradient(180deg,#c8e5e5 0 165px,#f7eedf 165px)}
+  body{background:linear-gradient(180deg,var(--skylight) 0 165px,#faf1de 165px)}
   .page{width:min(100% - 18px,600px);padding-top:12px}
   .user-name{display:none}
   .card{padding:14px}
@@ -183,7 +183,7 @@ textarea{min-height:80px;resize:vertical}
 <body>
 <main class="page">
 <header class="top">
-  <div class="brand"><span class="island">🏝️</span><div><h1>小島生活手帳</h1><p class="subtitle">慢慢記下，每一天都很重要。</p></div></div>
+  <div class="brand"><img class="mascot" src="quokka-heart.png" alt="矮袋鼠"><div><h1>矮袋鼠小手帳</h1><p class="subtitle">抱抱一下，記錄軟軟的每一天。</p></div></div>
   <div class="user"><img id="avatar" class="avatar hidden"><span id="userName" class="user-name">準備同步中</span><button id="signIn" class="btn hidden">Google 登入</button><button id="signOut" class="ghost hidden">登出</button></div>
 </header>
 
