@@ -5,13 +5,13 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --ink:#5b4632; --paper:#fffaf5; --cream:#f7ecd4;
-  --leaf:#8ea766; --deep:#6b8049; --sun:#e8c26a; --coral:#e0453c; --sea:#579c9b;
-  --line:#ecdcb8; --sky:#8fd4f2; --skylight:#cdedfb;
-  --shadow:0 8px 0 #c9a86d18,0 13px 27px #6b502515;
+  --ink:#4a3d2e; --paper:#fffdf8; --cream:#f7f2e2;
+  --leaf:#5fa06a; --deep:#457850; --sun:#e8c26a; --coral:#c23b32; --sea:#2fb0d6;
+  --line:#e6ddc6; --sky:#2fb0d6; --skylight:#d6ede0;
+  --shadow:0 8px 0 #45785018,0 13px 27px #2b230015;
 }
 *{box-sizing:border-box}
-body{margin:0;background:linear-gradient(180deg,var(--skylight) 0 225px,#faf1de 225px);color:var(--ink);font-family:"Huninn","Noto Sans TC","Microsoft JhengHei",sans-serif;min-height:100vh}
+body{margin:0;background:linear-gradient(180deg,var(--skylight) 0 225px,var(--cream) 225px);color:var(--ink);font-family:"Huninn","Noto Sans TC","Microsoft JhengHei",sans-serif;min-height:100vh}
 button,input,select,textarea{font:inherit;color:inherit}
 button{border:0;cursor:pointer}
 .page{width:min(1120px,calc(100% - 26px));margin:auto;padding:22px 0 48px}
@@ -152,7 +152,7 @@ textarea{min-height:80px;resize:vertical}
 .footer{text-align:center;font-size:11px;opacity:.6;margin:19px}
 .empty{font-size:12px;color:#9b8877;padding:5px 0}
 @media(max-width:720px){
-  body{background:linear-gradient(180deg,var(--skylight) 0 165px,#faf1de 165px)}
+  body{background:linear-gradient(180deg,var(--skylight) 0 165px,var(--cream) 165px)}
   .page{width:min(100% - 18px,600px);padding-top:12px}
   .user-name{display:none}
   .card{padding:14px}
