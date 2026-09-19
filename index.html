@@ -71,6 +71,9 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
 .food{grid-template-columns:82px 1fr 62px 62px 30px}
 .expense{grid-template-columns:1fr 102px 86px 1fr 30px}
+.ledger-add{grid-template-columns:132px 102px 86px 1fr}
+.ledger-daygroup{margin-bottom:14px}
+.ledger-daygroup .heading small{color:var(--deep);font-weight:700}
 .item input,.item select,input,select,textarea{width:100%;border:1px solid #e5d8c7;background:#fffdf8;border-radius:9px;padding:8px;outline:0}
 .item input{padding:7px}
 .delete{width:29px;height:29px;border-radius:50%;background:#fbe6e0;color:#bd604c;font-weight:700;flex:none}
@@ -165,6 +168,7 @@ textarea{min-height:80px;resize:vertical}
   .food select{grid-area:meal}.food input:nth-of-type(1){grid-area:name}.food input:nth-of-type(2){grid-area:cal}.food input:nth-of-type(3){grid-area:protein}.food .delete{grid-area:del;justify-self:end}
   .expense{grid-template-columns:1fr 88px 65px 29px}
   .expense .expense-note{grid-column:span 3}
+  .ledger-add{grid-template-columns:1fr 1fr}
   .exercise-main{grid-template-columns:1fr 90px 30px}
   .chart{height:195px}
   .goals-grid{grid-template-columns:repeat(2,1fr)}
@@ -172,8 +176,8 @@ textarea{min-height:80px;resize:vertical}
   .number{font-size:13px}
   .face{font-size:19px;margin-top:4px}
   .calendar-mark{font-size:13px}
-  .tabs{width:100%;justify-content:space-between}
-  .tab{padding:8px 10px}
+  .tabs{width:100%;justify-content:space-between;gap:3px;padding:4px}
+  .tab{padding:8px 6px;font-size:11px}
   .datebar{flex-wrap:wrap}
   .date-control{width:100%;justify-content:space-between}
   .budget-grid{grid-template-columns:1fr}
@@ -184,13 +188,14 @@ textarea{min-height:80px;resize:vertical}
 <main class="page">
 <header class="top">
   <div class="brand"><img class="mascot" src="quokka-heart.png" alt="矮袋鼠"><div><h1>矮袋鼠小手帳</h1><p class="subtitle">抱抱一下，記錄軟軟的每一天。</p></div></div>
-  <div class="user"><img id="avatar" class="avatar hidden"><span id="userName" class="user-name">準備同步中</span><button id="signIn" class="btn hidden">Google 登入</button><button id="signOut" class="ghost hidden">登出</button></div>
+  <div class="user"><img id="avatar" class="avatar hidden"><span id="userName" class="user-name">準備同步中</span><button id="settingsBtn" class="nav hidden" title="設定">⚙️</button><button id="signIn" class="btn hidden">Google 登入</button><button id="signOut" class="ghost hidden">登出</button></div>
 </header>
 
-<section class="card">
+<section class="card" id="mainCard">
 <nav class="tabs">
   <button class="tab active" data-pane="todayPane">☀️ 今日</button>
   <button class="tab" data-pane="insightsPane">📊 洞察</button>
+  <button class="tab" data-pane="ledgerPane">🧾 記帳</button>
   <button class="tab" data-pane="calendarPane">📖 日記曆</button>
 </nav>
 
@@ -246,12 +251,6 @@ textarea{min-height:80px;resize:vertical}
       <button class="add" id="addExercise">＋ 新增運動</button>
     </section>
 
-    <section class="section wide"><h2 class="heading">🧺 支出 <small>每筆均會累加至預算</small></h2>
-      <div id="expenseList" class="item-list"></div>
-      <button class="add" id="addExpense">＋ 新增支出</button>
-      <div class="total">今日支出總和　<b id="expenseTotal">$0</b></div>
-    </section>
-
     <section class="section wide"><h2 class="heading">📝 小小日記</h2><textarea id="note" placeholder="今天有什麼想記下來的事？"></textarea></section>
   </div>
   <div class="save-row"><span id="status" class="status">修改會自動儲存</span><button id="save" class="btn">儲存今天的手帳 ✿</button></div>
@@ -276,24 +275,36 @@ textarea{min-height:80px;resize:vertical}
       </div>
     </section>
     <section class="card chart-card wide"><h2>🌙 本月睡眠與熱量</h2><p>長條為熱量，虛線為 7 小時睡眠目標</p><div class="chart"><canvas id="lifeChart"></canvas></div></section>
-    <section class="card chart-card"><h2>📖 本月支出地圖</h2><p>依分類查看每月花費</p><div class="chart"><canvas id="expenseChart"></canvas></div></section>
-    <section class="card chart-card"><h2>🌼 本月摘要</h2><div id="monthSummary" class="summary-list">—</div></section>
+    <section class="card chart-card wide"><h2>🌼 本月摘要</h2><div id="monthSummary" class="summary-list">—</div></section>
+  </div>
+</div>
 
-    <section class="card tape-coral goalsbox"><h2 class="heading">🎯 每日目標 <small>套用在每一天的進度條上</small></h2>
-      <div class="goals-grid">
-        <div class="goal-box"><b>熱量 kcal</b><input id="goalCalorie" type="number" min="0" placeholder="例如 2000"></div>
-        <div class="goal-box"><b>蛋白質 g</b><input id="goalProtein" type="number" min="0" placeholder="例如 100"></div>
-        <div class="goal-box"><b>喝水 ml</b><input id="goalWater" type="number" min="0" placeholder="例如 2000"></div>
-        <div class="goal-box"><b>睡眠 小時</b><input id="goalSleep" type="number" min="0" step=".5" placeholder="例如 7"></div>
-      </div>
-      <button class="btn" id="saveGoals" style="margin-top:10px">儲存目標</button>
-    </section>
-
+<div class="pane" id="ledgerPane">
+  <div class="datebar"><b>🧾 記帳</b>
+    <div class="date-control"><button class="nav" id="ledgerPrev">‹</button><input type="month" id="ledgerMonth"><button class="nav" id="ledgerNext">›</button></div>
+  </div>
+  <div class="insights">
     <section class="card budget"><h2 class="heading">💰 月預算 <small>餐飲、交通、生活＝必要；其他＝非必要</small></h2>
       <div class="budget-grid">
         <div class="budget-box"><b>必要支出預算</b><div class="line"><input id="needBudget" type="number" min="0" placeholder="設定金額"><button class="btn" id="saveBudget">設定</button></div><div class="progress" id="needProgress"><i></i></div><div class="budget-stat" id="needStat"></div></div>
         <div class="budget-box"><b>非必要支出預算</b><div class="line"><input id="wantBudget" type="number" min="0" placeholder="設定金額"><button class="btn" id="saveWantBudget">設定</button></div><div class="progress" id="wantProgress"><i></i></div><div class="budget-stat" id="wantStat"></div></div>
       </div>
+    </section>
+
+    <section class="card chart-card tape-sea"><h2>📖 本月支出地圖</h2><p>依分類查看每月花費</p><div class="chart"><canvas id="expenseChart"></canvas></div></section>
+
+    <section class="section wide"><h2 class="heading">＋ 新增支出 <small>可選任意日期</small></h2>
+      <div class="item ledger-add">
+        <input type="date" id="ledgerDate">
+        <select id="ledgerCategory"></select>
+        <input type="number" min="0" id="ledgerAmount" placeholder="金額">
+        <input type="text" id="ledgerNote" placeholder="備註">
+      </div>
+      <button class="add" id="addLedgerExpense">＋ 新增支出</button>
+    </section>
+
+    <section class="section wide"><h2 class="heading">📋 交易紀錄</h2>
+      <div id="ledgerList"></div>
     </section>
   </div>
 </div>
@@ -305,6 +316,21 @@ textarea{min-height:80px;resize:vertical}
   <div class="entry-preview" id="entryPreview">點選日期回顧那天的小日記。</div>
 </div>
 </section>
+
+<div id="settingsScreen" class="card tape-sea" style="display:none">
+  <div class="heading"><button id="settingsBack" class="nav" title="返回">←</button>&nbsp;⚙️ 設定</div>
+  <section class="card tape-coral goalsbox" style="margin-top:14px">
+    <h2 class="heading">🎯 每日目標 <small>套用在每一天的進度條上</small></h2>
+    <div class="goals-grid">
+      <div class="goal-box"><b>熱量 kcal</b><input id="goalCalorie" type="number" min="0" placeholder="例如 2000"></div>
+      <div class="goal-box"><b>蛋白質 g</b><input id="goalProtein" type="number" min="0" placeholder="例如 100"></div>
+      <div class="goal-box"><b>喝水 ml</b><input id="goalWater" type="number" min="0" placeholder="例如 2000"></div>
+      <div class="goal-box"><b>睡眠 小時</b><input id="goalSleep" type="number" min="0" step=".5" placeholder="例如 7"></div>
+    </div>
+    <button class="btn" id="saveGoals" style="margin-top:10px">儲存目標</button>
+  </section>
+</div>
+
 <p class="footer">資料只屬於登入的你 ☁︎ 自動同步中</p>
 </main>
 
@@ -385,7 +411,6 @@ function totals(){
   $("sumExpense").textContent="$"+exp.toLocaleString();
   $("foodTotal").textContent=cal+" kcal";
   $("foodProteinTotal").textContent=pro+" g";
-  $("expenseTotal").textContent="$"+exp.toLocaleString();
 
   setBar("calorieBar","calorieBarWrap",cal,goals.calorie,true);
   setBar("proteinBar","proteinBarWrap",pro,goals.protein,false);
@@ -473,28 +498,11 @@ function exercises(){
   bindDelete("exerciseList","exercises");
 }
 
-function expenses(){
-  $("expenseList").innerHTML=data.expenses.map((x,i)=>`
-    <div class="item expense">
-      <input data-i="${i}" data-f="name" value="${esc(x.name)}" placeholder="項目">
-      <select data-i="${i}" data-f="category">${EXP_CATS.map(v=>`<option ${x.category===v?"selected":""}>${v}</option>`).join("")}</select>
-      <input data-i="${i}" data-f="amount" type="number" min="0" value="${x.amount||""}" placeholder="金額">
-      <input class="expense-note" data-i="${i}" data-f="note" value="${esc(x.note)}" placeholder="備註">
-      <button class="delete" data-del="${i}">×</button>
-    </div>`).join("")||'<div class="empty">還沒有支出紀錄。</div>';
-  $("expenseList").querySelectorAll("[data-i]").forEach(el=>el.oninput=()=>{
-    const i=+el.dataset.i,f=el.dataset.f;
-    data.expenses[i][f]=el.type==="number"?(+el.value||0):el.value;
-    totals(); schedule();
-  });
-  bindDelete("expenseList","expenses");
-}
-
 function render(){
   $("sleep").value=data.sleep||"";
   $("note").value=data.note||"";
   document.querySelectorAll(".mood").forEach(b=>b.classList.toggle("active",+b.dataset.mood===data.mood));
-  foods(); exercises(); expenses(); totals();
+  foods(); exercises(); totals();
 }
 
 async function save(){
@@ -502,7 +510,8 @@ async function save(){
   clearTimeout(saveTimer);
   status("正在同步…");
   try{
-    await setDoc(doc(db,"users",user.uid,"journal",data.date),{...data,updatedAt:serverTimestamp()},{merge:true});
+    const{expenses,...rest}=data;
+    await setDoc(doc(db,"users",user.uid,"journal",data.date),{...rest,updatedAt:serverTimestamp()},{merge:true});
     status("已自動同步 ✿",true);
     if($("insightsPane").classList.contains("active"))insights();
   }catch(e){status("同步失敗，請確認 Firestore Rules")}
@@ -607,7 +616,7 @@ async function insights(){
   },{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:12,ticks:{font:{size:9}}}}});
 
   const n=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
-  const dl=[],ms=[],mc=[],target=[],cats={},buck={need:0,want:0};
+  const dl=[],ms=[],mc=[],target=[];
   let ts=0,sd=0,te=0,mo=0,md=0,tp=0;
   for(let i=1;i<=n;i++){
     const x=mp[m+"-"+String(i).padStart(2,"0")]||norm({});
@@ -618,10 +627,6 @@ async function insights(){
     if(x.mood){mo+=x.mood;md++}
     te+=x.exercises.reduce((a,v)=>a+(+v.minutes||0),0);
     tp+=x.foods.reduce((a,v)=>a+(+v.protein||0),0);
-    x.expenses.forEach(v=>{
-      cats[v.category]=(cats[v.category]||0)+(+v.amount||0);
-      buck[NEED_CATS.has(v.category)?"need":"want"]+=(+v.amount||0);
-    });
   });
 
   lifeChart?.destroy();
@@ -638,21 +643,12 @@ async function insights(){
     x:{ticks:{autoSkip:false,maxRotation:0,minRotation:0,font:{size:8}}}
   }});
 
-  expenseChart?.destroy();
-  const catKeys=Object.keys(cats);
-  expenseChart=draw("expenseChart","doughnut",{
-    labels:catKeys.length?catKeys:["尚無支出"],
-    datasets:[{data:catKeys.length?Object.values(cats):[1],backgroundColor:catKeys.length?["#f2b461","#8ebd88","#96c7cd","#e98772","#ba9bc8","#d8c371"]:["#e7decf"]}]
-  },{plugins:{legend:{position:"bottom",labels:{boxWidth:10}}}});
-
   $("monthSummary").innerHTML=[
     ["🌙 平均睡眠",sd?(ts/sd).toFixed(1)+" 小時":"—"],
     ["🏃 累積運動",te+" 分鐘"],
     ["🥚 累積蛋白質",tp+" g"],
-    ["🌼 平均心情",md?(mo/md).toFixed(1)+" / 5":"—"],
-    ["🧺 本月支出","$"+(buck.need+buck.want).toLocaleString()]
+    ["🌼 平均心情",md?(mo/md).toFixed(1)+" / 5":"—"]
   ].map(([label,value])=>`<div class="summary-row"><span>${label}</span><b>${value}</b></div>`).join("");
-  budget(m,buck);
 }
 
 async function budget(m,b){
@@ -667,9 +663,107 @@ async function budget(m,b){
 }
 async function saveBudget(){
   if(!user)return;
-  const m=$("insightMonth").value;
+  const m=$("ledgerMonth").value;
   await setDoc(doc(db,"users",user.uid,"budget",m),{need:+$("needBudget").value||0,want:+$("wantBudget").value||0,updatedAt:serverTimestamp()},{merge:true});
-  insights();
+  ledger();
+}
+
+// ---------- ledger page ----------
+let ledgerByDate=new Map();
+
+async function ledger(){
+  if(!user)return;
+  const m=$("ledgerMonth").value||month(new Date());
+  const docs=await monthDocs(m);
+  ledgerByDate=new Map(docs.map(d=>[d.date,d]));
+  const cats={},buck={need:0,want:0};
+  docs.forEach(x=>x.expenses.forEach(v=>{
+    cats[v.category]=(cats[v.category]||0)+(+v.amount||0);
+    buck[NEED_CATS.has(v.category)?"need":"want"]+=(+v.amount||0);
+  }));
+
+  expenseChart?.destroy();
+  const catKeys=Object.keys(cats);
+  expenseChart=draw("expenseChart","doughnut",{
+    labels:catKeys.length?catKeys:["尚無支出"],
+    datasets:[{data:catKeys.length?Object.values(cats):[1],backgroundColor:catKeys.length?["#f2b461","#8ebd88","#96c7cd","#e98772","#ba9bc8","#d8c371"]:["#e7decf"]}]
+  },{plugins:{legend:{position:"bottom",labels:{boxWidth:10}}}});
+
+  await budget(m,buck);
+  renderLedgerList();
+}
+
+function renderLedgerList(){
+  const dates=[...ledgerByDate.keys()]
+    .filter(d=>ledgerByDate.get(d).expenses.length)
+    .sort().reverse();
+  $("ledgerList").innerHTML=dates.map(date=>{
+    const list=ledgerByDate.get(date).expenses;
+    const subtotal=list.reduce((s,e)=>s+(+e.amount||0),0);
+    return `<div class="ledger-daygroup" data-group="${date}">
+      <div class="heading">${esc(date)} <small>$${subtotal.toLocaleString()}</small></div>
+      <div class="item-list">${list.map((e,i)=>`
+        <div class="item expense">
+          <input data-date="${date}" data-i="${i}" data-f="name" value="${esc(e.name)}" placeholder="項目">
+          <select data-date="${date}" data-i="${i}" data-f="category">${EXP_CATS.map(v=>`<option ${e.category===v?"selected":""}>${v}</option>`).join("")}</select>
+          <input data-date="${date}" data-i="${i}" data-f="amount" type="number" min="0" value="${e.amount||""}" placeholder="金額">
+          <input class="expense-note" data-date="${date}" data-i="${i}" data-f="note" value="${esc(e.note)}" placeholder="備註">
+          <button class="delete" data-deldate="${date}" data-del="${i}">×</button>
+        </div>`).join("")}</div>
+    </div>`;
+  }).join("")||'<div class="empty">這個月還沒有支出紀錄。</div>';
+
+  $("ledgerList").querySelectorAll("[data-i]").forEach(el=>el.oninput=el.onchange=()=>{
+    const date=el.dataset.date,i=+el.dataset.i,f=el.dataset.f;
+    ledgerByDate.get(date).expenses[i][f]=el.type==="number"?(+el.value||0):el.value;
+    updateLedgerSubtotal(date);
+    scheduleLedgerSave(date);
+  });
+  $("ledgerList").querySelectorAll("[data-deldate]").forEach(b=>b.onclick=async()=>{
+    const date=b.dataset.deldate;
+    ledgerByDate.get(date).expenses.splice(+b.dataset.del,1);
+    await commitLedgerDay(date);
+    ledger();
+  });
+}
+
+function updateLedgerSubtotal(date){
+  const entry=ledgerByDate.get(date);
+  const subtotal=entry.expenses.reduce((s,e)=>s+(+e.amount||0),0);
+  const el=document.querySelector(`.ledger-daygroup[data-group="${date}"] .heading small`);
+  if(el)el.textContent="$"+subtotal.toLocaleString();
+}
+
+const ledgerSaveTimers=new Map();
+function scheduleLedgerSave(date){
+  clearTimeout(ledgerSaveTimers.get(date));
+  ledgerSaveTimers.set(date,setTimeout(()=>commitLedgerDay(date),600));
+}
+
+async function commitLedgerDay(date){
+  const entry=ledgerByDate.get(date);
+  await setDoc(doc(db,"users",user.uid,"journal",date),
+    {expenses:entry.expenses,updatedAt:serverTimestamp()},{merge:true});
+  if(data&&data.date===date){data.expenses=entry.expenses; totals()}
+}
+
+async function saveLedgerDay(date){
+  await commitLedgerDay(date);
+  ledger();
+}
+
+async function getOrLoadDay(date){
+  if(ledgerByDate.has(date))return ledgerByDate.get(date);
+  const snap=await getDoc(doc(db,"users",user.uid,"journal",date));
+  const entry=norm(snap.exists()?snap.data():{date});
+  ledgerByDate.set(date,entry);
+  return entry;
+}
+
+function moveLedgerMonth(n){
+  const d=new Date($("ledgerMonth").value+"-01T12:00:00");
+  d.setMonth(d.getMonth()+n);
+  $("ledgerMonth").value=month(d); ledger();
 }
 
 // ---------- calendar ----------
@@ -701,9 +795,9 @@ async function calendar(){
 }
 
 // ---------- events ----------
+$("ledgerCategory").innerHTML=EXP_CATS.map(v=>`<option>${v}</option>`).join("");
 $("addFood").onclick=()=>{data.foods.push(normFood()); render(); save()};
 $("addExercise").onclick=()=>{data.exercises.push(normExercise()); render(); save()};
-$("addExpense").onclick=()=>{data.expenses.push(normExpense()); render(); save()};
 $("sleep").oninput=e=>{data.sleep=+e.target.value||0; schedule()};
 $("note").oninput=e=>{data.note=e.target.value; schedule()};
 $("water250").onclick=()=>{data.water=(+data.water||0)+250; totals(); waterCups(data.water); save()};
@@ -725,8 +819,27 @@ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll(".pane").forEach(x=>x.classList.toggle("active",x.id===b.dataset.pane));
   if(b.dataset.pane==="insightsPane")insights();
+  if(b.dataset.pane==="ledgerPane")ledger();
   if(b.dataset.pane==="calendarPane")calendar();
 });
+
+$("ledgerMonth").onchange=ledger;
+$("ledgerPrev").onclick=()=>moveLedgerMonth(-1);
+$("ledgerNext").onclick=()=>moveLedgerMonth(1);
+$("addLedgerExpense").onclick=async()=>{
+  const date=$("ledgerDate").value||today();
+  const entry=await getOrLoadDay(date);
+  entry.expenses.push(normExpense({
+    amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value
+  }));
+  const sameMonth=month(date)===($("ledgerMonth").value||month(new Date()));
+  await saveLedgerDay(date);
+  $("ledgerAmount").value=""; $("ledgerNote").value="";
+  if(!sameMonth)status(`已新增到 ${month(date)} 的紀錄`,true);
+};
+
+$("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"};
+$("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"};
 
 // ---------- auth ----------
 const app=initializeApp(firebaseConfig);
@@ -744,15 +857,19 @@ onAuthStateChanged(auth,async u=>{
     $("userName").textContent="請登入以同步";
     $("signIn").classList.remove("hidden");
     $("signOut").classList.add("hidden");
+    $("settingsBtn").classList.add("hidden");
     return;
   }
   user=u;
   $("userName").textContent=u.displayName||"我的小島";
   $("avatar").src=u.photoURL||""; $("avatar").classList.remove("hidden");
   $("signIn").classList.add("hidden"); $("signOut").classList.remove("hidden");
+  $("settingsBtn").classList.remove("hidden");
   $("signOut").onclick=()=>signOut(auth);
   $("date").value=today();
   $("insightMonth").value=month(new Date());
+  $("ledgerMonth").value=month(new Date());
+  $("ledgerDate").value=today();
   await loadGoals();
   await day();
 });
