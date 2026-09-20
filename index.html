@@ -71,7 +71,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
 .food{grid-template-columns:82px 1fr 62px 62px 30px}
 .expense{grid-template-columns:1fr 102px 86px 1fr 30px}
-.ledger-add{grid-template-columns:118px 130px 1fr 80px 1fr}
+.ledger-add{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
 .ledger-daygroup{margin-bottom:14px}
 .ledger-daygroup .heading small{color:var(--deep);font-weight:700}
 .ledger-daygroup .heading small.net-negative{color:var(--coral)}
@@ -79,6 +79,11 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item-expense{border-left:3px solid var(--coral)}
 .cat-row{grid-template-columns:1fr 90px 30px}
 .cat-row.cat-row-income{grid-template-columns:1fr 30px}
+.allocate-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#f8efe1;border-radius:14px;padding:11px 14px;margin-bottom:17px;font-size:13px}
+.allocate-bar b{color:var(--deep)}
+.allocate-btns{display:flex;gap:8px;flex-wrap:wrap}
+.networth-total{font-size:14px;margin-bottom:11px}
+.networth-total b{display:block;font-size:26px;color:var(--deep)}
 .item input,.item select,input,select,textarea{width:100%;border:1px solid #e5d8c7;background:#fffdf8;border-radius:9px;padding:8px;outline:0}
 .item input{padding:7px}
 .delete{width:29px;height:29px;border-radius:50%;background:#fbe6e0;color:#bd604c;font-weight:700;flex:none}
@@ -174,8 +179,8 @@ textarea{min-height:80px;resize:vertical}
   .food select{grid-area:meal}.food input:nth-of-type(1){grid-area:name}.food input:nth-of-type(2){grid-area:cal}.food input:nth-of-type(3){grid-area:protein}.food .delete{grid-area:del;justify-self:end}
   .expense{grid-template-columns:1fr 88px 65px 29px}
   .expense .expense-note{grid-column:span 3}
-  .ledger-add{grid-template-columns:1fr 1fr}
   .cat-row{grid-template-columns:1fr 70px 26px}
+  .allocate-bar{flex-direction:column;align-items:stretch;text-align:center}
   .exercise-main{grid-template-columns:1fr 90px 30px}
   .chart{height:195px}
   .goals-grid{grid-template-columns:repeat(2,1fr)}
@@ -297,7 +302,25 @@ textarea{min-height:80px;resize:vertical}
     <div class="metric"><span class="metric-label">🌿 本期結餘</span><b id="ledgerNetTotal">$0</b></div>
   </div>
 
+  <div class="allocate-bar hidden" id="allocateBar">
+    <span>把結餘 <b id="allocateAmount">$0</b> 分配到：</span>
+    <div class="allocate-btns">
+      <button class="ghost" id="allocateBank">💰 存入銀行</button>
+      <button class="ghost" id="allocateReserve">🐖 存入預備金</button>
+    </div>
+  </div>
+
   <div class="insights">
+    <section class="card tape-sea wide"><h2 class="heading">💎 資產盤點 <small>每月手動更新一次即可</small></h2>
+      <div class="networth-total">目前淨資產<b id="netWorthTotal">$0</b></div>
+      <div class="budget-grid">
+        <div class="budget-box"><b>銀行存款總額</b><input id="assetBank" type="number" min="0" placeholder="0"></div>
+        <div class="budget-box"><b>投資現值總額</b><input id="assetInvestment" type="number" min="0" placeholder="0"></div>
+        <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" min="0" placeholder="0"></div>
+      </div>
+      <button class="btn" id="saveAssets" style="margin-top:10px">更新本月盤點</button>
+    </section>
+
     <section class="card budget wide"><h2 class="heading">💰 分類預算 <small>可到設定頁調整分類與金額上限</small></h2>
       <p class="metric-sub" style="margin:0 0 6px">🏠 固定支出</p>
       <div class="budget-grid cats" id="fixedBudgetGrid"></div>
@@ -316,6 +339,7 @@ textarea{min-height:80px;resize:vertical}
           <option value="income">收入</option>
         </select>
         <select id="ledgerCategory"></select>
+        <input type="text" id="ledgerName" placeholder="項目">
         <input type="number" min="0" id="ledgerAmount" placeholder="金額">
         <input type="text" id="ledgerNote" placeholder="備註">
       </div>
@@ -784,9 +808,12 @@ async function ledger(){
     x.incomes.forEach(v=>{incomeTotal+=(+v.amount||0)});
   });
 
+  const net=incomeTotal-expenseTotal;
   $("ledgerIncomeTotal").textContent="$"+incomeTotal.toLocaleString();
   $("ledgerExpenseTotal").textContent="$"+expenseTotal.toLocaleString();
-  $("ledgerNetTotal").textContent="$"+(incomeTotal-expenseTotal).toLocaleString();
+  $("ledgerNetTotal").textContent="$"+net.toLocaleString();
+  updateAllocateBar(net);
+  await loadAssets(m);
 
   renderBudgetBoxes(fixedSpent,variableSpent);
 
@@ -800,6 +827,59 @@ async function ledger(){
 
   updateLedgerCategoryOptions();
   renderLedgerList();
+}
+
+let ledgerSurplus=0;
+function updateAllocateBar(net){
+  ledgerSurplus=net;
+  $("allocateAmount").textContent="$"+net.toLocaleString();
+  $("allocateBar").classList.toggle("hidden",net<=0);
+}
+
+function normAssets(x={}){return{bank:+x.bank||0,investment:+x.investment||0,liability:+x.liability||0}}
+async function loadAssets(m){
+  if(!user)return;
+  let a;
+  try{
+    const s=await getDoc(doc(db,"users",user.uid,"assets",m));
+    a=normAssets(s.exists()?s.data():{});
+  }catch(e){
+    a=normAssets({});
+    status("資產盤點讀取失敗，請確認 Firestore Rules 已加入 assets 集合");
+  }
+  $("assetBank").value=a.bank||""; $("assetInvestment").value=a.investment||""; $("assetLiability").value=a.liability||"";
+  $("netWorthTotal").textContent="$"+(a.bank+a.investment-a.liability).toLocaleString();
+}
+async function saveAssets(){
+  if(!user)return;
+  const m=$("ledgerMonth").value||month(new Date());
+  const a=normAssets({bank:$("assetBank").value,investment:$("assetInvestment").value,liability:$("assetLiability").value});
+  try{
+    await setDoc(doc(db,"users",user.uid,"assets",m),{...a,updatedAt:serverTimestamp()},{merge:true});
+    status("資產盤點已更新",true);
+  }catch(e){
+    status("資產盤點儲存失敗，請確認 Firestore Rules 已加入 assets 集合");
+  }
+  $("netWorthTotal").textContent="$"+(a.bank+a.investment-a.liability).toLocaleString();
+}
+
+async function allocateToBank(){
+  if(!user||ledgerSurplus<=0)return;
+  $("assetBank").value=(+$("assetBank").value||0)+ledgerSurplus;
+  await saveAssets();
+  status(`已把 $${ledgerSurplus.toLocaleString()} 存入銀行資產盤點`,true);
+}
+async function allocateToReserve(){
+  if(!user||ledgerSurplus<=0)return;
+  if(!categories.variable.some(c=>c.name==="預備金")){
+    categories.variable.push(normCatItem({name:"預備金"}));
+    await saveCategories();
+  }
+  const date=today();
+  const entry=await getOrLoadDay(date);
+  entry.expenses.push(normExpense({name:"本期結餘",category:"預備金",kind:"variable",amount:ledgerSurplus,note:"本期結餘存入預備金"}));
+  await saveLedgerDay(date);
+  status(`已把 $${ledgerSurplus.toLocaleString()} 存入預備金`,true);
 }
 
 function budgetBoxHtml(c,spent){
@@ -960,16 +1040,19 @@ $("addLedgerEntry").onclick=async()=>{
   const type=$("ledgerType").value;
   const entry=await getOrLoadDay(date);
   if(type==="income"){
-    entry.incomes.push(normIncome({amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value}));
+    entry.incomes.push(normIncome({name:$("ledgerName").value,amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value}));
   }else{
-    entry.expenses.push(normExpense({amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value,kind:type}));
+    entry.expenses.push(normExpense({name:$("ledgerName").value,amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value,kind:type}));
   }
   const dateMonth=date.slice(0,7);
   const sameMonth=dateMonth===($("ledgerMonth").value||month(new Date()));
   await saveLedgerDay(date);
-  $("ledgerAmount").value=""; $("ledgerNote").value="";
+  $("ledgerName").value=""; $("ledgerAmount").value=""; $("ledgerNote").value="";
   if(!sameMonth)status(`已新增到 ${dateMonth} 的紀錄`,true);
 };
+$("saveAssets").onclick=saveAssets;
+$("allocateBank").onclick=allocateToBank;
+$("allocateReserve").onclick=allocateToReserve;
 
 $("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"};
 $("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"};
