@@ -524,7 +524,7 @@ function normExercise(x={}){
 const EXPENSE_KINDS=["fixed","variable","sinking"];
 function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:EXPENSE_KINDS.includes(x.kind)?x.kind:"variable",amount:+x.amount||0,note:x.note||""}}
 function normIncome(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"薪資",amount:+x.amount||0,note:x.note||""}}
-function normSave(x={}){return{id:x.id||id(),bag:x.bag||"",amount:+x.amount||0,note:x.note||""}}
+function normSave(x={}){return{id:x.id||id(),name:x.name||"",bag:x.bag||"",amount:+x.amount||0,note:x.note||""}}
 
 function norm(d={}){
   const foods=d.foods?d.foods.map(normFood):
