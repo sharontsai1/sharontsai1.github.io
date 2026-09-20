@@ -326,6 +326,7 @@ textarea{min-height:80px;resize:vertical}
 </div>
 
 <div class="pane" id="financePane">
+<p id="finStatus" class="status"></p>
 
 <div class="fin-page active" id="finHome">
   <div class="datebar"><b>💰 我的帳戶</b>
@@ -524,9 +525,10 @@ function normExercise(x={}){
   return ex;
 }
 const EXPENSE_KINDS=["fixed","variable","sinking"];
-function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:EXPENSE_KINDS.includes(x.kind)?x.kind:"variable",amount:+x.amount||0,note:x.note||""}}
-function normIncome(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"薪資",amount:+x.amount||0,note:x.note||""}}
-function normSave(x={}){return{id:x.id||id(),name:x.name||"",bag:x.bag||"",amount:+x.amount||0,note:x.note||""}}
+// addedAt = when the row was actually created, so 最近新增 can show back-dated entries.
+function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:EXPENSE_KINDS.includes(x.kind)?x.kind:"variable",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0}}
+function normIncome(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"薪資",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0}}
+function normSave(x={}){return{id:x.id||id(),name:x.name||"",bag:x.bag||"",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0}}
 
 function norm(d={}){
   const foods=d.foods?d.foods.map(normFood):
@@ -561,7 +563,14 @@ function normCategories(c={}){
 }
 
 // ---------- small helpers ----------
-function status(msg,ok){$("status").textContent=msg;$("status").className="status"+(ok?" ok":"")}
+// #status lives inside todayPane, so the finance pages need their own copy or
+// every message (including "已新增到 X 月的紀錄") is invisible there.
+function status(msg,ok){
+  ["status","finStatus"].forEach(elId=>{
+    const el=$(elId); if(!el)return;
+    el.textContent=msg; el.className="status"+(ok?" ok":"");
+  });
+}
 function pct(v,t){return t?Math.min(100,Math.round(v/t*100)):0}
 function setBar(barId,wrapId,v,t,warnOverTarget){
   const p=pct(v,t),wrap=$(wrapId);
@@ -1195,7 +1204,7 @@ async function balanceToReserve(){
   const date=today();
   await ensureYear(date.slice(0,4));
   const entry=await getOrLoadDay(date);
-  entry.saves.push(normSave({name:"本期結餘",bag,amount:s.trueBalance,note:"本期結餘存入"}));
+  entry.saves.push(normSave({name:"本期結餘",bag,amount:s.trueBalance,note:"本期結餘存入",addedAt:Date.now()}));
   await commitFinanceDay(date);
   renderFinance();
   status(`已把 ${money(s.trueBalance)} 存入 ${bag}`,true);
@@ -1232,14 +1241,19 @@ function updateFinanceCategoryOptions(){
   $("finCategory").innerHTML=list.map(c=>`<option>${esc(c.name)}</option>`).join("")
     ||'<option value="">（請先到設定新增分類）</option>';
 }
+// Sorted by when the row was created, not by its date, so a back-dated entry
+// still shows up here right after you add it. Rows saved before addedAt existed
+// fall back to their date, which keeps the old ordering for existing data.
 function renderFinRecent(){
   const all=[];
+  const add=(d,e,tag,name,amount)=>all.push({date:d.date,tag,name,amount,
+    key:e.addedAt||Date.parse(d.date+"T00:00:00")||0});
   daysIn(finMonth()).forEach(d=>{
-    d.expenses.forEach(e=>all.push({date:d.date,tag:e.kind==="sinking"?"🛡️ 花預存":e.kind==="fixed"?"🏠 固定":"🛍 變動",name:e.name||e.category,amount:-(+e.amount||0)}));
-    d.saves.forEach(e=>all.push({date:d.date,tag:"🐖 存入",name:e.name||e.bag,amount:+e.amount||0}));
-    d.incomes.forEach(e=>all.push({date:d.date,tag:"💰 收入",name:e.name||e.category,amount:+e.amount||0}));
+    d.expenses.forEach(e=>add(d,e,e.kind==="sinking"?"🛡️ 花預存":e.kind==="fixed"?"🏠 固定":"🛍 變動",e.name||e.category,-(+e.amount||0)));
+    d.saves.forEach(e=>add(d,e,"🐖 存入",e.name||e.bag,+e.amount||0));
+    d.incomes.forEach(e=>add(d,e,"💰 收入",e.name||e.category,+e.amount||0));
   });
-  all.sort((a,b)=>a.date<b.date?1:-1);
+  all.sort((a,b)=>b.key-a.key);
   $("finRecent").innerHTML=all.slice(0,5).map(x=>
     `<div class="summary-row"><span>${esc(x.date)}　${x.tag}　${esc(x.name)}</span><b>${x.amount<0?"−":"+"}${money(Math.abs(x.amount))}</b></div>`
   ).join("")||'<div class="empty">這個月還沒有紀錄。</div>';
@@ -1372,10 +1386,10 @@ $("finAddEntry").onclick=async()=>{
   if(!cat)return status("請先到設定新增分類");
   await ensureYear(date.slice(0,4));
   const entry=await getOrLoadDay(date);
-  const name=$("finName").value,note=$("finNote").value;
-  if(flow==="income")entry.incomes.push(normIncome({name,amount,category:cat,note}));
-  else if(flow==="save")entry.saves.push(normSave({name,bag:cat,amount,note}));
-  else entry.expenses.push(normExpense({name,amount,category:cat,note,kind:flow}));
+  const name=$("finName").value,note=$("finNote").value,addedAt=Date.now();
+  if(flow==="income")entry.incomes.push(normIncome({name,amount,category:cat,note,addedAt}));
+  else if(flow==="save")entry.saves.push(normSave({name,bag:cat,amount,note,addedAt}));
+  else entry.expenses.push(normExpense({name,amount,category:cat,note,kind:flow,addedAt}));
   await commitFinanceDay(date);
   $("finAmount").value=""; $("finName").value=""; $("finNote").value="";
   renderFinance();
