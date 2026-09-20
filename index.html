@@ -80,6 +80,10 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item-save{border-left:3px solid var(--sea)}
 .cat-row{grid-template-columns:1fr 90px 30px}
 .cat-row.cat-row-income{grid-template-columns:1fr 30px}
+.acc-row{grid-template-columns:1fr 100px}
+.acc-set-row{grid-template-columns:1fr 84px 84px 30px}
+.acc-hint{grid-column:1/-1;text-align:right;font-size:10px;opacity:.65}
+.acc-archived{opacity:.55}
 .neg{color:var(--coral)}
 
 /* finance section: bottom sub-nav + sub-pages */
@@ -211,6 +215,8 @@ textarea{min-height:80px;resize:vertical}
   .expense{grid-template-columns:1fr 88px 65px 29px}
   .expense .expense-note{grid-column:span 3}
   .cat-row{grid-template-columns:1fr 70px 26px}
+  .acc-row{grid-template-columns:1fr 86px}
+  .acc-set-row{grid-template-columns:1fr 1fr}
   .allocate-bar{flex-direction:column;align-items:stretch;text-align:center}
   .plan-grid{grid-template-columns:repeat(3,1fr)}
   .seg{width:100%}
@@ -350,6 +356,7 @@ textarea{min-height:80px;resize:vertical}
       <div class="allocate-btns hidden" id="finAllocateBtns" style="margin-top:10px">
         <select id="finSaveBag" style="max-width:150px"></select>
         <button class="ghost" id="finToReserve">🐖 把餘額存入預備金</button>
+        <select id="finBankAcc" style="max-width:170px"></select>
         <button class="ghost" id="finToBank">💰 把餘額存入銀行</button>
       </div>
       <p class="metric-sub" id="finAllocatedNote" style="margin:6px 0 0"></p>
@@ -379,23 +386,55 @@ textarea{min-height:80px;resize:vertical}
 </div>
 
 <div class="fin-page" id="finAssets">
-  <section class="card tape-sea"><h2 class="heading">💎 目前總淨資產 <small>顯示最新一次盤點</small></h2>
+  <section class="card tape-sea"><h2 class="heading">💎 目前總淨資產 <small id="netWorthAsOf">—</small></h2>
     <div class="networth-total"><b id="netWorthTotal">$0</b></div>
-    <div class="summary" style="grid-template-columns:repeat(2,1fr);margin-bottom:0">
-      <div class="metric"><span class="metric-label">💰 總資產（存款＋投資）</span><b id="assetPositive">$0</b></div>
+    <div class="summary" style="margin-bottom:0">
+      <div class="metric"><span class="metric-label">🏦 總存款</span><b id="assetBankTotal">$0</b></div>
+      <div class="metric"><span class="metric-label">📈 總投資</span><b id="assetInvestTotal">$0</b></div>
       <div class="metric"><span class="metric-label">🪨 總負債</span><b id="assetLiabilityTotal">$0</b></div>
     </div>
+    <div id="assetAccountBreakdown" class="summary-list" style="margin-top:10px"></div>
   </section>
 
   <section class="card chart-card"><h2>🌿 底氣走勢</h2><p>每月淨資產變化</p><div class="chart"><canvas id="netWorthChart"></canvas></div></section>
 
   <section class="card"><h2 class="heading">📍 更新這個月的站位 <small>可切換月份補登</small></h2>
     <input type="month" id="assetMonth" class="month-picker" style="margin-bottom:10px">
-    <div class="budget-grid">
-      <div class="budget-box"><b>銀行存款總額</b><input id="assetBank" type="number" min="0" placeholder="0"></div>
-      <div class="budget-box"><b>投資現值總額</b><input id="assetInvestment" type="number" min="0" placeholder="0"></div>
-      <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" min="0" placeholder="0"></div>
+
+    <div class="section" style="margin-bottom:12px">
+      <h3 class="heading" style="font-size:13px;margin-bottom:8px">🏦 銀行帳戶 <small id="assetBankSub"></small></h3>
+      <div id="assetBankRows" class="item-list"></div>
     </div>
+    <div class="section" style="margin-bottom:12px">
+      <h3 class="heading" style="font-size:13px;margin-bottom:8px">📈 投資帳戶 <small id="assetInvestSub"></small></h3>
+      <div id="assetInvestRows" class="item-list"></div>
+    </div>
+
+    <div class="section hidden" id="assetLegacyBox" style="margin-bottom:12px">
+      <h3 class="heading" style="font-size:13px;margin-bottom:8px">🗄 未分類 <small>帳戶功能之前的紀錄</small></h3>
+      <p class="metric-sub" style="margin:0 0 8px">這些金額仍然計入總額。可以搬到上面的帳戶，再把這裡歸零。</p>
+      <div class="budget-grid">
+        <div class="budget-box"><b>未分類存款</b><input id="assetBank" type="number" min="0" placeholder="0"></div>
+        <div class="budget-box"><b>未分類投資</b><input id="assetInvestment" type="number" min="0" placeholder="0"></div>
+      </div>
+      <div class="item ledger-add" style="margin-top:8px">
+        <select id="assetMigrateTarget"></select>
+        <button class="add small" id="assetMigrateBank">把未分類存款搬過去</button>
+        <button class="add small" id="assetMigrateInvest">把未分類投資搬過去</button>
+      </div>
+    </div>
+
+    <div class="budget-grid">
+      <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" min="0" placeholder="0"></div>
+      <div class="budget-box"><b>這次盤點的淨資產</b>
+        <div class="networth-total" style="margin:4px 0 0"><b id="assetFormNet">$0</b></div>
+        <div class="metric-sub" id="assetFormNetSub"></div>
+      </div>
+    </div>
+
+    <label class="label" id="assetUseTodayRateLabel" style="margin-top:10px"><input type="checkbox" id="assetUseTodayRate" style="width:auto;margin-right:6px">用今天的匯率重算這個月</label>
+    <p class="metric-sub" id="assetRateNote" style="margin:2px 0 0"></p>
+
     <button class="btn" id="saveAssets" style="margin-top:10px">存下這次盤點</button>
   </section>
 
@@ -447,6 +486,30 @@ textarea{min-height:80px;resize:vertical}
       </div>
     </div>
     <button class="btn" id="saveCategories" style="margin-top:10px">儲存分類設定</button>
+  </section>
+
+  <section class="card tape-sea" id="accountsBox">
+    <h2 class="heading">🏦 帳戶與匯率 <small>所有報表都換算成台幣</small></h2>
+    <div class="day-grid">
+      <div class="section"><h3 class="heading" style="font-size:13px;margin-bottom:8px">🏦 銀行帳戶</h3>
+        <div id="accBankList" class="item-list"></div>
+        <button class="add small" id="addAccBank">＋ 新增帳戶</button>
+      </div>
+      <div class="section"><h3 class="heading" style="font-size:13px;margin-bottom:8px">📈 投資帳戶</h3>
+        <div id="accInvestList" class="item-list"></div>
+        <button class="add small" id="addAccInvest">＋ 新增帳戶</button>
+      </div>
+      <div class="section wide"><h3 class="heading" style="font-size:13px;margin-bottom:8px">💱 匯率 <small>1 外幣 = ? 台幣</small></h3>
+        <div class="budget-grid">
+          <div class="budget-box"><b>美金 USD</b><input id="rateUSD" type="number" step="0.0001" min="0" placeholder="31.8"></div>
+          <div class="budget-box"><b>日圓 JPY</b><input id="rateJPY" type="number" step="0.0001" min="0" placeholder="0.205"></div>
+        </div>
+        <button class="add small" id="refreshRates">🔄 更新匯率</button>
+        <p class="metric-sub" id="ratesUpdatedNote" style="margin:6px 0 0"></p>
+        <p class="metric-sub" style="margin:2px 0 0">改匯率只影響「還沒凍結」的盤點；已存下的月份會保留當時的匯率。</p>
+      </div>
+    </div>
+    <button class="btn" id="saveAccounts" style="margin-top:10px">儲存帳戶設定</button>
   </section>
 </div>
 
@@ -502,8 +565,13 @@ const EXP_CATS=["餐飲","交通","生活","購物","娛樂","其他"];
 const WEEKDAYS=["一","二","三","四","五","六","日"];
 const DEFAULT_GOALS={calorie:2000,protein:100,water:2000,sleep:7};
 const CAT_PALETTE=["#f2b461","#8ebd88","#96c7cd","#e98772","#ba9bc8","#d8c371","#e0a8c0","#9fb8d9","#c9b28f","#7fb0a0"];
+const CURRENCIES=["TWD","USD","JPY"];
+const CUR_SYMBOL={TWD:"NT$",USD:"US$",JPY:"¥"};
+const DEFAULT_RATES={USD:31.8,JPY:0.205};        // last-resort floor; must never be 0
+const RATE_BOUNDS={USD:[10,100],JPY:[0.05,1]};   // sanity gate for fetched rates
+const RATE_MAX_AGE=12*3600*1000;
 
-let auth,db,user,data,goals=DEFAULT_GOALS,categories=null,calendarMonth=new Date(),saveTimer;
+let auth,db,user,data,goals=DEFAULT_GOALS,categories=null,accountsCfg=null,ratesFetchedThisSession=false,calendarMonth=new Date(),saveTimer;
 let weekCPChart,weekSleepChart,lifeChart;
 
 const id=()=>crypto.randomUUID();
@@ -561,6 +629,29 @@ function normCategories(c={}){
     income:(c.income&&c.income.length?c.income:DEFAULT_CATEGORIES.income).map(normIncomeCat)
   };
 }
+
+// A bad rate is DROPPED, never stored as 0 — a 0 rate would silently zero out a
+// whole asset class, while a missing key falls through to rateIn()'s next fallback.
+function normRateMap(r={}){
+  const o={};
+  CURRENCIES.forEach(c=>{
+    if(c==="TWD")return;
+    const v=+((r||{})[c]);
+    if(isFinite(v)&&v>0)o[c]=v;
+  });
+  return o;
+}
+function normAccount(x={}){return{
+  id:x.id||id(),name:x.name||"",
+  type:x.type==="invest"?"invest":"bank",
+  currency:CURRENCIES.includes(x.currency)?x.currency:"TWD",
+  archived:!!x.archived
+}}
+function normAccounts(c={}){return{
+  accounts:(Array.isArray(c.accounts)?c.accounts:[]).map(normAccount),
+  rates:{...DEFAULT_RATES,...normRateMap(c.rates)},
+  ratesUpdatedAt:+c.ratesUpdatedAt||0
+}}
 
 // ---------- small helpers ----------
 // #status lives inside todayPane, so the finance pages need their own copy or
@@ -795,6 +886,140 @@ async function saveCategories(){
   }
   updateFinanceCategoryOptions();
   if($("financePane").classList.contains("active"))renderFinance();
+}
+
+// ---- 帳戶與匯率 ----
+// Uses data-af/data-ai/data-delacc (not data-f/data-i) and scopes to #accountsBox, so it
+// can never collide with the category card's [data-f] handler. #accountsBox must stay a
+// SIBLING of #categoriesBox — nesting it would route account edits into categories[undefined].
+function accRowHtml(i,a){
+  return `<div class="item acc-set-row${a.archived?" acc-archived":""}">
+    <input data-ai="${i}" data-af="name" value="${esc(a.name)}" placeholder="帳戶名稱（例：台銀活存）">
+    <select data-ai="${i}" data-af="currency">${CURRENCIES.map(c=>`<option${c===a.currency?" selected":""}>${c}</option>`).join("")}</select>
+    <select data-ai="${i}" data-af="type">
+      <option value="bank"${a.type==="bank"?" selected":""}>銀行</option>
+      <option value="invest"${a.type==="invest"?" selected":""}>投資</option>
+    </select>
+    <button class="delete small" data-delacc="${i}">×</button>
+  </div>`;
+}
+function renderAccountSettings(){
+  if(!accountsCfg)return;
+  const rows=t=>accountsCfg.accounts.map((a,i)=>[a,i]).filter(([a])=>a.type===t)
+    .map(([a,i])=>accRowHtml(i,a)).join("")||'<div class="empty">還沒有帳戶。</div>';
+  $("accBankList").innerHTML=rows("bank");
+  $("accInvestList").innerHTML=rows("invest");
+  $("rateUSD").value=accountsCfg.rates.USD;
+  $("rateJPY").value=accountsCfg.rates.JPY;
+  $("ratesUpdatedNote").textContent=accountsCfg.ratesUpdatedAt
+    ?"匯率更新於 "+new Date(accountsCfg.ratesUpdatedAt).toLocaleString("zh-TW")
+    :"尚未自動更新過匯率";
+  // oninput AND onchange: <select> only fires change
+  $("accountsBox").querySelectorAll("[data-af]").forEach(el=>el.oninput=el.onchange=()=>{
+    accountsCfg.accounts[+el.dataset.ai][el.dataset.af]=el.value;
+    if(el.dataset.af==="type")renderAccountSettings();
+  });
+  $("accountsBox").querySelectorAll("[data-delacc]").forEach(b=>b.onclick=()=>archiveAccount(+b.dataset.delacc));
+  $("rateUSD").oninput=()=>{accountsCfg.rates.USD=+$("rateUSD").value||DEFAULT_RATES.USD};
+  $("rateJPY").oninput=()=>{accountsCfg.rates.JPY=+$("rateJPY").value||DEFAULT_RATES.JPY};
+}
+function addAccountRow(type){
+  accountsCfg.accounts.push(normAccount({type}));
+  renderAccountSettings();
+}
+// An account referenced by any snapshot is archived, never deleted: deleting it would
+// leave its historical balances unresolvable (no currency, no type).
+function archiveAccount(i){
+  const a=accountsCfg.accounts[i];
+  if(assetHistory.some(s=>+((s.balances||{})[a.id]))){
+    if(!confirm(`「${a.name||"這個帳戶"}」在過去的盤點裡還有餘額。封存後它不會出現在新的盤點表單，但歷史紀錄仍然計入總額。要封存嗎？`))return;
+    a.archived=true;
+  }else{
+    if(!confirm(`刪除「${a.name||"這個帳戶"}」？`))return;
+    accountsCfg.accounts.splice(i,1);
+  }
+  renderAccountSettings();
+}
+async function loadAccounts(){
+  if(!user)return;
+  try{
+    const s=await getDoc(doc(db,"users",user.uid,"settings","accounts"));
+    accountsCfg=normAccounts(s.exists()?s.data():{});
+  }catch(e){
+    accountsCfg=normAccounts({});
+    status("帳戶設定讀取失敗，請確認 Firestore Rules 已加入 settings 集合");
+  }
+  renderAccountSettings();
+}
+async function saveAccounts(){
+  if(!user||!accountsCfg)return;
+  accountsCfg.accounts=accountsCfg.accounts.map(normAccount);
+  accountsCfg.rates={...DEFAULT_RATES,...normRateMap(accountsCfg.rates)};
+  try{
+    await setDoc(doc(db,"users",user.uid,"settings","accounts"),
+      {accounts:accountsCfg.accounts,rates:accountsCfg.rates,
+       ratesUpdatedAt:accountsCfg.ratesUpdatedAt,updatedAt:serverTimestamp()},{merge:true});
+    status("帳戶設定已儲存",true);
+  }catch(e){
+    status("帳戶設定儲存失敗，請確認 Firestore Rules 已加入 settings 集合");
+  }
+  renderAccountSettings();
+  if($("financePane").classList.contains("active")){
+    fillAssetForm($("assetMonth").value||finMonth());
+    renderAssetsPage(); renderBankAccOptions();
+  }
+}
+
+async function fetchJson(url,ms){
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),ms||6000);
+  try{
+    const r=await fetch(url,{signal:c.signal});
+    if(!r.ok)throw new Error(r.status);
+    return await r.json();
+  }finally{clearTimeout(t)}
+}
+const round4=v=>Math.round(v*10000)/10000;
+// Checks the DERIVED pair, so a garbage JPY can't slip through on the back of a sane TWD.
+function ratesSane(r){
+  return Object.keys(RATE_BOUNDS).every(c=>{
+    const[lo,hi]=RATE_BOUNDS[c],v=+r[c];
+    return isFinite(v)&&v>=lo&&v<=hi;
+  });
+}
+async function fetchRates(manual){
+  if(!user||!accountsCfg)return;
+  if(!manual&&ratesFetchedThisSession)return;
+  ratesFetchedThisSession=true;
+  if(manual)status("正在更新匯率…");
+  let next=null;
+  try{   // primary: open.er-api.com (USD base) — rates.TWD is TWD/USD; TWD/JPY = rates.TWD/rates.JPY
+    const j=await fetchJson("https://open.er-api.com/v6/latest/USD");
+    if(j&&j.result==="success"&&j.rates&&+j.rates.TWD>0&&+j.rates.JPY>0)
+      next={USD:round4(+j.rates.TWD),JPY:round4(+j.rates.TWD/+j.rates.JPY)};
+  }catch(e){}
+  if(!next||!ratesSane(next)){
+    try{   // fallback: jsdelivr currency-api (same CDN this app already uses for Chart.js)
+      const j=await fetchJson("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json");
+      const u=j&&j.usd;
+      if(u&&+u.twd>0&&+u.jpy>0)next={USD:round4(+u.twd),JPY:round4(+u.twd/+u.jpy)};
+    }catch(e){}
+  }
+  if(!next||!ratesSane(next)){
+    if(manual)status("匯率更新失敗，先沿用目前設定的匯率");
+    return;
+  }
+  const cur=accountsCfg.rates;
+  const changed=Math.abs(cur.USD-next.USD)>1e-4||Math.abs(cur.JPY-next.JPY)>1e-4;
+  accountsCfg.rates=next; accountsCfg.ratesUpdatedAt=Date.now();
+  if(changed||manual){
+    try{   // field-scoped: never touches `accounts`, so concurrent account edits survive
+      await setDoc(doc(db,"users",user.uid,"settings","accounts"),
+        {rates:next,ratesUpdatedAt:accountsCfg.ratesUpdatedAt,updatedAt:serverTimestamp()},{merge:true});
+    }catch(e){if(manual)status("匯率已更新但儲存失敗")}
+  }
+  if(manual)status(`匯率已更新：1 USD = ${next.USD}・1 JPY = ${next.JPY}`,true);
+  renderAccountSettings();
+  if($("financePane").classList.contains("active")){updateAssetFormPreview(); renderAssetsPage()}
 }
 
 async function day(){
@@ -1127,8 +1352,44 @@ async function getOrLoadDay(date){
 }
 
 // ---- 資產盤點 page ----
-function normAssets(x={}){return{bank:+x.bank||0,investment:+x.investment||0,liability:+x.liability||0,allocatedFromBalance:+x.allocatedFromBalance||0}}
-const netWorthOf=a=>a.bank+a.investment-a.liability;
+// Zeros are KEPT on purpose: Firestore's merge:true deep-merges maps, so a key
+// omitted from `balances` keeps its old value instead of being cleared.
+function normBalances(b={}){
+  const o={};
+  Object.keys(b||{}).forEach(k=>{const v=+b[k]; if(isFinite(v))o[k]=v});
+  return o;
+}
+function normAssets(x={}){return{
+  balances:normBalances(x.balances),
+  rates:normRateMap(x.rates),
+  bank:+x.bank||0,investment:+x.investment||0,
+  liability:+x.liability||0,allocatedFromBalance:+x.allocatedFromBalance||0
+}}
+const accountById=aid=>(((accountsCfg&&accountsCfg.accounts)||[]).find(a=>a.id===aid));
+// 1. rate frozen into this snapshot → 2. current configured rate → 3. hardcoded floor
+function rateIn(snap,cur){
+  if(cur==="TWD")return 1;
+  const frozen=snap&&snap.rates&&+snap.rates[cur];
+  if(isFinite(frozen)&&frozen>0)return frozen;
+  const cfg=accountsCfg&&+accountsCfg.rates[cur];
+  if(isFinite(cfg)&&cfg>0)return cfg;
+  return DEFAULT_RATES[cur]||1;
+}
+// Sums unrounded and rounds once at the end, so the per-row ≈NT$ hints can differ
+// from the total by a dollar or two. The total is the one that must match the chart.
+function snapshotTotals(s){
+  const a=normAssets(s);
+  let bank=a.bank,invest=a.investment,unknown=0;
+  Object.keys(a.balances).forEach(aid=>{
+    const acc=accountById(aid);
+    const twd=(+a.balances[aid]||0)*rateIn(a,acc?acc.currency:"TWD");
+    if(acc&&acc.type==="invest")invest+=twd;
+    else{bank+=twd; if(!acc)unknown+=twd}   // orphaned id: count it, never drop it
+  });
+  return{bank,invest,unknown,assets:bank+invest,liability:a.liability,net:bank+invest-a.liability};
+}
+const netWorthOf=s=>snapshotTotals(s).net;   // single param: assetHistory.map(netWorthOf)
+const fmtCur=(n,cur)=>CUR_SYMBOL[cur]+(cur==="USD"?(+n||0).toFixed(2):Math.round(+n||0).toLocaleString());
 
 async function loadAssetHistory(){
   if(!user)return;
@@ -1140,23 +1401,134 @@ async function loadAssetHistory(){
     status("資產盤點讀取失敗，請確認 Firestore Rules 已加入 assets 集合");
   }
 }
-function fillAssetForm(m){
-  const a=assetHistory.find(x=>x.m===m)||normAssets({});
-  $("assetBank").value=a.bank||""; $("assetInvestment").value=a.investment||""; $("assetLiability").value=a.liability||"";
+const accountsHaveForeign=()=>((accountsCfg&&accountsCfg.accounts)||[]).some(a=>a.currency!=="TWD");
+
+function assetRowHtml(acc,amount,orphan){
+  return `<div class="item acc-row${acc.archived?" acc-archived":""}">
+    <span><b>${esc(acc.name||"（未命名）")}</b><br><span class="metric-sub">${orphan?"⚠️ 已刪除的帳戶":acc.currency+(acc.archived?"・已封存":"")}</span></span>
+    <input data-acc="${acc.id}" type="number" step="${acc.currency==="TWD"?"1":"0.01"}" value="${amount||""}" placeholder="0">
+    <span class="acc-hint" data-hint="${acc.id}"></span>
+  </div>`;
 }
+// Which rates the form is currently valuing with: the month's frozen set unless the
+// user ticks 用今天的匯率重算, with config filling any gap (e.g. a doc frozen before JPY existed).
+function formRates(){
+  const snap=assetHistory.find(x=>x.m===$("assetMonth").value);
+  if($("assetUseTodayRate").checked||!snap||!Object.keys(snap.rates).length)return{...accountsCfg.rates};
+  return{...accountsCfg.rates,...snap.rates};
+}
+function fillAssetForm(m){
+  if(!accountsCfg)return;
+  const a=assetHistory.find(x=>x.m===m)||normAssets({});
+  const hadRates=Object.keys(a.rates).length>0;
+  // Default OFF for anything already frozen or in the past, so fixing a typo in an
+  // old month never silently revalues its foreign holdings at today's rate.
+  $("assetUseTodayRate").checked=!hadRates&&m>=month(new Date());
+  $("assetUseTodayRateLabel").classList.toggle("hidden",!accountsHaveForeign()&&!hadRates);
+
+  const live=accountsCfg.accounts.filter(x=>!x.archived);
+  const rowsFor=type=>{
+    const shown=live.filter(x=>x.type===type);
+    // archived accounts still render while this month holds a balance, so history stays editable
+    accountsCfg.accounts.filter(x=>x.archived&&x.type===type&&+a.balances[x.id]).forEach(x=>shown.push(x));
+    let html=shown.map(acc=>assetRowHtml(acc,a.balances[acc.id],false)).join("");
+    if(type==="bank"){
+      Object.keys(a.balances).filter(aid=>!accountById(aid)&&+a.balances[aid])
+        .forEach(aid=>{html+=assetRowHtml({id:aid,name:"（已刪除的帳戶）",currency:"TWD"},a.balances[aid],true)});
+    }
+    return html||'<div class="empty">還沒有帳戶，可到「設定 → 帳戶與匯率」新增。</div>';
+  };
+  $("assetBankRows").innerHTML=rowsFor("bank");
+  $("assetInvestRows").innerHTML=rowsFor("invest");
+
+  $("assetBank").value=a.bank||"";
+  $("assetInvestment").value=a.investment||"";
+  $("assetLiability").value=a.liability||"";
+  $("assetLegacyBox").classList.toggle("hidden",!(a.bank||a.investment));
+  $("assetMigrateTarget").innerHTML=live.map(x=>
+    `<option value="${x.id}">${esc(x.name||"（未命名）")}${x.currency==="TWD"?"":"・"+x.currency}</option>`).join("")
+    ||'<option value="">（尚無帳戶）</option>';
+
+  document.querySelectorAll("#assetBankRows [data-acc],#assetInvestRows [data-acc]")
+    .forEach(el=>el.oninput=updateAssetFormPreview);
+  ["assetBank","assetInvestment","assetLiability"].forEach(k=>$(k).oninput=updateAssetFormPreview);
+  updateAssetFormPreview();
+}
+function readAssetForm(){
+  const balances={};
+  document.querySelectorAll("#assetBankRows [data-acc],#assetInvestRows [data-acc]")
+    .forEach(el=>balances[el.dataset.acc]=+el.value||0);
+  return normAssets({balances,rates:formRates(),
+    bank:$("assetBank").value,investment:$("assetInvestment").value,liability:$("assetLiability").value});
+}
+function updateAssetFormPreview(){
+  if(!accountsCfg)return;
+  const draft=readAssetForm(),t=snapshotTotals(draft),r=formRates();
+  document.querySelectorAll("[data-hint]").forEach(el=>{
+    const acc=accountById(el.dataset.hint);
+    if(!acc||acc.currency==="TWD"){el.textContent="";return}
+    el.textContent="≈ "+money((+draft.balances[el.dataset.hint]||0)*rateIn(draft,acc.currency));
+  });
+  $("assetBankSub").textContent="小計 "+money(t.bank);
+  $("assetInvestSub").textContent="小計 "+money(t.invest);
+  $("assetFormNet").textContent=money(t.net);
+  $("assetFormNetSub").textContent=`存款 ${money(t.bank)}・投資 ${money(t.invest)}`;
+  $("assetRateNote").textContent=accountsHaveForeign()
+    ?`此月換算匯率：1 USD = ${r.USD} TWD・1 JPY = ${r.JPY} TWD`:"";
+}
+// Moves legacy money into a real account in the FORM only; the user reviews the
+// preview then presses 存下這次盤點. Without this, re-typing the amount into an
+// account and forgetting the legacy row silently doubles the net worth.
+function migrateLegacy(which){
+  const aid=$("assetMigrateTarget").value,acc=accountById(aid);
+  if(!acc)return status("請先到「設定 → 帳戶與匯率」新增一個帳戶");
+  const src=which==="bank"?"assetBank":"assetInvestment";
+  const amt=+$(src).value||0;
+  if(!amt)return status("沒有可以搬的金額");
+  const el=document.querySelector(`[data-acc="${aid}"]`);
+  if(!el)return status("找不到那個帳戶的欄位");
+  const add=acc.currency==="TWD"?amt:Math.round(amt/rateIn({rates:formRates()},acc.currency)*100)/100;
+  el.value=Math.round(((+el.value||0)+add)*100)/100;
+  $(src).value="";
+  updateAssetFormPreview();
+  status(`已搬到「${acc.name}」，確認後記得按「存下這次盤點」`,true);
+}
+
 function renderAssetsPage(){
+  if(!accountsCfg)return;
   const latest=assetHistory.length?assetHistory[assetHistory.length-1]:normAssets({});
-  $("netWorthTotal").textContent=money(netWorthOf(latest));
-  $("assetPositive").textContent=money(latest.bank+latest.investment);
-  $("assetLiabilityTotal").textContent=money(latest.liability);
-  $("assetHistory").innerHTML=[...assetHistory].reverse().map(a=>
-    `<div class="summary-row" data-assetm="${a.m}" style="cursor:pointer">
-      <span>${a.m}<br><span class="metric-sub">存款 ${money(a.bank)}・投資 ${money(a.investment)}・負債 ${money(a.liability)}</span></span>
-      <b>${money(netWorthOf(a))}</b>
-    </div>`).join("")||'<div class="empty">還沒有盤點紀錄，填一次下面的表單就會出現。</div>';
+  const t=snapshotTotals(latest);
+  $("netWorthTotal").textContent=money(t.net);
+  $("assetBankTotal").textContent=money(t.bank);
+  $("assetInvestTotal").textContent=money(t.invest);
+  $("assetLiabilityTotal").textContent=money(t.liability);
+  $("netWorthAsOf").textContent=latest.m?`最新盤點 ${latest.m}`:"尚無盤點";
+
+  const rows=[];
+  Object.keys(latest.balances||{}).forEach(aid=>{
+    const v=+latest.balances[aid]||0; if(!v)return;
+    const acc=accountById(aid);
+    const cur=acc?acc.currency:"TWD";
+    rows.push([`${acc?esc(acc.name||"（未命名）"):"（已刪除的帳戶）"}<span class="metric-sub">　${acc&&acc.type==="invest"?"投資":"存款"}・${cur}</span>`,
+      cur==="TWD"?money(v):`${fmtCur(v,cur)}　≈ ${money(v*rateIn(latest,cur))}`]);
+  });
+  if(latest.bank)rows.push(["未分類存款",money(latest.bank)]);
+  if(latest.investment)rows.push(["未分類投資",money(latest.investment)]);
+  $("assetAccountBreakdown").innerHTML=rows.map(([l,v])=>
+    `<div class="summary-row"><span>${l}</span><b>${v}</b></div>`).join("")
+    ||'<div class="empty">還沒有帳戶餘額。</div>';
+
+  $("assetHistory").innerHTML=[...assetHistory].reverse().map(a=>{
+    const ht=snapshotTotals(a);
+    return `<div class="summary-row" data-assetm="${a.m}" style="cursor:pointer">
+      <span>${a.m}${Object.keys(a.rates).length?"":" ⚠️未凍結匯率"}<br><span class="metric-sub">存款 ${money(ht.bank)}・投資 ${money(ht.invest)}・負債 ${money(ht.liability)}</span></span>
+      <b>${money(ht.net)}</b>
+    </div>`;
+  }).join("")||'<div class="empty">還沒有盤點紀錄，填一次下面的表單就會出現。</div>';
   $("assetHistory").querySelectorAll("[data-assetm]").forEach(el=>el.onclick=()=>{
     $("assetMonth").value=el.dataset.assetm; fillAssetForm(el.dataset.assetm);
   });
+
   if(!isFinPage("finAssets"))return;   // Chart.js can't size a canvas inside display:none
   netWorthChart?.destroy();
   netWorthChart=draw("netWorthChart","line",{
@@ -1173,16 +1545,23 @@ async function writeAssets(m,a){
   else{assetHistory.push({m,...body}); assetHistory.sort((x,y)=>x.m<y.m?-1:1)}
 }
 async function saveAssets(){
-  if(!user)return;
+  if(!user||!accountsCfg)return;
   const m=$("assetMonth").value||finMonth();
   const prev=assetHistory.find(x=>x.m===m)||normAssets({});
+  const draft=readAssetForm();
+  // Always write both rates in full, so no snapshot ever ends up holding foreign
+  // balances without a frozen rate. prev wins per-key unless the user asked to refresh.
+  const rates=$("assetUseTodayRate").checked?{...accountsCfg.rates}:{...accountsCfg.rates,...prev.rates};
+  // Every configured account gets an explicit number (including 0) — merge can't delete keys.
+  const balances={...draft.balances};
+  accountsCfg.accounts.forEach(acc=>{if(balances[acc.id]===undefined)balances[acc.id]=0});
   try{
-    await writeAssets(m,{bank:$("assetBank").value,investment:$("assetInvestment").value,
-      liability:$("assetLiability").value,allocatedFromBalance:prev.allocatedFromBalance});
+    await writeAssets(m,{...draft,balances,rates,allocatedFromBalance:prev.allocatedFromBalance});
     status("資產盤點已更新",true);
   }catch(e){
     status("資產盤點儲存失敗，請確認 Firestore Rules 已加入 assets 集合");
   }
+  fillAssetForm(m);
   renderAssetsPage();
   if(categories)renderFinTotals(financeStats(finMonth()));
 }
@@ -1212,16 +1591,37 @@ async function balanceToReserve(){
 // 存入銀行 writes only the asset snapshot — never a journal entry — so it can never
 // be double-counted as income or expense. It has no feedback loop, hence the confirm()
 // and the persisted allocatedFromBalance shown under the buttons.
+// TWD accounts are listed first so the default selection is a TWD one without
+// needing a separate "default account" concept.
+function renderBankAccOptions(){
+  if(!accountsCfg)return;
+  const list=accountsCfg.accounts.filter(a=>a.type==="bank"&&!a.archived);
+  const twdFirst=[...list].sort((a,b)=>(a.currency==="TWD"?0:1)-(b.currency==="TWD"?0:1));
+  $("finBankAcc").innerHTML=twdFirst.map(a=>
+    `<option value="${a.id}">${esc(a.name||"（未命名）")}${a.currency==="TWD"?"":"・"+a.currency}</option>`).join("")
+    ||'<option value="">未分類存款</option>';
+}
 async function balanceToBank(){
-  if(!user||!categories)return;
+  if(!user||!categories||!accountsCfg)return;
   const s=financeStats(finMonth());
   if(s.trueBalance<=0)return status("本期沒有可以分配的餘額");
-  if(!confirm(`把 ${money(s.trueBalance)} 加入 ${s.m} 的銀行存款？（不會產生交易紀錄）`))return;
+  const aid=$("finBankAcc").value,acc=aid&&accountById(aid);
   const prev=assetHistory.find(x=>x.m===s.m)||normAssets({});
+  const rates={...accountsCfg.rates,...prev.rates};
+  const rate=acc?rateIn({rates},acc.currency):1;
+  const native=acc&&acc.currency!=="TWD"?Math.round(s.trueBalance/rate*100)/100:s.trueBalance;
+  const label=acc?`「${acc.name||"未命名帳戶"}」`:"未分類存款";
+  const extra=acc&&acc.currency!=="TWD"
+    ?`\n將以 1 ${acc.currency} = ${rate} TWD 換算成 ${fmtCur(native,acc.currency)}`:"";
+  if(!confirm(`把 ${money(s.trueBalance)} 加入 ${s.m} 的 ${label}？（不會產生交易紀錄）${extra}`))return;
+  const body=acc
+    ?{...prev,balances:{...prev.balances,[aid]:(+prev.balances[aid]||0)+native}}
+    :{...prev,bank:prev.bank+s.trueBalance};
+  body.rates=rates;   // freeze now, so a foreign balance never lands without a rate
+  body.allocatedFromBalance=prev.allocatedFromBalance+s.trueBalance;   // stays TWD: it's an audit figure
   try{
-    await writeAssets(s.m,{...normAssets(prev),bank:prev.bank+s.trueBalance,
-      allocatedFromBalance:prev.allocatedFromBalance+s.trueBalance});
-    status(`已把 ${money(s.trueBalance)} 記入銀行存款`,true);
+    await writeAssets(s.m,body);
+    status(`已把 ${money(s.trueBalance)} 記入 ${label}`,true);
   }catch(e){
     return status("資產盤點儲存失敗，請確認 Firestore Rules 已加入 assets 集合");
   }
@@ -1268,7 +1668,7 @@ async function loadFinanceData(){
 function renderFinance(){
   if(!user||!categories)return;
   const s=financeStats(finMonth());
-  renderFinTotals(s); renderBreakdown(s); renderSaveBagOptions();
+  renderFinTotals(s); renderBreakdown(s); renderSaveBagOptions(); renderBankAccOptions();
   renderBudgetBoxes(s.fixedSpent,s.variableSpent);
   renderSinkingGrid();
   if(isFinPage("finHome"))renderFinDonut(s);
@@ -1277,6 +1677,7 @@ function renderFinance(){
 }
 async function openFinance(){
   if(!user)return;
+  if(!accountsCfg)await loadAccounts();
   if(!$("finMonth").value)$("finMonth").value=month(new Date());
   if(!$("assetMonth").value)$("assetMonth").value=$("finMonth").value;
   if(!$("finDate").value)$("finDate").value=today();
@@ -1298,7 +1699,7 @@ function showFinancePage(subId){
   if(!categories)return;
   if(subId==="finHome")renderFinDonut(financeStats(finMonth()));
   if(subId==="finAssets")renderAssetsPage();
-  if(subId==="finSettings")renderCategorySettings();
+  if(subId==="finSettings"){renderCategorySettings(); renderAccountSettings()}
 }
 
 // ---------- calendar ----------
@@ -1397,6 +1798,13 @@ $("finAddEntry").onclick=async()=>{
   status(dm===finMonth()?"已新增 ✿":`已新增到 ${dm} 的紀錄`,true);
 };
 $("assetMonth").onchange=()=>fillAssetForm($("assetMonth").value);
+$("assetUseTodayRate").onchange=updateAssetFormPreview;
+$("assetMigrateBank").onclick=()=>migrateLegacy("bank");
+$("assetMigrateInvest").onclick=()=>migrateLegacy("investment");
+$("saveAccounts").onclick=saveAccounts;
+$("addAccBank").onclick=()=>addAccountRow("bank");
+$("addAccInvest").onclick=()=>addAccountRow("invest");
+$("refreshRates").onclick=()=>fetchRates(true);
 $("saveAssets").onclick=saveAssets;
 $("finToReserve").onclick=balanceToReserve;
 $("finToBank").onclick=balanceToBank;
@@ -1436,6 +1844,9 @@ onAuthStateChanged(auth,async u=>{
   $("finDate").value=today();
   await loadGoals();
   await loadCategories();
+  await loadAccounts();
+  // fire-and-forget: a slow or blocked network must never delay sign-in
+  if(Date.now()-accountsCfg.ratesUpdatedAt>RATE_MAX_AGE)fetchRates(false);
   await day();
 });
 </script>
