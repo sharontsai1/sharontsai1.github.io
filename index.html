@@ -72,13 +72,41 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .food{grid-template-columns:82px 1fr 62px 62px 30px}
 .expense{grid-template-columns:1fr 102px 86px 1fr 30px}
 .ledger-add{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
-.ledger-daygroup{margin-bottom:14px}
-.ledger-daygroup .heading small{color:var(--deep);font-weight:700}
-.ledger-daygroup .heading small.net-negative{color:var(--coral)}
+.fin-daygroup{margin-bottom:14px}
+.fin-daygroup .heading small{color:var(--deep);font-weight:700}
+.fin-daygroup .heading small.net-negative{color:var(--coral)}
 .item-income{border-left:3px solid var(--leaf)}
 .item-expense{border-left:3px solid var(--coral)}
+.item-save{border-left:3px solid var(--sea)}
 .cat-row{grid-template-columns:1fr 90px 30px}
 .cat-row.cat-row-income{grid-template-columns:1fr 30px}
+.neg{color:var(--coral)}
+
+/* finance section: bottom sub-nav + sub-pages */
+.fin-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
+  background:#fffdf8f2;backdrop-filter:blur(6px);border-top:2px solid var(--line);
+  padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px #2b230012}
+body.finance-mode .fin-nav{display:flex}
+body.finance-mode.settings-open .fin-nav{display:none}
+body.finance-mode{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+@media(min-width:721px){.fin-nav{left:50%;transform:translateX(-50%);width:min(1120px,calc(100% - 26px));
+  border:2px solid #fffdfa;border-bottom:0;border-radius:20px 20px 0 0}}
+.fin-nav-btn{flex:1;max-width:150px;margin:0 auto;background:transparent;border-radius:14px;padding:6px 2px;
+  display:flex;flex-direction:column;align-items:center;gap:1px;color:#9a8673}
+.fin-nav-btn.active{background:#edf6eb;color:var(--deep)}
+.fin-ico{font-size:19px;line-height:1}
+.fin-lab{font-size:11px;font-weight:700}
+.fin-sub{font-size:9px;opacity:.7}
+.fin-page{display:none}
+.fin-page.active{display:block}
+.seg{display:flex;gap:7px;margin:0 0 11px;padding:4px;background:#eee2cf;border-radius:14px;width:max-content}
+.seg-btn{background:transparent;padding:7px 13px;border-radius:10px;font-size:12px;font-weight:700;color:#8a7460}
+.seg-btn.active{background:white;color:var(--deep);box-shadow:0 2px 8px #795c3022}
+.plan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px}
+.plan-cell{display:flex;flex-direction:column;gap:2px}
+.plan-cell span{font-size:9px;font-weight:700;color:#897464}
+.plan-cell input{padding:6px;font-size:12px}
+.sinking-row{margin-bottom:12px}
 .allocate-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#f8efe1;border-radius:14px;padding:11px 14px;margin-bottom:17px;font-size:13px}
 .allocate-bar b{color:var(--deep)}
 .allocate-btns{display:flex;gap:8px;flex-wrap:wrap}
@@ -144,6 +172,7 @@ textarea{min-height:80px;resize:vertical}
 .line input{font-size:16px;font-weight:700}
 .progress{height:14px;background:#e2d6c4;border-radius:9px;overflow:hidden}
 .progress i{display:block;height:100%;background:var(--leaf)}
+.progress.warn i{background:var(--sun)}
 .progress.over i{background:var(--coral)}
 .budget-stat{font-size:14px;margin-top:9px;font-weight:700;color:#6b5a49}
 
@@ -181,6 +210,9 @@ textarea{min-height:80px;resize:vertical}
   .expense .expense-note{grid-column:span 3}
   .cat-row{grid-template-columns:1fr 70px 26px}
   .allocate-bar{flex-direction:column;align-items:stretch;text-align:center}
+  .plan-grid{grid-template-columns:repeat(3,1fr)}
+  .seg{width:100%}
+  .seg-btn{flex:1}
   .exercise-main{grid-template-columns:1fr 90px 30px}
   .chart{height:195px}
   .goals-grid{grid-template-columns:repeat(2,1fr)}
@@ -207,7 +239,7 @@ textarea{min-height:80px;resize:vertical}
 <nav class="tabs">
   <button class="tab active" data-pane="todayPane">☀️ 今日</button>
   <button class="tab" data-pane="insightsPane">📊 洞察</button>
-  <button class="tab" data-pane="ledgerPane">🧾 記帳</button>
+  <button class="tab" data-pane="financePane">💰 財務</button>
   <button class="tab" data-pane="calendarPane">📖 日記曆</button>
 </nav>
 
@@ -291,65 +323,130 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </div>
 
-<div class="pane" id="ledgerPane">
-  <div class="datebar"><b>🧾 記帳</b>
-    <div class="date-control"><button class="nav" id="ledgerPrev">‹</button><input type="month" id="ledgerMonth"><button class="nav" id="ledgerNext">›</button></div>
+<div class="pane" id="financePane">
+
+<div class="fin-page active" id="finHome">
+  <div class="datebar"><b>💰 我的帳戶</b>
+    <div class="date-control"><button class="nav" id="finPrev">‹</button><input type="month" id="finMonth"><button class="nav" id="finNext">›</button></div>
   </div>
 
-  <div class="summary" style="grid-template-columns:repeat(3,1fr)">
-    <div class="metric"><span class="metric-label">💰 本期收入</span><b id="ledgerIncomeTotal">$0</b></div>
-    <div class="metric"><span class="metric-label">🧺 本期支出</span><b id="ledgerExpenseTotal">$0</b></div>
-    <div class="metric"><span class="metric-label">🌿 本期結餘</span><b id="ledgerNetTotal">$0</b></div>
+  <div class="summary" style="grid-template-columns:repeat(2,1fr)">
+    <div class="metric"><span class="metric-label">💰 本期收入</span><b id="finIncomeTotal">$0</b></div>
+    <div class="metric"><span class="metric-label">🧺 本期支出</span><b id="finExpenseTotal">$0</b><span class="metric-sub">不含預存支出</span></div>
   </div>
 
-  <div class="allocate-bar hidden" id="allocateBar">
-    <span>把結餘 <b id="allocateAmount">$0</b> 分配到：</span>
-    <div class="allocate-btns">
-      <button class="ghost" id="allocateBank">💰 存入銀行</button>
-      <button class="ghost" id="allocateReserve">🐖 存入預備金</button>
+  <div class="allocate-bar"><span>☀️ 今日花費總額</span><b id="finTodaySpend">$0</b></div>
+
+  <section class="card tape-sea">
+    <div class="networth-total">本期日常總結餘<b id="finBalance">$0</b></div>
+    <div class="section">
+      <div class="summary-row"><span>🛡️ 本月預存金</span><b id="finLocked">-$0</b></div>
+      <div class="summary-row"><span>✨ 真實可動用餘額</span><b id="finTrueBalance">$0</b></div>
+      <button class="add small" id="finBreakdownToggle">查看組成 ▾</button>
+      <div id="finBreakdown" class="summary-list hidden"></div>
+      <div class="allocate-btns hidden" id="finAllocateBtns" style="margin-top:10px">
+        <select id="finSaveBag" style="max-width:150px"></select>
+        <button class="ghost" id="finToReserve">🐖 把餘額存入預備金</button>
+        <button class="ghost" id="finToBank">💰 把餘額存入銀行</button>
+      </div>
+      <p class="metric-sub" id="finAllocatedNote" style="margin:6px 0 0"></p>
     </div>
-  </div>
+  </section>
 
-  <div class="insights">
-    <section class="card tape-sea wide"><h2 class="heading">💎 資產盤點 <small>每月手動更新一次即可</small></h2>
-      <div class="networth-total">目前淨資產<b id="netWorthTotal">$0</b></div>
-      <div class="budget-grid">
-        <div class="budget-box"><b>銀行存款總額</b><input id="assetBank" type="number" min="0" placeholder="0"></div>
-        <div class="budget-box"><b>投資現值總額</b><input id="assetInvestment" type="number" min="0" placeholder="0"></div>
-        <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" min="0" placeholder="0"></div>
+  <section class="card budget"><h2 class="heading">🧺 本月生活費剩餘 <small>可到設定調整上限</small></h2>
+    <p class="metric-sub" style="margin:0 0 6px">🏠 固定支出</p>
+    <div class="budget-grid cats" id="finFixedGrid"></div>
+    <p class="metric-sub" style="margin:14px 0 6px">🛍 變動支出</p>
+    <div class="budget-grid cats" id="finVariableGrid"></div>
+  </section>
+
+  <section class="card tape-coral"><h2 class="heading">🛡️ 幫未來先留位置 <small>預存支出的水位</small></h2>
+    <div class="budget-grid cats" id="finSinkingGrid"></div>
+  </section>
+
+  <section class="card chart-card tape-sea"><h2>📖 本期日常花費結構</h2><p>不含預存支出</p>
+    <div class="seg" id="finDonutMode">
+      <button class="seg-btn active" data-mode="kind">固定／變動</button>
+      <button class="seg-btn" data-mode="bag">依分類</button>
+    </div>
+    <div class="chart"><canvas id="finDonut"></canvas></div>
+  </section>
+
+  <section class="section wide"><h2 class="heading">📋 本期紀錄明細</h2><div id="finList"></div></section>
+</div>
+
+<div class="fin-page" id="finAssets">
+  <section class="card tape-sea"><h2 class="heading">💎 目前總淨資產 <small>顯示最新一次盤點</small></h2>
+    <div class="networth-total"><b id="netWorthTotal">$0</b></div>
+    <div class="summary" style="grid-template-columns:repeat(2,1fr);margin-bottom:0">
+      <div class="metric"><span class="metric-label">💰 總資產（存款＋投資）</span><b id="assetPositive">$0</b></div>
+      <div class="metric"><span class="metric-label">🪨 總負債</span><b id="assetLiabilityTotal">$0</b></div>
+    </div>
+  </section>
+
+  <section class="card chart-card"><h2>🌿 底氣走勢</h2><p>每月淨資產變化</p><div class="chart"><canvas id="netWorthChart"></canvas></div></section>
+
+  <section class="card"><h2 class="heading">📍 更新這個月的站位 <small>可切換月份補登</small></h2>
+    <input type="month" id="assetMonth" class="month-picker" style="margin-bottom:10px">
+    <div class="budget-grid">
+      <div class="budget-box"><b>銀行存款總額</b><input id="assetBank" type="number" min="0" placeholder="0"></div>
+      <div class="budget-box"><b>投資現值總額</b><input id="assetInvestment" type="number" min="0" placeholder="0"></div>
+      <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" min="0" placeholder="0"></div>
+    </div>
+    <button class="btn" id="saveAssets" style="margin-top:10px">存下這次盤點</button>
+  </section>
+
+  <section class="card"><h2 class="heading">🗓 歷史盤點紀錄 <small>點一列可載回上面的表單</small></h2>
+    <div id="assetHistory" class="summary-list"></div>
+  </section>
+</div>
+
+<div class="fin-page" id="finEntry">
+  <section class="section wide"><h2 class="heading">＋ 新增紀錄 <small>可選任意日期</small></h2>
+    <div class="item ledger-add">
+      <input type="number" min="0" id="finAmount" placeholder="金額">
+      <input type="date" id="finDate">
+      <select id="finFlow">
+        <option value="variable">支出（變動）</option>
+        <option value="fixed">支出（固定）</option>
+        <option value="sinking">支出（花掉預存金）</option>
+        <option value="save">存入預備金</option>
+        <option value="income">收入</option>
+      </select>
+      <select id="finCategory"></select>
+      <input type="text" id="finName" placeholder="項目">
+      <input type="text" id="finNote" placeholder="備註">
+    </div>
+    <button class="add" id="finAddEntry">＋ 新增紀錄</button>
+  </section>
+  <section class="section wide"><h2 class="heading">🕘 最近新增</h2><div id="finRecent"></div></section>
+</div>
+
+<div class="fin-page" id="finSettings">
+  <section class="card tape-coral" id="categoriesBox">
+    <h2 class="heading">🗂 記帳分類與預算 <small>套用在帳戶頁的預算條與分類選單</small></h2>
+    <div class="day-grid">
+      <div class="section"><h3 class="heading" style="font-size:13px;margin-bottom:8px">🏠 固定支出</h3>
+        <div id="catFixedList" class="item-list"></div>
+        <button class="add small" id="addCatFixed">＋ 新增分類</button>
       </div>
-      <button class="btn" id="saveAssets" style="margin-top:10px">更新本月盤點</button>
-    </section>
-
-    <section class="card budget wide"><h2 class="heading">💰 分類預算 <small>可到設定頁調整分類與金額上限</small></h2>
-      <p class="metric-sub" style="margin:0 0 6px">🏠 固定支出</p>
-      <div class="budget-grid cats" id="fixedBudgetGrid"></div>
-      <p class="metric-sub" style="margin:14px 0 6px">🛍 變動支出</p>
-      <div class="budget-grid cats" id="variableBudgetGrid"></div>
-    </section>
-
-    <section class="card chart-card tape-sea"><h2>📖 本月支出地圖</h2><p>依分類查看每月花費（固定＋變動）</p><div class="chart"><canvas id="expenseChart"></canvas></div></section>
-
-    <section class="section wide"><h2 class="heading">＋ 新增紀錄 <small>可選任意日期</small></h2>
-      <div class="item ledger-add">
-        <input type="date" id="ledgerDate">
-        <select id="ledgerType">
-          <option value="variable">支出（變動）</option>
-          <option value="fixed">支出（固定）</option>
-          <option value="income">收入</option>
-        </select>
-        <select id="ledgerCategory"></select>
-        <input type="text" id="ledgerName" placeholder="項目">
-        <input type="number" min="0" id="ledgerAmount" placeholder="金額">
-        <input type="text" id="ledgerNote" placeholder="備註">
+      <div class="section"><h3 class="heading" style="font-size:13px;margin-bottom:8px">🛍 變動支出</h3>
+        <div id="catVariableList" class="item-list"></div>
+        <button class="add small" id="addCatVariable">＋ 新增分類</button>
       </div>
-      <button class="add" id="addLedgerEntry">＋ 新增紀錄</button>
-    </section>
+      <div class="section wide"><h3 class="heading" style="font-size:13px;margin-bottom:8px">🛡️ 預存支出 <small>年度目標與每月預計存入</small></h3>
+        <div id="catSinkingList"></div>
+        <button class="add small" id="addCatSinking">＋ 新增預存袋</button>
+      </div>
+      <div class="section wide"><h3 class="heading" style="font-size:13px;margin-bottom:8px">💰 收入來源</h3>
+        <div id="catIncomeList" class="item-list"></div>
+        <button class="add small" id="addCatIncome">＋ 新增分類</button>
+      </div>
+    </div>
+    <button class="btn" id="saveCategories" style="margin-top:10px">儲存分類設定</button>
+  </section>
+</div>
 
-    <section class="section wide"><h2 class="heading">📋 交易紀錄</h2>
-      <div id="ledgerList"></div>
-    </section>
-  </div>
 </div>
 
 <div class="pane" id="calendarPane">
@@ -373,28 +470,18 @@ textarea{min-height:80px;resize:vertical}
     <button class="btn" id="saveGoals" style="margin-top:10px">儲存目標</button>
   </section>
 
-  <section class="card tape-coral wide" style="margin-top:14px" id="categoriesBox">
-    <h2 class="heading">🗂 記帳分類與預算 <small>套用在記帳頁的預算條與分類選單</small></h2>
-    <div class="day-grid">
-      <div class="section"><h3 class="heading" style="font-size:13px;margin-bottom:8px">🏠 固定支出</h3>
-        <div id="catFixedList" class="item-list"></div>
-        <button class="add small" id="addCatFixed">＋ 新增分類</button>
-      </div>
-      <div class="section"><h3 class="heading" style="font-size:13px;margin-bottom:8px">🛍 變動支出</h3>
-        <div id="catVariableList" class="item-list"></div>
-        <button class="add small" id="addCatVariable">＋ 新增分類</button>
-      </div>
-      <div class="section wide"><h3 class="heading" style="font-size:13px;margin-bottom:8px">💰 收入來源</h3>
-        <div id="catIncomeList" class="item-list"></div>
-        <button class="add small" id="addCatIncome">＋ 新增分類</button>
-      </div>
-    </div>
-    <button class="btn" id="saveCategories" style="margin-top:10px">儲存分類設定</button>
-  </section>
+  <p class="metric-sub" style="margin-top:14px">💰 記帳的分類與預算請到「財務 → 設定」調整。</p>
 </div>
 
 <p class="footer">資料只屬於登入的你 ☁︎ 自動同步中</p>
 </main>
+
+<nav id="financeNav" class="fin-nav">
+  <button class="fin-nav-btn active" data-sub="finHome"><span class="fin-ico">🏠</span><span class="fin-lab">帳戶</span><span class="fin-sub">我的</span></button>
+  <button class="fin-nav-btn" data-sub="finAssets"><span class="fin-ico">💎</span><span class="fin-lab">資產盤點</span><span class="fin-sub">底氣</span></button>
+  <button class="fin-nav-btn" data-sub="finEntry"><span class="fin-ico">🧾</span><span class="fin-lab">記帳</span><span class="fin-sub">留位置</span></button>
+  <button class="fin-nav-btn" data-sub="finSettings"><span class="fin-ico">🗂</span><span class="fin-lab">設定</span><span class="fin-sub">整理</span></button>
+</nav>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -414,7 +501,7 @@ const DEFAULT_GOALS={calorie:2000,protein:100,water:2000,sleep:7};
 const CAT_PALETTE=["#f2b461","#8ebd88","#96c7cd","#e98772","#ba9bc8","#d8c371","#e0a8c0","#9fb8d9","#c9b28f","#7fb0a0"];
 
 let auth,db,user,data,goals=DEFAULT_GOALS,categories=null,calendarMonth=new Date(),saveTimer;
-let weekCPChart,weekSleepChart,lifeChart,expenseChart;
+let weekCPChart,weekSleepChart,lifeChart;
 
 const id=()=>crypto.randomUUID();
 const esc=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
@@ -434,8 +521,10 @@ function normExercise(x={}){
   if(!ex.parts.length&&(x.muscle||x.movement))ex.parts=[normPart({muscle:x.muscle,movement:x.movement})];
   return ex;
 }
-function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:x.kind==="fixed"?"fixed":"variable",amount:+x.amount||0,note:x.note||""}}
+const EXPENSE_KINDS=["fixed","variable","sinking"];
+function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:EXPENSE_KINDS.includes(x.kind)?x.kind:"variable",amount:+x.amount||0,note:x.note||""}}
 function normIncome(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"薪資",amount:+x.amount||0,note:x.note||""}}
+function normSave(x={}){return{id:x.id||id(),bag:x.bag||"",amount:+x.amount||0,note:x.note||""}}
 
 function norm(d={}){
   const foods=d.foods?d.foods.map(normFood):
@@ -446,7 +535,8 @@ function norm(d={}){
   const expenses=d.expenses?d.expenses.map(normExpense):
     ((d.expenseAmount||d.expenseNote)?[normExpense({name:d.expenseNote,category:d.expenseCategory,amount:d.expenseAmount})]:[]);
   const incomes=d.incomes?d.incomes.map(normIncome):[];
-  return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",water:+d.water||0,foods,exercises,expenses,incomes};
+  const saves=d.saves?d.saves.map(normSave):[];
+  return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",water:+d.water||0,foods,exercises,expenses,incomes,saves};
 }
 function normGoals(g={}){return{calorie:+g.calorie||DEFAULT_GOALS.calorie,protein:+g.protein||DEFAULT_GOALS.protein,water:+g.water||DEFAULT_GOALS.water,sleep:+g.sleep||DEFAULT_GOALS.sleep}}
 
@@ -457,10 +547,13 @@ const DEFAULT_CATEGORIES={
 };
 function normCatItem(x={}){return{id:x.id||id(),name:x.name||"",budget:+x.budget||0}}
 function normIncomeCat(x={}){return{id:x.id||id(),name:x.name||""}}
+function normPlan(p){const a=Array.isArray(p)?p:[];return Array.from({length:12},(_,i)=>+a[i]||0)}
+function normSinkingCat(x={}){return{id:x.id||id(),name:x.name||"",goal:+x.goal||0,initSaved:+x.initSaved||0,plan:normPlan(x.plan)}}
 function normCategories(c={}){
   return{
     fixed:(c.fixed&&c.fixed.length?c.fixed:DEFAULT_CATEGORIES.fixed).map(normCatItem),
     variable:(c.variable&&c.variable.length?c.variable:DEFAULT_CATEGORIES.variable).map(normCatItem),
+    sinking:(c.sinking||[]).map(normSinkingCat),
     income:(c.income&&c.income.length?c.income:DEFAULT_CATEGORIES.income).map(normIncomeCat)
   };
 }
@@ -589,7 +682,9 @@ async function save(){
   clearTimeout(saveTimer);
   status("正在同步…");
   try{
-    const{expenses,incomes,...rest}=data;
+    // expenses / incomes / saves are owned exclusively by the finance page —
+    // never write them from here, or the today page's autosave clobbers ledger edits.
+    const{expenses,incomes,saves,...rest}=data;
     await setDoc(doc(db,"users",user.uid,"journal",data.date),{...rest,updatedAt:serverTimestamp()},{merge:true});
     status("已自動同步 ✿",true);
     if($("insightsPane").classList.contains("active"))insights();
@@ -640,14 +735,35 @@ function catRowHtml(group,i,c){
     <button class="delete small" data-delcat="${group}:${i}">×</button>
   </div>`;
 }
+const MONTH_LABELS=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+function sinkingRowHtml(i,c){
+  const st=sinkingState(c,today().slice(0,4));
+  return `<div class="section sinking-row">
+    <div class="item cat-row">
+      <input data-group="sinking" data-i="${i}" data-f="name" value="${esc(c.name)}" placeholder="袋子名稱（例：旅遊）">
+      <input data-group="sinking" data-i="${i}" data-f="goal" type="number" min="0" value="${c.goal||""}" placeholder="年度目標">
+      <button class="delete small" data-delcat="sinking:${i}">×</button>
+    </div>
+    <label class="label">已存金額（年初起始）</label>
+    <input data-group="sinking" data-i="${i}" data-f="initSaved" type="number" min="0" value="${c.initSaved||""}" placeholder="0">
+    <label class="label">每月預計存入</label>
+    <div class="plan-grid">${c.plan.map((v,j)=>`<label class="plan-cell"><span>${MONTH_LABELS[j]}</span><input data-i="${i}" data-plan="${j}" type="number" min="0" value="${v||""}" placeholder="0"></label>`).join("")}</div>
+    <div class="budget-stat">目前水位 $${st.level.toLocaleString()} ／ 目標 $${(+c.goal||0).toLocaleString()}</div>
+    <p class="metric-sub" style="margin:4px 0 0">水位依目前的計畫金額重新計算，改計畫會連動過去的月份。</p>
+  </div>`;
+}
 function renderCategorySettings(){
   if(!categories)return;
   $("catFixedList").innerHTML=categories.fixed.map((c,i)=>catRowHtml("fixed",i,c)).join("")||'<div class="empty">還沒有分類。</div>';
   $("catVariableList").innerHTML=categories.variable.map((c,i)=>catRowHtml("variable",i,c)).join("")||'<div class="empty">還沒有分類。</div>';
+  $("catSinkingList").innerHTML=categories.sinking.map((c,i)=>sinkingRowHtml(i,c)).join("")||'<div class="empty">還沒有預存袋。幫未來的旅遊、保費、換手機先留位置吧。</div>';
   $("catIncomeList").innerHTML=categories.income.map((c,i)=>catRowHtml("income",i,c)).join("")||'<div class="empty">還沒有分類。</div>';
-  $("categoriesBox").querySelectorAll("[data-group]").forEach(el=>el.oninput=()=>{
+  $("categoriesBox").querySelectorAll("[data-f]").forEach(el=>el.oninput=()=>{
     const{group,i,f}=el.dataset;
     categories[group][+i][f]=el.type==="number"?(+el.value||0):el.value;
+  });
+  $("categoriesBox").querySelectorAll("[data-plan]").forEach(el=>el.oninput=()=>{
+    categories.sinking[+el.dataset.i].plan[+el.dataset.plan]=+el.value||0;
   });
   $("categoriesBox").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>{
     const[group,i]=b.dataset.delcat.split(":");
@@ -655,7 +771,7 @@ function renderCategorySettings(){
   });
 }
 function addCategoryRow(group){
-  categories[group].push(group==="income"?normIncomeCat():normCatItem());
+  categories[group].push(group==="income"?normIncomeCat():group==="sinking"?normSinkingCat():normCatItem());
   renderCategorySettings();
 }
 async function saveCategories(){
@@ -666,8 +782,8 @@ async function saveCategories(){
   }catch(e){
     status("分類儲存失敗，請確認 Firestore Rules 已加入 settings 集合");
   }
-  updateLedgerCategoryOptions();
-  if($("ledgerPane").classList.contains("active"))ledger();
+  updateFinanceCategoryOptions();
+  if($("financePane").classList.contains("active"))renderFinance();
 }
 
 async function day(){
@@ -780,197 +896,393 @@ async function insights(){
   ].map(([label,value])=>`<div class="summary-row"><span>${label}</span><b>${value}</b></div>`).join("");
 }
 
-// ---------- ledger page ----------
-let ledgerByDate=new Map();
+// ---------- finance section ----------
+// expenses / incomes / saves on each journal day doc belong exclusively to this section.
+// commitFinanceDay() is their only writer; the today page's save() must keep excluding them.
+let financeByDate=new Map();   // "YYYY-MM-DD" -> normalized day doc; doubles as the live edit map
+let loadedYears=new Set();
+let assetHistory=[];
+let finDonutMode="kind";
+let finDonutChart,netWorthChart;
 
-function updateLedgerCategoryOptions(){
-  if(!categories)return;
-  const type=$("ledgerType").value;
-  const list=type==="income"?categories.income:type==="fixed"?categories.fixed:categories.variable;
-  $("ledgerCategory").innerHTML=list.map(c=>`<option>${esc(c.name)}</option>`).join("");
+const yearOf=m=>m.slice(0,4);
+const midx=m=>+m.slice(5,7)-1;
+const daysIn=p=>[...financeByDate.values()].filter(d=>d.date.startsWith(p));
+const finMonth=()=>$("finMonth").value||month(new Date());
+const money=n=>"$"+Math.round(n).toLocaleString();
+const isFinPage=x=>$(x).classList.contains("active");
+
+// A whole calendar year per load, because sinking-fund water levels are year-scoped.
+// Don't "optimize" this into a maintained rollup doc: that adds a second writer of
+// derived data, which is exactly what the field-scoped-write rule exists to prevent.
+async function ensureYear(y){
+  if(loadedYears.has(y))return;
+  (await rangeDocs(y+"-01-01",y+"-12-31")).forEach(d=>financeByDate.set(d.date,d));
+  loadedYears.add(y);
 }
 
-async function ledger(){
-  if(!user)return;
-  const m=$("ledgerMonth").value||month(new Date());
-  const docs=await monthDocs(m);
-  ledgerByDate=new Map(docs.map(d=>[d.date,d]));
-
-  const fixedSpent={},variableSpent={},catTotals={};
-  let incomeTotal=0,expenseTotal=0;
-  docs.forEach(x=>{
-    x.expenses.forEach(v=>{
-      const amt=+v.amount||0;
-      expenseTotal+=amt;
-      catTotals[v.category]=(catTotals[v.category]||0)+amt;
-      (v.kind==="fixed"?fixedSpent:variableSpent)[v.category]=((v.kind==="fixed"?fixedSpent:variableSpent)[v.category]||0)+amt;
-    });
-    x.incomes.forEach(v=>{incomeTotal+=(+v.amount||0)});
+function sinkingState(bag,y){
+  const actual=Array(12).fill(0);
+  let spent=0;
+  financeByDate.forEach((d,k)=>{
+    if(!k.startsWith(y))return;
+    const i=+k.slice(5,7)-1;
+    d.saves.forEach(s=>{if(s.bag===bag.name)actual[i]+=(+s.amount||0)});
+    d.expenses.forEach(e=>{if(e.kind==="sinking"&&e.category===bag.name)spent+=(+e.amount||0)});
   });
-
-  const net=incomeTotal-expenseTotal;
-  $("ledgerIncomeTotal").textContent="$"+incomeTotal.toLocaleString();
-  $("ledgerExpenseTotal").textContent="$"+expenseTotal.toLocaleString();
-  $("ledgerNetTotal").textContent="$"+net.toLocaleString();
-  updateAllocateBar(net);
-  await loadAssets(m);
-
-  renderBudgetBoxes(fixedSpent,variableSpent);
-
-  expenseChart?.destroy();
-  const catKeys=Object.keys(catTotals);
-  expenseChart=draw("expenseChart","doughnut",{
-    labels:catKeys.length?catKeys:["尚無支出"],
-    datasets:[{data:catKeys.length?catKeys.map(k=>catTotals[k]):[1],
-      backgroundColor:catKeys.length?catKeys.map((_,i)=>CAT_PALETTE[i%CAT_PALETTE.length]):["#e7decf"]}]
-  },{plugins:{legend:{position:"bottom",labels:{boxWidth:10}}}});
-
-  updateLedgerCategoryOptions();
-  renderLedgerList();
+  const cy=today().slice(0,4);
+  const curIdx=y<cy?11:y>cy?-1:+today().slice(5,7)-1;
+  let accrued=0;
+  for(let i=0;i<12;i++)accrued+=(i<=curIdx)?Math.max(+bag.plan[i]||0,actual[i]):actual[i];
+  const deposited=(+bag.initSaved||0)+accrued;
+  return{actual,spent,accrued,deposited,level:Math.max(0,deposited-spent)};
 }
 
-let ledgerSurplus=0;
-function updateAllocateBar(net){
-  ledgerSurplus=net;
-  $("allocateAmount").textContent="$"+net.toLocaleString();
-  $("allocateBar").classList.toggle("hidden",net<=0);
+function lockedRows(m){
+  const y=yearOf(m),i=midx(m);
+  return ((categories&&categories.sinking)||[]).map(b=>{
+    const st=sinkingState(b,y);
+    const planned=+b.plan[i]||0,saved=st.actual[i];
+    return{name:b.name,planned,saved,amount:Math.max(planned,saved)};
+  });
 }
 
-function normAssets(x={}){return{bank:+x.bank||0,investment:+x.investment||0,liability:+x.liability||0}}
-async function loadAssets(m){
-  if(!user)return;
-  let a;
-  try{
-    const s=await getDoc(doc(db,"users",user.uid,"assets",m));
-    a=normAssets(s.exists()?s.data():{});
-  }catch(e){
-    a=normAssets({});
-    status("資產盤點讀取失敗，請確認 Firestore Rules 已加入 assets 集合");
-  }
-  $("assetBank").value=a.bank||""; $("assetInvestment").value=a.investment||""; $("assetLiability").value=a.liability||"";
-  $("netWorthTotal").textContent="$"+(a.bank+a.investment-a.liability).toLocaleString();
-}
-async function saveAssets(){
-  if(!user)return;
-  const m=$("ledgerMonth").value||month(new Date());
-  const a=normAssets({bank:$("assetBank").value,investment:$("assetInvestment").value,liability:$("assetLiability").value});
-  try{
-    await setDoc(doc(db,"users",user.uid,"assets",m),{...a,updatedAt:serverTimestamp()},{merge:true});
-    status("資產盤點已更新",true);
-  }catch(e){
-    status("資產盤點儲存失敗，請確認 Firestore Rules 已加入 assets 集合");
-  }
-  $("netWorthTotal").textContent="$"+(a.bank+a.investment-a.liability).toLocaleString();
+function financeStats(m){
+  let income=0,dailyExpense=0,sinkingExpense=0,todaySpend=0;
+  const catTotals={},fixedSpent={},variableSpent={};
+  let kindFixed=0,kindVariable=0;
+  const t=today();
+  daysIn(m).forEach(d=>{
+    d.incomes.forEach(v=>income+=(+v.amount||0));
+    d.expenses.forEach(v=>{
+      const a=+v.amount||0;
+      if(v.kind==="sinking"){sinkingExpense+=a;return}
+      dailyExpense+=a;
+      catTotals[v.category]=(catTotals[v.category]||0)+a;
+      if(v.kind==="fixed"){kindFixed+=a;fixedSpent[v.category]=(fixedSpent[v.category]||0)+a}
+      else{kindVariable+=a;variableSpent[v.category]=(variableSpent[v.category]||0)+a}
+      if(d.date===t)todaySpend+=a;
+    });
+  });
+  const rows=lockedRows(m);
+  const locked=rows.reduce((s,r)=>s+r.amount,0);
+  const balance=income-dailyExpense;
+  return{m,income,dailyExpense,sinkingExpense,todaySpend,catTotals,fixedSpent,variableSpent,
+    kindFixed,kindVariable,rows,locked,balance,trueBalance:balance-locked};
 }
 
-async function allocateToBank(){
-  if(!user||ledgerSurplus<=0)return;
-  $("assetBank").value=(+$("assetBank").value||0)+ledgerSurplus;
-  await saveAssets();
-  status(`已把 $${ledgerSurplus.toLocaleString()} 存入銀行資產盤點`,true);
+// ---- 帳戶 page renders ----
+// renderFinTotals patches text only (no innerHTML) so it is safe to call while a list input has focus.
+function renderFinTotals(s){
+  $("finIncomeTotal").textContent=money(s.income);
+  $("finExpenseTotal").textContent=money(s.dailyExpense);
+  $("finTodaySpend").textContent=money(s.todaySpend);
+  $("finBalance").textContent=money(s.balance);
+  $("finLocked").textContent="-"+money(s.locked);
+  $("finTrueBalance").textContent=money(s.trueBalance);
+  $("finTrueBalance").classList.toggle("neg",s.trueBalance<0);
+  $("finAllocateBtns").classList.toggle("hidden",s.trueBalance<=0);
+  const a=assetHistory.find(x=>x.m===s.m);
+  $("finAllocatedNote").textContent=a&&a.allocatedFromBalance?`本月已從結餘撥入銀行 ${money(a.allocatedFromBalance)}`:"";
 }
-async function allocateToReserve(){
-  if(!user||ledgerSurplus<=0)return;
-  if(!categories.variable.some(c=>c.name==="預備金")){
-    categories.variable.push(normCatItem({name:"預備金"}));
-    await saveCategories();
-  }
-  const date=today();
-  const entry=await getOrLoadDay(date);
-  entry.expenses.push(normExpense({name:"本期結餘",category:"預備金",kind:"variable",amount:ledgerSurplus,note:"本期結餘存入預備金"}));
-  await saveLedgerDay(date);
-  status(`已把 $${ledgerSurplus.toLocaleString()} 存入預備金`,true);
+function renderBreakdown(s){
+  const line=(l,v,b)=>`<div class="summary-row"><span>${l}</span>${b?`<b>${v}</b>`:`<span>${v}</span>`}</div>`;
+  $("finBreakdown").innerHTML=
+    s.rows.filter(r=>r.amount>0||r.planned>0).map(r=>
+      line(`🛡️ ${esc(r.name)}`,`計畫 ${money(r.planned)}・已存 ${money(r.saved)} → 計入 ${money(r.amount)}`)).join("")
+    +line("本期收入",money(s.income))
+    +line("− 本期支出",money(s.dailyExpense))
+    +line("= 本期日常總結餘",money(s.balance),true)
+    +line("− 本月預存金",money(s.locked))
+    +line("= 真實可動用餘額",money(s.trueBalance),true);
 }
-
 function budgetBoxHtml(c,spent){
   const limit=+c.budget||0,p=limit?Math.round(spent/limit*100):0;
-  return `<div class="budget-box"><b>${esc(c.name)}</b><div class="progress ${limit&&spent>limit?"over":""}"><i style="width:${Math.min(p,100)}%"></i></div><div class="budget-stat">${limit?`已花 $${spent.toLocaleString()} ／ $${limit.toLocaleString()}（${p}%）`:`已花 $${spent.toLocaleString()}，尚未設定預算`}</div></div>`;
+  const cls=!limit?"":p>100?"over":p>80?"warn":"";
+  return `<div class="budget-box"><b>${esc(c.name)}</b>
+    <div class="progress ${cls}"><i style="width:${Math.min(p,100)}%"></i></div>
+    <div class="budget-stat">${limit?`${money(spent)} / ${money(limit)}`:`已花 ${money(spent)}`}</div>
+    <div class="metric-sub">${limit?`剩餘 ${money(limit-spent)}`:"尚未設定預算"}</div></div>`;
 }
 function renderBudgetBoxes(fixedSpent,variableSpent){
   if(!categories)return;
-  $("fixedBudgetGrid").innerHTML=categories.fixed.map(c=>budgetBoxHtml(c,fixedSpent[c.name]||0)).join("")||'<div class="empty">尚未設定分類，請至設定新增。</div>';
-  $("variableBudgetGrid").innerHTML=categories.variable.map(c=>budgetBoxHtml(c,variableSpent[c.name]||0)).join("")||'<div class="empty">尚未設定分類，請至設定新增。</div>';
+  $("finFixedGrid").innerHTML=categories.fixed.map(c=>budgetBoxHtml(c,fixedSpent[c.name]||0)).join("")||'<div class="empty">尚未設定分類。</div>';
+  $("finVariableGrid").innerHTML=categories.variable.map(c=>budgetBoxHtml(c,variableSpent[c.name]||0)).join("")||'<div class="empty">尚未設定分類。</div>';
+}
+function renderSinkingGrid(){
+  const y=yearOf(finMonth());
+  $("finSinkingGrid").innerHTML=((categories&&categories.sinking)||[]).map(b=>{
+    const st=sinkingState(b,y),goal=+b.goal||0,p=goal?Math.round(st.level/goal*100):0;
+    return `<div class="budget-box"><b>${esc(b.name)}</b>
+      <div class="progress"><i style="width:${Math.min(p,100)}%"></i></div>
+      <div class="budget-stat">水位 ${money(st.level)}${goal?` ／ 目標 ${money(goal)}`:""}</div>
+      <div class="metric-sub">累積存入 ${money(st.deposited)}・累積花費 ${money(st.spent)}</div></div>`;
+  }).join("")||'<div class="empty">還沒有預存袋，可到「設定」新增，幫未來的旅遊或保費先留位置。</div>';
+}
+function renderSaveBagOptions(){
+  const bags=(categories&&categories.sinking)||[];
+  $("finSaveBag").innerHTML=bags.map(b=>`<option>${esc(b.name)}</option>`).join("")||'<option value="">（尚無預存袋）</option>';
+}
+function renderFinDonut(s){
+  finDonutChart?.destroy();
+  let labels,values;
+  if(finDonutMode==="kind"){labels=["🏠 固定支出","🛍 變動支出"];values=[s.kindFixed,s.kindVariable]}
+  else{labels=Object.keys(s.catTotals);values=labels.map(k=>s.catTotals[k])}
+  const empty=!values.length||!values.some(v=>v>0);
+  finDonutChart=draw("finDonut","doughnut",{
+    labels:empty?["尚無支出"]:labels,
+    datasets:[{data:empty?[1]:values,backgroundColor:empty?["#e7decf"]:labels.map((_,i)=>CAT_PALETTE[i%CAT_PALETTE.length])}]
+  },{plugins:{legend:{position:"bottom",labels:{boxWidth:10}}}});
 }
 
-function ledgerRowHtml(date,field,i,e){
-  const isIncome=field==="incomes";
-  const catList=isIncome?categories.income:(e.kind==="fixed"?categories.fixed:categories.variable);
-  return `<div class="item expense ${isIncome?"item-income":"item-expense"}">
+// ---- transaction list ----
+function financeRowHtml(date,field,i,e){
+  const isSave=field==="saves",isIncome=field==="incomes";
+  const catList=isIncome?categories.income
+    :(isSave||e.kind==="sinking")?((categories&&categories.sinking)||[])
+    :e.kind==="fixed"?categories.fixed
+    :categories.variable;
+  const catField=isSave?"bag":"category";
+  const selected=isSave?e.bag:e.category;
+  const cls=isIncome?"item-income":isSave?"item-save":"item-expense";
+  return `<div class="item expense ${cls}">
     <input data-date="${date}" data-field="${field}" data-i="${i}" data-f="name" value="${esc(e.name)}" placeholder="項目">
-    <select data-date="${date}" data-field="${field}" data-i="${i}" data-f="category">${catList.map(c=>`<option ${e.category===c.name?"selected":""}>${esc(c.name)}</option>`).join("")}</select>
+    <select data-date="${date}" data-field="${field}" data-i="${i}" data-f="${catField}">${catList.map(c=>`<option ${selected===c.name?"selected":""}>${esc(c.name)}</option>`).join("")}</select>
     <input data-date="${date}" data-field="${field}" data-i="${i}" data-f="amount" type="number" min="0" value="${e.amount||""}" placeholder="金額">
     <input class="expense-note" data-date="${date}" data-field="${field}" data-i="${i}" data-f="note" value="${esc(e.note)}" placeholder="備註">
     <button class="delete" data-deldate="${date}" data-delfield="${field}" data-del="${i}">×</button>
   </div>`;
 }
-function renderLedgerList(){
-  const dates=[...ledgerByDate.keys()]
-    .filter(d=>{const e=ledgerByDate.get(d);return e.expenses.length||e.incomes.length})
-    .sort().reverse();
-  $("ledgerList").innerHTML=dates.map(date=>{
-    const entry=ledgerByDate.get(date);
-    const incomeSum=entry.incomes.reduce((s,x)=>s+(+x.amount||0),0);
-    const expenseSum=entry.expenses.reduce((s,x)=>s+(+x.amount||0),0);
-    const net=incomeSum-expenseSum;
-    const rows=[...entry.expenses.map((e,i)=>ledgerRowHtml(date,"expenses",i,e)),
-                ...entry.incomes.map((e,i)=>ledgerRowHtml(date,"incomes",i,e))].join("");
-    return `<div class="ledger-daygroup" data-group="${date}">
-      <div class="heading">${esc(date)} <small class="${net<0?"net-negative":""}">${net>=0?"+":"−"}$${Math.abs(net).toLocaleString()}</small></div>
+function renderFinanceList(){
+  const dates=daysIn(finMonth())
+    .filter(d=>d.expenses.length||d.incomes.length||d.saves.length)
+    .map(d=>d.date).sort().reverse();
+  $("finList").innerHTML=dates.map(date=>{
+    const entry=financeByDate.get(date);
+    const rows=[...entry.expenses.map((e,i)=>financeRowHtml(date,"expenses",i,e)),
+                ...entry.saves.map((e,i)=>financeRowHtml(date,"saves",i,e)),
+                ...entry.incomes.map((e,i)=>financeRowHtml(date,"incomes",i,e))].join("");
+    const net=dayNet(entry);
+    return `<div class="fin-daygroup" data-group="${date}">
+      <div class="heading">${esc(date)} <small class="${net<0?"net-negative":""}">${net>=0?"+":"−"}${money(Math.abs(net))}</small></div>
       <div class="item-list">${rows}</div>
     </div>`;
   }).join("")||'<div class="empty">這個月還沒有紀錄。</div>';
-
-  $("ledgerList").querySelectorAll("[data-f]").forEach(el=>el.oninput=el.onchange=()=>{
+  bindFinanceRowEvents();
+}
+// Day subtotal is 收入 − 支出. Saves are shown as their own rows but deliberately left
+// out of it, because the card above subtracts `locked` (planned) rather than actual saves.
+function dayNet(entry){
+  return entry.incomes.reduce((s,x)=>s+(+x.amount||0),0)-entry.expenses.reduce((s,x)=>s+(+x.amount||0),0);
+}
+function bindFinanceRowEvents(){
+  $("finList").querySelectorAll("[data-f]").forEach(el=>el.oninput=el.onchange=()=>{
     const{date,field,i,f}=el.dataset;
-    ledgerByDate.get(date)[field][+i][f]=el.type==="number"?(+el.value||0):el.value;
-    updateLedgerSubtotal(date);
-    scheduleLedgerSave(date);
+    financeByDate.get(date)[field][+i][f]=el.type==="number"?(+el.value||0):el.value;
+    updateFinanceSubtotal(date);
+    if(categories)renderFinTotals(financeStats(finMonth()));
+    scheduleFinanceSave(date);
   });
-  $("ledgerList").querySelectorAll("[data-deldate]").forEach(b=>b.onclick=async()=>{
+  $("finList").querySelectorAll("[data-deldate]").forEach(b=>b.onclick=async()=>{
     const date=b.dataset.deldate,field=b.dataset.delfield;
-    ledgerByDate.get(date)[field].splice(+b.dataset.del,1);
-    await commitLedgerDay(date);
-    ledger();
+    financeByDate.get(date)[field].splice(+b.dataset.del,1);
+    await commitFinanceDay(date);
+    renderFinance();
   });
 }
-
-function updateLedgerSubtotal(date){
-  const entry=ledgerByDate.get(date);
-  const net=entry.incomes.reduce((s,x)=>s+(+x.amount||0),0)-entry.expenses.reduce((s,x)=>s+(+x.amount||0),0);
-  const el=document.querySelector(`.ledger-daygroup[data-group="${date}"] .heading small`);
-  if(el){el.textContent=(net>=0?"+":"−")+"$"+Math.abs(net).toLocaleString();el.classList.toggle("net-negative",net<0)}
+function updateFinanceSubtotal(date){
+  const net=dayNet(financeByDate.get(date));
+  const el=document.querySelector(`.fin-daygroup[data-group="${date}"] .heading small`);
+  if(el){el.textContent=(net>=0?"+":"−")+money(Math.abs(net));el.classList.toggle("net-negative",net<0)}
 }
 
-const ledgerSaveTimers=new Map();
-function scheduleLedgerSave(date){
-  clearTimeout(ledgerSaveTimers.get(date));
-  ledgerSaveTimers.set(date,setTimeout(()=>commitLedgerDay(date),600));
+const financeSaveTimers=new Map();
+function scheduleFinanceSave(date){
+  clearTimeout(financeSaveTimers.get(date));
+  financeSaveTimers.set(date,setTimeout(()=>commitFinanceDay(date),600));
 }
-
-async function commitLedgerDay(date){
-  const entry=ledgerByDate.get(date);
+async function commitFinanceDay(date){
+  const entry=financeByDate.get(date);
   await setDoc(doc(db,"users",user.uid,"journal",date),
-    {expenses:entry.expenses,incomes:entry.incomes,updatedAt:serverTimestamp()},{merge:true});
-  if(data&&data.date===date){data.expenses=entry.expenses;data.incomes=entry.incomes; totals()}
+    {expenses:entry.expenses,incomes:entry.incomes,saves:entry.saves,updatedAt:serverTimestamp()},{merge:true});
+  if(data&&data.date===date){data.expenses=entry.expenses;data.incomes=entry.incomes;data.saves=entry.saves; totals()}
 }
-
-async function saveLedgerDay(date){
-  await commitLedgerDay(date);
-  ledger();
-}
-
 async function getOrLoadDay(date){
-  if(ledgerByDate.has(date))return ledgerByDate.get(date);
+  if(financeByDate.has(date))return financeByDate.get(date);
   const snap=await getDoc(doc(db,"users",user.uid,"journal",date));
   const entry=norm(snap.exists()?snap.data():{date});
-  ledgerByDate.set(date,entry);
+  financeByDate.set(date,entry);
   return entry;
 }
 
-function moveLedgerMonth(n){
-  const d=new Date($("ledgerMonth").value+"-01T12:00:00");
+// ---- 資產盤點 page ----
+function normAssets(x={}){return{bank:+x.bank||0,investment:+x.investment||0,liability:+x.liability||0,allocatedFromBalance:+x.allocatedFromBalance||0}}
+const netWorthOf=a=>a.bank+a.investment-a.liability;
+
+async function loadAssetHistory(){
+  if(!user)return;
+  try{
+    const s=await getDocs(collection(db,"users",user.uid,"assets"));
+    assetHistory=s.docs.map(d=>({m:d.id,...normAssets(d.data())})).sort((a,b)=>a.m<b.m?-1:1);
+  }catch(e){
+    assetHistory=[];
+    status("資產盤點讀取失敗，請確認 Firestore Rules 已加入 assets 集合");
+  }
+}
+function fillAssetForm(m){
+  const a=assetHistory.find(x=>x.m===m)||normAssets({});
+  $("assetBank").value=a.bank||""; $("assetInvestment").value=a.investment||""; $("assetLiability").value=a.liability||"";
+}
+function renderAssetsPage(){
+  const latest=assetHistory.length?assetHistory[assetHistory.length-1]:normAssets({});
+  $("netWorthTotal").textContent=money(netWorthOf(latest));
+  $("assetPositive").textContent=money(latest.bank+latest.investment);
+  $("assetLiabilityTotal").textContent=money(latest.liability);
+  $("assetHistory").innerHTML=[...assetHistory].reverse().map(a=>
+    `<div class="summary-row" data-assetm="${a.m}" style="cursor:pointer">
+      <span>${a.m}<br><span class="metric-sub">存款 ${money(a.bank)}・投資 ${money(a.investment)}・負債 ${money(a.liability)}</span></span>
+      <b>${money(netWorthOf(a))}</b>
+    </div>`).join("")||'<div class="empty">還沒有盤點紀錄，填一次下面的表單就會出現。</div>';
+  $("assetHistory").querySelectorAll("[data-assetm]").forEach(el=>el.onclick=()=>{
+    $("assetMonth").value=el.dataset.assetm; fillAssetForm(el.dataset.assetm);
+  });
+  if(!isFinPage("finAssets"))return;   // Chart.js can't size a canvas inside display:none
+  netWorthChart?.destroy();
+  netWorthChart=draw("netWorthChart","line",{
+    labels:assetHistory.length?assetHistory.map(a=>a.m):["尚無紀錄"],
+    datasets:[{label:"淨資產",data:assetHistory.length?assetHistory.map(netWorthOf):[0],
+      borderColor:"#457850",backgroundColor:"#5fa06a33",fill:true,tension:.3,pointRadius:3}]
+  },{plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:9}}},y:{ticks:{font:{size:9}}}}});
+}
+async function writeAssets(m,a){
+  const body=normAssets(a);
+  await setDoc(doc(db,"users",user.uid,"assets",m),{...body,updatedAt:serverTimestamp()},{merge:true});
+  const i=assetHistory.findIndex(x=>x.m===m);
+  if(i>=0)assetHistory[i]={m,...body};
+  else{assetHistory.push({m,...body}); assetHistory.sort((x,y)=>x.m<y.m?-1:1)}
+}
+async function saveAssets(){
+  if(!user)return;
+  const m=$("assetMonth").value||finMonth();
+  const prev=assetHistory.find(x=>x.m===m)||normAssets({});
+  try{
+    await writeAssets(m,{bank:$("assetBank").value,investment:$("assetInvestment").value,
+      liability:$("assetLiability").value,allocatedFromBalance:prev.allocatedFromBalance});
+    status("資產盤點已更新",true);
+  }catch(e){
+    status("資產盤點儲存失敗，請確認 Firestore Rules 已加入 assets 集合");
+  }
+  renderAssetsPage();
+  if(categories)renderFinTotals(financeStats(finMonth()));
+}
+
+// ---- 分配結餘 ----
+// 存入預備金 is self-limiting: the new save raises actual[m], which raises `locked`
+// through max(planned, actual), which pulls trueBalance back to 0.
+async function balanceToReserve(){
+  if(!user||!categories)return;
+  const s=financeStats(finMonth());
+  if(s.trueBalance<=0)return status("本期沒有可以分配的餘額");
+  let bag=$("finSaveBag").value;
+  if(!bag){
+    categories.sinking.push(normSinkingCat({name:"預備金"}));
+    await saveCategories();
+    bag="預備金";
+  }
+  if(!confirm(`把 ${money(s.trueBalance)} 存入「${bag}」？`))return;
+  const date=today();
+  await ensureYear(date.slice(0,4));
+  const entry=await getOrLoadDay(date);
+  entry.saves.push(normSave({name:"本期結餘",bag,amount:s.trueBalance,note:"本期結餘存入"}));
+  await commitFinanceDay(date);
+  renderFinance();
+  status(`已把 ${money(s.trueBalance)} 存入 ${bag}`,true);
+}
+// 存入銀行 writes only the asset snapshot — never a journal entry — so it can never
+// be double-counted as income or expense. It has no feedback loop, hence the confirm()
+// and the persisted allocatedFromBalance shown under the buttons.
+async function balanceToBank(){
+  if(!user||!categories)return;
+  const s=financeStats(finMonth());
+  if(s.trueBalance<=0)return status("本期沒有可以分配的餘額");
+  if(!confirm(`把 ${money(s.trueBalance)} 加入 ${s.m} 的銀行存款？（不會產生交易紀錄）`))return;
+  const prev=assetHistory.find(x=>x.m===s.m)||normAssets({});
+  try{
+    await writeAssets(s.m,{...normAssets(prev),bank:prev.bank+s.trueBalance,
+      allocatedFromBalance:prev.allocatedFromBalance+s.trueBalance});
+    status(`已把 ${money(s.trueBalance)} 記入銀行存款`,true);
+  }catch(e){
+    return status("資產盤點儲存失敗，請確認 Firestore Rules 已加入 assets 集合");
+  }
+  if($("assetMonth").value===s.m)fillAssetForm(s.m);
+  renderAssetsPage();
+  renderFinTotals(financeStats(finMonth()));
+}
+
+// ---- 記帳 page ----
+function updateFinanceCategoryOptions(){
+  if(!categories)return;
+  const f=$("finFlow").value;
+  const list=f==="income"?categories.income
+    :f==="fixed"?categories.fixed
+    :(f==="sinking"||f==="save")?((categories&&categories.sinking)||[])
+    :categories.variable;
+  $("finCategory").innerHTML=list.map(c=>`<option>${esc(c.name)}</option>`).join("")
+    ||'<option value="">（請先到設定新增分類）</option>';
+}
+function renderFinRecent(){
+  const all=[];
+  daysIn(finMonth()).forEach(d=>{
+    d.expenses.forEach(e=>all.push({date:d.date,tag:e.kind==="sinking"?"🛡️ 花預存":e.kind==="fixed"?"🏠 固定":"🛍 變動",name:e.name||e.category,amount:-(+e.amount||0)}));
+    d.saves.forEach(e=>all.push({date:d.date,tag:"🐖 存入",name:e.name||e.bag,amount:+e.amount||0}));
+    d.incomes.forEach(e=>all.push({date:d.date,tag:"💰 收入",name:e.name||e.category,amount:+e.amount||0}));
+  });
+  all.sort((a,b)=>a.date<b.date?1:-1);
+  $("finRecent").innerHTML=all.slice(0,5).map(x=>
+    `<div class="summary-row"><span>${esc(x.date)}　${x.tag}　${esc(x.name)}</span><b>${x.amount<0?"−":"+"}${money(Math.abs(x.amount))}</b></div>`
+  ).join("")||'<div class="empty">這個月還沒有紀錄。</div>';
+}
+
+// ---- orchestration ----
+async function loadFinanceData(){
+  await ensureYear(yearOf(finMonth()));
+  await ensureYear(today().slice(0,4));
+  await loadAssetHistory();
+}
+function renderFinance(){
+  if(!user||!categories)return;
+  const s=financeStats(finMonth());
+  renderFinTotals(s); renderBreakdown(s); renderSaveBagOptions();
+  renderBudgetBoxes(s.fixedSpent,s.variableSpent);
+  renderSinkingGrid();
+  if(isFinPage("finHome"))renderFinDonut(s);
+  updateFinanceCategoryOptions();
+  renderFinanceList(); renderFinRecent(); renderAssetsPage();
+}
+async function openFinance(){
+  if(!user)return;
+  if(!$("finMonth").value)$("finMonth").value=month(new Date());
+  if(!$("assetMonth").value)$("assetMonth").value=$("finMonth").value;
+  if(!$("finDate").value)$("finDate").value=today();
+  await loadFinanceData();
+  fillAssetForm($("assetMonth").value);
+  renderFinance();
+}
+async function moveFinanceMonth(n){
+  const d=new Date(finMonth()+"-01T12:00:00");
   d.setMonth(d.getMonth()+n);
-  $("ledgerMonth").value=month(d); ledger();
+  $("finMonth").value=month(d);
+  await ensureYear(yearOf(month(d)));
+  renderFinance();
+}
+function showFinancePage(subId){
+  document.querySelectorAll(".fin-page").forEach(p=>p.classList.toggle("active",p.id===subId));
+  document.querySelectorAll(".fin-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.sub===subId));
+  window.scrollTo({top:0});
+  if(!categories)return;
+  if(subId==="finHome")renderFinDonut(financeStats(finMonth()));
+  if(subId==="finAssets")renderAssetsPage();
+  if(subId==="finSettings")renderCategorySettings();
 }
 
 // ---------- calendar ----------
@@ -1021,41 +1333,60 @@ $("saveCategories").onclick=saveCategories;
 $("addCatFixed").onclick=()=>addCategoryRow("fixed");
 $("addCatVariable").onclick=()=>addCategoryRow("variable");
 $("addCatIncome").onclick=()=>addCategoryRow("income");
+$("addCatSinking").onclick=()=>addCategoryRow("sinking");
 $("prevMonth").onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()-1); calendar()};
 $("nextMonth").onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()+1); calendar()};
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===b));
+// Scoped to the top tab bar on purpose: a bare ".tab" would also catch anything
+// inside the panes and blank every pane (b.dataset.pane would be undefined).
+document.querySelectorAll("#mainCard>.tabs .tab").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#mainCard>.tabs .tab").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll(".pane").forEach(x=>x.classList.toggle("active",x.id===b.dataset.pane));
+  document.body.classList.toggle("finance-mode",b.dataset.pane==="financePane");
   if(b.dataset.pane==="insightsPane")insights();
-  if(b.dataset.pane==="ledgerPane")ledger();
+  if(b.dataset.pane==="financePane")openFinance();
   if(b.dataset.pane==="calendarPane")calendar();
 });
 
-$("ledgerMonth").onchange=ledger;
-$("ledgerPrev").onclick=()=>moveLedgerMonth(-1);
-$("ledgerNext").onclick=()=>moveLedgerMonth(1);
-$("ledgerType").onchange=updateLedgerCategoryOptions;
-$("addLedgerEntry").onclick=async()=>{
-  const date=$("ledgerDate").value||today();
-  const type=$("ledgerType").value;
-  const entry=await getOrLoadDay(date);
-  if(type==="income"){
-    entry.incomes.push(normIncome({name:$("ledgerName").value,amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value}));
-  }else{
-    entry.expenses.push(normExpense({name:$("ledgerName").value,amount:$("ledgerAmount").value,category:$("ledgerCategory").value,note:$("ledgerNote").value,kind:type}));
-  }
-  const dateMonth=date.slice(0,7);
-  const sameMonth=dateMonth===($("ledgerMonth").value||month(new Date()));
-  await saveLedgerDay(date);
-  $("ledgerName").value=""; $("ledgerAmount").value=""; $("ledgerNote").value="";
-  if(!sameMonth)status(`已新增到 ${dateMonth} 的紀錄`,true);
+document.querySelectorAll(".fin-nav-btn").forEach(b=>b.onclick=()=>showFinancePage(b.dataset.sub));
+$("finMonth").onchange=()=>{ensureYear(yearOf(finMonth())).then(renderFinance)};
+$("finPrev").onclick=()=>moveFinanceMonth(-1);
+$("finNext").onclick=()=>moveFinanceMonth(1);
+$("finFlow").onchange=updateFinanceCategoryOptions;
+$("finBreakdownToggle").onclick=()=>{
+  const box=$("finBreakdown"),open=box.classList.toggle("hidden");
+  $("finBreakdownToggle").textContent=open?"查看組成 ▾":"收起組成 ▴";
 };
+$("finDonutMode").querySelectorAll(".seg-btn").forEach(b=>b.onclick=()=>{
+  finDonutMode=b.dataset.mode;
+  $("finDonutMode").querySelectorAll(".seg-btn").forEach(x=>x.classList.toggle("active",x===b));
+  if(categories)renderFinDonut(financeStats(finMonth()));
+});
+$("finAddEntry").onclick=async()=>{
+  if(!user||!categories)return;
+  const date=$("finDate").value||today(),flow=$("finFlow").value;
+  const amount=+$("finAmount").value||0;
+  if(!amount)return status("請先輸入金額");
+  const cat=$("finCategory").value;
+  if(!cat)return status("請先到設定新增分類");
+  await ensureYear(date.slice(0,4));
+  const entry=await getOrLoadDay(date);
+  const name=$("finName").value,note=$("finNote").value;
+  if(flow==="income")entry.incomes.push(normIncome({name,amount,category:cat,note}));
+  else if(flow==="save")entry.saves.push(normSave({name,bag:cat,amount,note}));
+  else entry.expenses.push(normExpense({name,amount,category:cat,note,kind:flow}));
+  await commitFinanceDay(date);
+  $("finAmount").value=""; $("finName").value=""; $("finNote").value="";
+  renderFinance();
+  const dm=date.slice(0,7);
+  status(dm===finMonth()?"已新增 ✿":`已新增到 ${dm} 的紀錄`,true);
+};
+$("assetMonth").onchange=()=>fillAssetForm($("assetMonth").value);
 $("saveAssets").onclick=saveAssets;
-$("allocateBank").onclick=allocateToBank;
-$("allocateReserve").onclick=allocateToReserve;
+$("finToReserve").onclick=balanceToReserve;
+$("finToBank").onclick=balanceToBank;
 
-$("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"};
-$("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"};
+$("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"; document.body.classList.add("settings-open")};
+$("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"; document.body.classList.remove("settings-open")};
 
 // ---------- auth ----------
 const app=initializeApp(firebaseConfig);
@@ -1084,8 +1415,9 @@ onAuthStateChanged(auth,async u=>{
   $("signOut").onclick=()=>signOut(auth);
   $("date").value=today();
   $("insightMonth").value=month(new Date());
-  $("ledgerMonth").value=month(new Date());
-  $("ledgerDate").value=today();
+  $("finMonth").value=month(new Date());
+  $("assetMonth").value=month(new Date());
+  $("finDate").value=today();
   await loadGoals();
   await loadCategories();
   await day();
