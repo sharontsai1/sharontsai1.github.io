@@ -436,6 +436,7 @@ textarea{min-height:80px;resize:vertical}
     <p class="metric-sub" id="assetRateNote" style="margin:2px 0 0"></p>
 
     <button class="btn" id="saveAssets" style="margin-top:10px">存下這次盤點</button>
+    <button class="ghost" id="deleteAssets" style="margin-top:10px;margin-left:8px">刪除這個月的盤點</button>
   </section>
 
   <section class="card"><h2 class="heading">🗓 歷史盤點紀錄 <small>點一列可載回上面的表單</small></h2>
@@ -552,7 +553,7 @@ textarea{min-height:80px;resize:vertical}
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,getDoc,collection,getDocs,query,where,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import{initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,getDoc,deleteDoc,collection,getDocs,query,where,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={apiKey:"AIzaSyAN4Q_nHtCF0NhiiJ6lFrNEJGfoJa6VrU0",authDomain:"selfrecord-d0708.firebaseapp.com",projectId:"selfrecord-d0708",storageBucket:"selfrecord-d0708.firebasestorage.app",messagingSenderId:"361814038060",appId:"1:361814038060:web:8ca038c0e85d551bf06389"};
 
@@ -1575,6 +1576,25 @@ async function saveAssets(){
   if(categories)renderFinTotals(financeStats(finMonth()));
 }
 
+// Lets a mis-entered month be removed; without it a wrong snapshot is stuck in the
+// history and the trend chart forever (and, if it is the newest, it owns the hero card).
+async function deleteAssets(){
+  if(!user)return;
+  const m=$("assetMonth").value||finMonth();
+  if(!assetHistory.some(x=>x.m===m))return status("這個月還沒有盤點紀錄");
+  if(!confirm(`刪除 ${m} 的盤點紀錄？這個動作無法復原。`))return;
+  try{
+    await deleteDoc(doc(db,"users",user.uid,"assets",m));
+    assetHistory=assetHistory.filter(x=>x.m!==m);
+    status(`已刪除 ${m} 的盤點`,true);
+  }catch(e){
+    return status("刪除失敗，請確認 Firestore Rules 已加入 assets 集合");
+  }
+  fillAssetForm(m);
+  renderAssetsPage();
+  if(categories)renderFinTotals(financeStats(finMonth()));
+}
+
 // ---- 分配結餘 ----
 // 存入預備金 is self-limiting: the new save raises actual[m], which raises `locked`
 // through max(planned, actual), which pulls trueBalance back to 0.
@@ -1815,6 +1835,7 @@ $("addAccBank").onclick=()=>addAccountRow("bank");
 $("addAccInvest").onclick=()=>addAccountRow("invest");
 $("refreshRates").onclick=()=>fetchRates(true);
 $("saveAssets").onclick=saveAssets;
+$("deleteAssets").onclick=deleteAssets;
 $("finToReserve").onclick=balanceToReserve;
 $("finToBank").onclick=balanceToBank;
 
