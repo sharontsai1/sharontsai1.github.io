@@ -22,4 +22,6 @@ service cloud.firestore {
 }
 ```
 
+> 記帳的自訂分類（`settings/categories`）與帳戶／匯率設定（`settings/accounts`）都落在上面的 `settings/{docId}` 萬用規則底下，**不需要另外加規則**。
+
 > 若還沒加這條規則，登入時會跳出「Missing or insufficient permissions」，程式碼已經改成失敗時會用預設值繼續運作、不會卡住今日資料，但目標／分類／資產盤點的讀寫還是會失敗，請盡快到 Firebase Console 更新。
