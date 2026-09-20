@@ -98,7 +98,9 @@ body.finance-mode{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
 .fin-lab{font-size:11px;font-weight:700}
 .fin-sub{font-size:9px;opacity:.7}
 .fin-page{display:none}
-.fin-page.active{display:block}
+/* flex+gap so stacked cards keep the same 14px rhythm the .insights grid gives elsewhere */
+.fin-page.active{display:flex;flex-direction:column;gap:14px}
+.fin-page>.datebar,.fin-page>.summary,.fin-page>.allocate-bar{margin-bottom:0}
 .seg{display:flex;gap:7px;margin:0 0 11px;padding:4px;background:#eee2cf;border-radius:14px;width:max-content}
 .seg-btn{background:transparent;padding:7px 13px;border-radius:10px;font-size:12px;font-weight:700;color:#8a7460}
 .seg-btn.active{background:white;color:var(--deep);box-shadow:0 2px 8px #795c3022}
