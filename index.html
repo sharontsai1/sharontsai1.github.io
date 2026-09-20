@@ -1402,6 +1402,15 @@ async function loadAssetHistory(){
   }
 }
 const accountsHaveForeign=()=>((accountsCfg&&accountsCfg.accounts)||[]).some(a=>a.currency!=="TWD");
+// Only warn about missing frozen rates when the month actually holds foreign money —
+// otherwise every pre-accounts snapshot shows a scary warning that changes nothing.
+function snapNeedsRates(a){
+  if(Object.keys(a.rates||{}).length)return false;
+  return Object.keys(a.balances||{}).some(aid=>{
+    const acc=accountById(aid);
+    return acc&&acc.currency!=="TWD"&&+a.balances[aid];
+  });
+}
 
 function assetRowHtml(acc,amount,orphan){
   return `<div class="item acc-row${acc.archived?" acc-archived":""}">
@@ -1521,7 +1530,7 @@ function renderAssetsPage(){
   $("assetHistory").innerHTML=[...assetHistory].reverse().map(a=>{
     const ht=snapshotTotals(a);
     return `<div class="summary-row" data-assetm="${a.m}" style="cursor:pointer">
-      <span>${a.m}${Object.keys(a.rates).length?"":" ⚠️未凍結匯率"}<br><span class="metric-sub">存款 ${money(ht.bank)}・投資 ${money(ht.invest)}・負債 ${money(ht.liability)}</span></span>
+      <span>${a.m}${snapNeedsRates(a)?" ⚠️未凍結匯率":""}<br><span class="metric-sub">存款 ${money(ht.bank)}・投資 ${money(ht.invest)}・負債 ${money(ht.liability)}</span></span>
       <b>${money(ht.net)}</b>
     </div>`;
   }).join("")||'<div class="empty">還沒有盤點紀錄，填一次下面的表單就會出現。</div>';
