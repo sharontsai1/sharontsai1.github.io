@@ -75,8 +75,15 @@ function b64urlToBytes(s) {
   return out;
 }
 
-const decodeJson = (part) =>
-  JSON.parse(new TextDecoder().decode(b64urlToBytes(part)));
+// A token the client made up is a client error, not a server one: atob throws a DOMException
+// and JSON.parse a SyntaxError, and letting either escape reports 500 for a bad request.
+function decodeJson(part, what) {
+  try {
+    return JSON.parse(new TextDecoder().decode(b64urlToBytes(part)));
+  } catch (e) {
+    throw new AuthError(`token ${what} is not valid base64url JSON`);
+  }
+}
 
 // Verifies the signature locally against Google's published keys. Doing it here rather than
 // calling an identitytoolkit endpoint keeps it to one cached fetch per hour instead of a
@@ -85,7 +92,7 @@ async function verifyIdToken(token) {
   const parts = token.split(".");
   if (parts.length !== 3) throw new AuthError("malformed token");
 
-  const header = decodeJson(parts[0]);
+  const header = decodeJson(parts[0], "header");
   if (header.alg !== "RS256") throw new AuthError("unexpected token algorithm");
 
   const jwk = (await publicKeys()).find((k) => k.kid === header.kid);
@@ -107,7 +114,7 @@ async function verifyIdToken(token) {
   );
   if (!ok) throw new AuthError("bad token signature");
 
-  const p = decodeJson(parts[1]);
+  const p = decodeJson(parts[1], "payload");
   const now = Math.floor(Date.now() / 1000);
   if (!p.exp || p.exp <= now) throw new AuthError("token expired");
   if (p.iat && p.iat > now + 300) throw new AuthError("token issued in the future");

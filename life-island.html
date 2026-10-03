@@ -820,7 +820,7 @@ function foods(){
 // SCAN_API is the Cloudflare Worker that holds the Gemini key (the key can never live here —
 // this page is public). Empty means the AI tiers are simply unavailable; barcode still works,
 // since Open Food Facts needs no key and is called directly.
-const SCAN_API = "";
+const SCAN_API = "https://lifeisland-food-scan.sharontsai1.workers.dev";
 const OFF_API = "https://world.openfoodfacts.org/api/v2/product/";
 
 let scanBusy = false;

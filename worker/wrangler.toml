@@ -14,7 +14,7 @@ ALLOWED_ORIGINS = "https://sharontsai1.github.io,http://localhost:8532"
 # A valid Firebase token only proves someone signed into the project, and sign-in is open —
 # so this is what keeps the Gemini quota to the owner. Fill it in after the first scan
 # (the Worker logs the uid, and GET /models returns it).
-ALLOWED_UIDS = ""
+ALLOWED_UIDS = "ppjmxqHSC5MSOG1r0B7Nm7WAnD43"
 
 # Leave empty to let the Worker discover a flash model at runtime. Set it to pin one,
 # e.g. MODEL = "gemini-2.5-flash".
