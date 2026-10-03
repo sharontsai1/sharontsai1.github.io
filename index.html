@@ -309,10 +309,10 @@ textarea{min-height:80px;resize:vertical}
       <button class="add" id="addFood">＋ 新增食物</button>
       <div class="scan-row">
         <button class="add scan-btn" id="scanBarcode">🔖 掃條碼</button>
-        <button class="add scan-btn" id="scanLabel">🏷 拍營養標示</button>
-        <button class="add scan-btn" id="scanPhoto">🍽 拍食物估算</button>
+        <button class="add scan-btn" id="scanLabel">🏷 營養標示</button>
+        <button class="add scan-btn" id="scanPhoto">🍽 食物照估算</button>
       </div>
-      <input type="file" accept="image/*" capture="environment" id="scanFile" class="hidden">
+      <input type="file" accept="image/*" id="scanFile" class="hidden">
       <div class="total">熱量　<b id="foodTotal">0 kcal</b>蛋白質　<b id="foodProteinTotal">0 g</b></div>
     </section>
 
@@ -841,7 +841,7 @@ async function loadBitmap(file) {
   return await new Promise((res, rej) => {
     const img = new Image(), url = URL.createObjectURL(file);
     img.onload = () => { URL.revokeObjectURL(url); res(img); };
-    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("這張圖片讀不進來")); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("這張圖片讀不進來，可能是瀏覽器不支援的格式（例如 iPhone 的 HEIC），改存成 JPG 再試")); };
     img.src = url;
   });
 }
@@ -988,9 +988,9 @@ async function barcodeResult(code) {
   if (!p) {
     openSheet("🔖 掃條碼",
       '<p class="metric-sub">食品資料庫裡找不到這個條碼（' + esc(code) +
-      '）。台灣商品的收錄率本來就不高 —— 改用拍營養標示通常更快。</p>' +
+      '）。台灣商品的收錄率本來就不高 —— 改用營養標示通常更快。</p>' +
       '<div class="scan-actions">' +
-      (SCAN_API ? '<button class="btn" id="sfToLabel">改拍營養標示</button>' : "") +
+      (SCAN_API ? '<button class="btn" id="sfToLabel">改用營養標示</button>' : "") +
       '<button class="add" data-scan-close>關閉</button></div>');
     if (SCAN_API) $("sfToLabel").onclick = () => { closeSheet(); startScan("label"); };
     return;
@@ -1012,7 +1012,7 @@ async function barcodeResult(code) {
     openSheet("🔖 掃條碼",
       '<p class="metric-sub">找到商品「' + esc(name) + '」，但資料庫沒有它的熱量資料。</p>' +
       '<div class="scan-actions">' +
-      (SCAN_API ? '<button class="btn" id="sfToLabel">改拍營養標示</button>' : "") +
+      (SCAN_API ? '<button class="btn" id="sfToLabel">改用營養標示</button>' : "") +
       '<button class="add" data-scan-close>關閉</button></div>');
     if (SCAN_API) $("sfToLabel").onclick = () => { closeSheet(); startScan("label"); };
     return;
@@ -1031,11 +1031,11 @@ async function barcodeResult(code) {
 
 // ---- tier 2: nutrition label ----
 async function tierLabel(file) {
-  sheetBusy("🏷 拍營養標示", "正在讀標示上的數字…");
+  sheetBusy("🏷 營養標示", "正在讀標示上的數字…");
   const shot = await downscale(file);
   const { result: r, model } = await callScan("label", shot);
   if (!r.ok) {
-    return sheetError("🏷 拍營養標示", r.note || "讀不出這張標示，再拍清楚一點試試。");
+    return sheetError("🏷 營養標示", r.note || "讀不出這張標示，換一張清楚一點的試試。");
   }
 
   const packs = Math.max(1, num(r.servings_per_pack, 1));
@@ -1077,11 +1077,11 @@ async function tierLabel(file) {
 
 // ---- tier 3: photo estimate ----
 async function tierPhoto(file) {
-  sheetBusy("🍽 拍食物估算", "正在辨識食物與估算份量…");
+  sheetBusy("🍽 食物照估算", "正在辨識食物與估算份量…");
   const shot = await downscale(file);
   const { result: r } = await callScan("photo", shot);
   if (!r.ok) {
-    return sheetError("🍽 拍食物估算", r.note || "這張照片裡看不出食物。");
+    return sheetError("🍽 食物照估算", r.note || "這張照片裡看不出食物。");
   }
 
   const lo = Math.round(num(r.total_kcal_low, 0)), hi = Math.round(num(r.total_kcal_high, 0));
@@ -1104,8 +1104,9 @@ async function tierPhoto(file) {
 }
 
 // ---- entry point ----
-// One hidden file input drives all three tiers; `capture="environment"` opens the camera
-// directly on a phone, so no getUserMedia or video element is needed anywhere.
+// One hidden file input drives all three tiers. `capture` is deliberately NOT set so the
+// OS chooser offers the photo library as well as the camera — re-adding it would silently
+// remove the ability to log a meal from a photo taken earlier.
 let scanKind = "barcode";
 function startScan(kind) {
   if (kind !== "barcode" && !SCAN_API) {
