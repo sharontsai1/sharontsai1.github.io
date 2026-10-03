@@ -68,6 +68,29 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .heading{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;margin:0 0 11px}
 .heading small{font-size:10px;font-weight:400;color:#9a8673;margin-left:auto}
 .item-list{display:grid;gap:7px}
+.scan-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
+.scan-btn{margin-top:0;font-size:11px;padding:8px 4px;text-align:center}
+.sheet-wrap{position:fixed;inset:0;z-index:60;background:#2b230055;backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:16px}
+.sheet{background:var(--paper);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
+  padding:16px;width:min(100%,440px);max-height:86vh;overflow:auto}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.sheet-head h3{font-size:15px;color:var(--deep);margin:0}
+.sheet-x{background:transparent;border:0;font-size:22px;color:#9b8877;line-height:1;padding:0 4px}
+.scan-wait{text-align:center;padding:18px 0;color:#9b8877;font-size:13px}
+.scan-spin{width:26px;height:26px;margin:0 auto 10px;border:3px solid var(--line);
+  border-top-color:var(--leaf);border-radius:50%;animation:scanspin .8s linear infinite}
+@keyframes scanspin{to{transform:rotate(360deg)}}
+.scan-err{font-size:13px;color:var(--coral);background:#fdf0ef;border-radius:10px;padding:10px}
+.scan-src{font-size:12px;font-weight:700;border-radius:10px;padding:8px 10px;margin:0 0 8px}
+.scan-src.ok{color:var(--deep);background:#edf6eb}
+.scan-src.ai{color:#8a6a1f;background:#fdf6e3}
+.scan-fields{display:grid;gap:8px;margin:10px 0}
+.scan-field{display:grid;grid-template-columns:104px 1fr;align-items:center;gap:8px;font-size:12px;color:#7a6a58}
+.scan-actions{display:flex;gap:8px;margin-top:4px}
+.scan-actions .btn,.scan-actions .add{flex:1;margin-top:0;padding:10px}
+.food-db{border-left:3px solid var(--leaf)}
+.food-ai{border-left:3px solid var(--sun)}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
 .food{grid-template-columns:82px 1fr 62px 62px 30px}
 .expense{grid-template-columns:1fr 92px 100px 86px 1fr 30px}
@@ -216,6 +239,9 @@ textarea{min-height:80px;resize:vertical}
   .food{grid-template-columns:1fr 1fr;grid-template-areas:"meal meal" "name name" "cal protein" "del del"}
   .food select{grid-area:meal}.food input:nth-of-type(1){grid-area:name}.food input:nth-of-type(2){grid-area:cal}.food input:nth-of-type(3){grid-area:protein}.food .delete{grid-area:del;justify-self:end}
   .expense{grid-template-columns:1fr 88px 65px 29px}
+  .sheet-wrap{align-items:flex-end;padding:0}
+  .sheet{width:100%;max-width:none;border-radius:20px 20px 0 0;max-height:92vh}
+  .scan-field{grid-template-columns:92px 1fr}
   .expense:not(.has-kind) [data-f=name]{grid-column:auto}
   .expense .expense-note{grid-column:span 3}
   .expense.has-kind{grid-template-columns:1fr 88px 65px 29px;grid-template-areas:"name name name del" "kind cat amt amt" "note note note note"}
@@ -281,6 +307,12 @@ textarea{min-height:80px;resize:vertical}
     <section class="section wide"><h2 class="heading">🍙 飲食紀錄 <small>熱量與蛋白質一起記</small></h2>
       <div id="foodList" class="item-list"></div>
       <button class="add" id="addFood">＋ 新增食物</button>
+      <div class="scan-row">
+        <button class="add scan-btn" id="scanBarcode">🔖 掃條碼</button>
+        <button class="add scan-btn" id="scanLabel">🏷 拍營養標示</button>
+        <button class="add scan-btn" id="scanPhoto">🍽 拍食物估算</button>
+      </div>
+      <input type="file" accept="image/*" capture="environment" id="scanFile" class="hidden">
       <div class="total">熱量　<b id="foodTotal">0 kcal</b>蛋白質　<b id="foodProteinTotal">0 g</b></div>
     </section>
 
@@ -570,6 +602,13 @@ textarea{min-height:80px;resize:vertical}
   <button class="fin-nav-btn" data-sub="finSettings"><span class="fin-ico">🗂</span><span class="fin-lab">設定</span><span class="fin-sub">整理</span></button>
 </nav>
 
+<div class="sheet-wrap hidden" id="scanSheet">
+  <div class="sheet">
+    <div class="sheet-head"><h3 id="scanTitle"></h3><button class="sheet-x" data-scan-close>×</button></div>
+    <div id="scanBody"></div>
+  </div>
+</div>
+
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -606,7 +645,8 @@ const today=()=>{
 };
 
 // ---------- data normalization (keeps old records readable) ----------
-function normFood(f={}){return{id:f.id||id(),meal:f.meal||"早餐",name:f.name||"",cal:+f.cal||0,protein:+f.protein||0}}
+const FOOD_SRCS=["manual","barcode","ai-label","ai-photo"];
+function normFood(f={}){return{id:f.id||id(),meal:f.meal||"早餐",name:f.name||"",cal:+f.cal||0,protein:+f.protein||0,src:FOOD_SRCS.includes(f.src)?f.src:"manual",confidence:+f.confidence||0}}
 function normPart(p={}){return{id:p.id||id(),muscle:p.muscle||"",movement:p.movement||""}}
 function normExercise(x={}){
   const ex={id:x.id||id(),type:x.type||"跑步",minutes:+x.minutes||0,parts:(x.parts||[]).map(normPart)};
@@ -756,9 +796,12 @@ function bindDelete(containerId,field){
   });
 }
 
+const FOOD_SRC_LABEL={manual:"手動輸入",barcode:"條碼・食品資料庫實際數據",
+  "ai-label":"AI 讀營養標示（估計值）","ai-photo":"AI 照片估算（估計值，誤差大）"};
+const foodSrcClass=src=>src==="barcode"?" food-db":(src==="ai-label"||src==="ai-photo")?" food-ai":"";
 function foods(){
   $("foodList").innerHTML=data.foods.map((x,i)=>`
-    <div class="item food">
+    <div class="item food${foodSrcClass(x.src)}" title="${esc(FOOD_SRC_LABEL[x.src]||FOOD_SRC_LABEL.manual)}">
       <select data-i="${i}" data-f="meal">${MEALS.map(v=>`<option ${x.meal===v?"selected":""}>${v}</option>`).join("")}</select>
       <input data-i="${i}" data-f="name" value="${esc(x.name)}" placeholder="吃了什麼？">
       <input data-i="${i}" data-f="cal" type="number" min="0" value="${x.cal||""}" placeholder="kcal">
@@ -766,6 +809,329 @@ function foods(){
       <button class="delete" data-del="${i}">×</button>
     </div>`).join("")||'<div class="empty">還沒有紀錄，新增第一筆食物吧。</div>';
   inputs("foodList",data.foods); bindDelete("foodList","foods");
+}
+
+// ---------- 飲食掃描（條碼 / 營養標示 / 食物照）----------
+// Three tiers, most accurate first: a barcode looked up in a free database, a nutrition
+// panel read by AI, and an AI guess from a photo of the food. Every tier lands in the same
+// confirmation sheet and nothing reaches Firestore until the user presses 加入, because tier
+// 2 and 3 are estimates that would otherwise silently distort the 洞察 trend charts.
+//
+// SCAN_API is the Cloudflare Worker that holds the Gemini key (the key can never live here —
+// this page is public). Empty means the AI tiers are simply unavailable; barcode still works,
+// since Open Food Facts needs no key and is called directly.
+const SCAN_API = "";
+const OFF_API = "https://world.openfoodfacts.org/api/v2/product/";
+
+let scanBusy = false;
+
+function mealByClock(d = new Date()) {
+  const m = d.getHours() * 60 + d.getMinutes();
+  return m < 630 ? "早餐" : m < 900 ? "午餐" : m < 1260 ? "晚餐" : "點心";
+}
+
+// EXIF orientation matters here: a sideways nutrition panel is markedly harder to read, and
+// createImageBitmap is the only path that reliably applies the rotation before we rasterize.
+async function loadBitmap(file) {
+  if (self.createImageBitmap) {
+    try {
+      return await createImageBitmap(file, { imageOrientation: "from-image" });
+    } catch (e) {}
+  }
+  return await new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => { URL.revokeObjectURL(url); res(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("這張圖片讀不進來")); };
+    img.src = url;
+  });
+}
+
+// A phone photo is several megabytes and over ten times the tokens of what the model needs.
+async function downscale(file, maxEdge = 1024, quality = 0.8) {
+  const bmp = await loadBitmap(file);
+  const w0 = bmp.width, h0 = bmp.height;
+  const s = Math.min(1, maxEdge / Math.max(w0, h0));
+  const w = Math.max(1, Math.round(w0 * s)), h = Math.max(1, Math.round(h0 * s));
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  c.getContext("2d").drawImage(bmp, 0, 0, w, h);
+  if (bmp.close) bmp.close();
+  const dataUrl = c.toDataURL("image/jpeg", quality);
+  return { dataUrl, base64: dataUrl.split(",")[1], mediaType: "image/jpeg", w, h };
+}
+
+async function detectBarcode(file) {
+  if (!("BarcodeDetector" in self)) return null;
+  try {
+    const supported = await BarcodeDetector.getSupportedFormats();
+    const want = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128"].filter(f => supported.includes(f));
+    const det = new BarcodeDetector(want.length ? { formats: want } : undefined);
+    const found = await det.detect(await loadBitmap(file));
+    return found.length ? found[0].rawValue : null;
+  } catch (e) { return null; }
+}
+
+async function lookupBarcode(code) {
+  const url = OFF_API + encodeURIComponent(code) +
+    ".json?fields=product_name,product_name_zh,generic_name,brands,serving_size,nutriments";
+  const r = await fetch(url);
+  if (r.status === 404) return null;          // unknown barcode, not an error
+  if (!r.ok) throw new Error("食品資料庫查詢失敗（" + r.status + "）");
+  // Open Food Facts serves an HTML "temporarily unavailable" page under load, so a 200 is
+  // not a promise of JSON — parsing blind turns that into an unreadable SyntaxError.
+  const body = await r.text();
+  let j;
+  try { j = JSON.parse(body); }
+  catch (e) { throw new Error("食品資料庫暫時無法回應，請稍後再試"); }
+  return j && j.product ? j.product : null;
+}
+
+async function callScan(kind, shot) {
+  if (!SCAN_API) throw new Error("還沒設定掃描服務，請先部署 Worker");
+  if (!user) throw new Error("請先登入");
+  const token = await user.getIdToken();
+  const r = await fetch(SCAN_API.replace(/\/+$/, "") + "/" + kind, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+    body: JSON.stringify({ image: shot.base64, mediaType: shot.mediaType }),
+  });
+  let j = null;
+  try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error((j && j.error) || "掃描服務回應 " + r.status);
+  if (!j || !j.result) throw new Error("掃描服務沒有回傳結果");
+  return j;
+}
+
+// ---- sheet ----
+function openSheet(title, html) {
+  $("scanTitle").textContent = title;
+  $("scanBody").innerHTML = html;
+  $("scanSheet").classList.remove("hidden");
+}
+function closeSheet() {
+  $("scanSheet").classList.add("hidden");
+  $("scanBody").innerHTML = "";
+}
+const sheetBusy = (title, msg) =>
+  openSheet(title, '<div class="scan-wait"><div class="scan-spin"></div><p>' + esc(msg) + "</p></div>");
+const sheetError = (title, msg) =>
+  openSheet(title, '<p class="scan-err">' + esc(msg) + '</p>' +
+    '<div class="scan-actions"><button class="btn" data-scan-close>關閉</button></div>');
+
+const num = (v, d) => (Number.isFinite(+v) && +v > 0 ? +v : (d === undefined ? 0 : d));
+const confLabel = c =>
+  c >= 0.8 ? "高" : c >= 0.55 ? "中等" : c > 0 ? "偏低" : "未知";
+
+// The confirmation sheet every tier funnels into. `pre` is the tier-specific explanation
+// above the editable fields.
+function confirmSheet(title, pre, rows, src, confidence) {
+  const meal = mealByClock();
+  openSheet(title,
+    pre +
+    '<div class="scan-fields">' + rows.map((r, i) =>
+      '<label class="scan-field"><span>' + esc(r.label) + '</span>' +
+      '<input id="sf' + i + '" ' + (r.type === "number" ? 'type="number" min="0" step="any"' : "") +
+      ' value="' + esc(String(r.value)) + '"' + (r.hint ? ' placeholder="' + esc(r.hint) + '"' : "") + "></label>"
+    ).join("") +
+    '<label class="scan-field"><span>餐別</span><select id="sfMeal">' +
+      MEALS.map(v => '<option' + (v === meal ? " selected" : "") + ">" + v + "</option>").join("") +
+    "</select></label></div>" +
+    '<div class="scan-actions"><button class="btn" id="scanAccept">加入紀錄</button>' +
+    '<button class="add" data-scan-close>取消</button></div>');
+
+  $("scanAccept").onclick = () => {
+    const name = ($("sf0").value || "").trim();
+    const cal = num($("sf1").value, 0);
+    const protein = num($("sf2").value, 0);
+    if (!name && !cal) { status("至少要有名稱或熱量"); return; }
+    data.foods.push(normFood({
+      meal: $("sfMeal").value, name, cal, protein,
+      src, confidence: num(confidence, 0),
+    }));
+    closeSheet();
+    render(); save();
+    status("已加入「" + (name || "未命名") + "」", true);
+  };
+}
+
+// ---- tier 1: barcode ----
+async function tierBarcode(file) {
+  sheetBusy("🔖 掃條碼", "正在從照片裡找條碼…");
+  const code = await detectBarcode(file);
+  if (!code) {
+    const why = "BarcodeDetector" in self
+      ? "這張照片裡找不到條碼。可以靠近一點、把條碼拍正，或直接輸入號碼。"
+      : "這個瀏覽器沒有內建條碼辨識，請直接輸入條碼號碼。";
+    return manualBarcode(why);
+  }
+  await barcodeResult(code);
+}
+
+function manualBarcode(why) {
+  openSheet("🔖 掃條碼",
+    '<p class="metric-sub">' + esc(why) + "</p>" +
+    '<div class="scan-fields"><label class="scan-field"><span>條碼號碼</span>' +
+    '<input id="sfCode" inputmode="numeric" placeholder="例：4710088410115"></label></div>' +
+    '<div class="scan-actions"><button class="btn" id="sfCodeGo">查詢</button>' +
+    '<button class="add" data-scan-close>取消</button></div>');
+  $("sfCodeGo").onclick = async () => {
+    const code = ($("sfCode").value || "").replace(/\D/g, "");
+    if (!code) { status("請輸入條碼號碼"); return; }
+    try { await barcodeResult(code); }
+    catch (e) { sheetError("🔖 掃條碼", e.message); }
+  };
+}
+
+async function barcodeResult(code) {
+  sheetBusy("🔖 掃條碼", "查詢食品資料庫…（" + code + "）");
+  const p = await lookupBarcode(code);
+  if (!p) {
+    openSheet("🔖 掃條碼",
+      '<p class="metric-sub">食品資料庫裡找不到這個條碼（' + esc(code) +
+      '）。台灣商品的收錄率本來就不高 —— 改用拍營養標示通常更快。</p>' +
+      '<div class="scan-actions">' +
+      (SCAN_API ? '<button class="btn" id="sfToLabel">改拍營養標示</button>' : "") +
+      '<button class="add" data-scan-close>關閉</button></div>');
+    if (SCAN_API) $("sfToLabel").onclick = () => { closeSheet(); startScan("label"); };
+    return;
+  }
+
+  const n = p.nutriments || {};
+  const name = [p.product_name_zh, p.product_name, p.generic_name].find(v => v && v.trim()) || "條碼 " + code;
+  const brand = (p.brands || "").split(",")[0].trim();
+  // Per-serving figures are what the user actually eats; fall back to per-100g and say so,
+  // rather than presenting a 100g number as if it were a portion.
+  const perServing = num(n["energy-kcal_serving"], 0) > 0;
+  const cal = perServing ? num(n["energy-kcal_serving"], 0) : num(n["energy-kcal_100g"], 0);
+  const protein = perServing ? num(n.proteins_serving, 0) : num(n.proteins_100g, 0);
+  const basis = perServing
+    ? "每份" + (p.serving_size ? "（" + p.serving_size + "）" : "")
+    : "每 100 克／毫升";
+
+  if (!cal && !protein) {
+    openSheet("🔖 掃條碼",
+      '<p class="metric-sub">找到商品「' + esc(name) + '」，但資料庫沒有它的熱量資料。</p>' +
+      '<div class="scan-actions">' +
+      (SCAN_API ? '<button class="btn" id="sfToLabel">改拍營養標示</button>' : "") +
+      '<button class="add" data-scan-close>關閉</button></div>');
+    if (SCAN_API) $("sfToLabel").onclick = () => { closeSheet(); startScan("label"); };
+    return;
+  }
+
+  confirmSheet("🔖 條碼查詢結果",
+    '<p class="scan-src ok">✓ 來自食品資料庫的實際數據，不是估計值。</p>' +
+    '<p class="metric-sub">' + esc(brand ? brand + "・" : "") + esc(basis) +
+    (perServing ? "" : " —— 請按實際吃的份量調整下面的數字") + "</p>",
+    [
+      { label: "名稱", value: name },
+      { label: "熱量 kcal", value: Math.round(cal), type: "number" },
+      { label: "蛋白質 g", value: Math.round(protein * 10) / 10, type: "number" },
+    ], "barcode", 1);
+}
+
+// ---- tier 2: nutrition label ----
+async function tierLabel(file) {
+  sheetBusy("🏷 拍營養標示", "正在讀標示上的數字…");
+  const shot = await downscale(file);
+  const { result: r, model } = await callScan("label", shot);
+  if (!r.ok) {
+    return sheetError("🏷 拍營養標示", r.note || "讀不出這張標示，再拍清楚一點試試。");
+  }
+
+  const packs = Math.max(1, num(r.servings_per_pack, 1));
+  const kcal = num(r.serving_kcal, 0), pro = num(r.serving_protein_g, 0);
+  const basisText = {
+    per_serving: "標示本來就是每份值",
+    converted_from_100g: "標示是每 100g 值，已換算成每份",
+    per_pack: "標示只有整包值",
+    unknown: "標示基準不明",
+  }[r.basis] || "標示基準不明";
+
+  openSheet("🏷 營養標示",
+    '<p class="scan-src ai">⚠ AI 讀取結果，信心度：' + confLabel(num(r.confidence, 0)) + "</p>" +
+    '<p class="metric-sub"><b>' + esc(r.product || "未命名商品") + "</b><br>" +
+    esc(basisText) + "・每份 " + Math.round(kcal) + " kcal" +
+    (r.serving_size ? "（" + esc(r.serving_size) + "）" : "") +
+    "<br>本包裝含 <b>" + packs + "</b> 份" +
+    (packs > 1 ? "　← 整包吃完就是 " + Math.round(kcal * packs) + " kcal" : "") +
+    (r.note ? "<br>" + esc(r.note) : "") + "</p>" +
+    '<div class="scan-fields"><label class="scan-field"><span>你吃了幾份？</span>' +
+    '<input id="sfServ" type="number" min="0" step="any" value="1"></label></div>' +
+    '<div class="scan-actions"><button class="btn" id="sfServGo">換算</button>' +
+    '<button class="add" data-scan-close>取消</button></div>');
+
+  const go = () => {
+    const servings = num($("sfServ").value, 1);
+    confirmSheet("🏷 營養標示",
+      '<p class="scan-src ai">⚠ AI 讀取結果（信心度 ' + confLabel(num(r.confidence, 0)) +
+      '），會標記為估計值。存檔前請確認數字。</p>' +
+      '<p class="metric-sub">' + servings + " 份 × 每份 " + Math.round(kcal) + " kcal</p>",
+      [
+        { label: "名稱", value: (r.product || "") + (servings !== 1 ? "（" + servings + " 份）" : "") },
+        { label: "熱量 kcal", value: Math.round(kcal * servings), type: "number" },
+        { label: "蛋白質 g", value: Math.round(pro * servings * 10) / 10, type: "number" },
+      ], "ai-label", num(r.confidence, 0));
+  };
+  $("sfServGo").onclick = go;
+}
+
+// ---- tier 3: photo estimate ----
+async function tierPhoto(file) {
+  sheetBusy("🍽 拍食物估算", "正在辨識食物與估算份量…");
+  const shot = await downscale(file);
+  const { result: r } = await callScan("photo", shot);
+  if (!r.ok) {
+    return sheetError("🍽 拍食物估算", r.note || "這張照片裡看不出食物。");
+  }
+
+  const lo = Math.round(num(r.total_kcal_low, 0)), hi = Math.round(num(r.total_kcal_high, 0));
+  const items = Array.isArray(r.items) ? r.items : [];
+  confirmSheet("🍽 食物估算",
+    '<p class="scan-src ai">⚠ 這是<b>估計值</b>，不是實測。信心度：' + confLabel(num(r.confidence, 0)) + "</p>" +
+    (items.length
+      ? '<div class="summary-list">' + items.map(it =>
+          '<div class="summary-row"><span>' + esc(it.name || "—") + "</span><b>" +
+          Math.round(num(it.kcal, 0)) + " kcal</b></div>").join("") + "</div>"
+      : "") +
+    '<p class="metric-sub">' +
+    (lo && hi && hi > lo ? "合理範圍 <b>" + lo + "–" + hi + "</b> kcal　" : "") +
+    (r.note ? "<br>" + esc(r.note) : "") + "</p>",
+    [
+      { label: "名稱", value: r.meal_name || "" },
+      { label: "熱量 kcal", value: Math.round(num(r.total_kcal, 0)), type: "number" },
+      { label: "蛋白質 g", value: Math.round(num(r.total_protein_g, 0) * 10) / 10, type: "number" },
+    ], "ai-photo", num(r.confidence, 0));
+}
+
+// ---- entry point ----
+// One hidden file input drives all three tiers; `capture="environment"` opens the camera
+// directly on a phone, so no getUserMedia or video element is needed anywhere.
+let scanKind = "barcode";
+function startScan(kind) {
+  if (kind !== "barcode" && !SCAN_API) {
+    status("還沒設定掃描服務（Worker 未部署）");
+    return;
+  }
+  scanKind = kind;
+  const el = $("scanFile");
+  el.value = "";
+  el.click();
+}
+
+async function onScanFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file || scanBusy) return;
+  scanBusy = true;
+  try {
+    if (scanKind === "barcode") await tierBarcode(file);
+    else if (scanKind === "label") await tierLabel(file);
+    else await tierPhoto(file);
+  } catch (err) {
+    sheetError("掃描失敗", err.message || String(err));
+  } finally {
+    scanBusy = false;
+    e.target.value = "";
+  }
 }
 
 function exercises(){
@@ -1914,6 +2280,14 @@ async function calendar(){
 
 // ---------- events ----------
 $("addFood").onclick=()=>{data.foods.push(normFood()); render(); save()};
+$("scanBarcode").onclick=()=>startScan("barcode");
+$("scanLabel").onclick=()=>startScan("label");
+$("scanPhoto").onclick=()=>startScan("photo");
+$("scanFile").onchange=onScanFile;
+// delegated so every [data-scan-close] rendered into the sheet works without rebinding
+$("scanSheet").onclick=e=>{
+  if(e.target===$("scanSheet")||e.target.closest("[data-scan-close]"))closeSheet();
+};
 $("addExercise").onclick=()=>{data.exercises.push(normExercise()); render(); save()};
 $("sleep").oninput=e=>{data.sleep=+e.target.value||0; schedule()};
 $("note").oninput=e=>{data.note=e.target.value; schedule()};

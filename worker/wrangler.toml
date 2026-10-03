@@ -1,0 +1,21 @@
+name = "lifeisland-food-scan"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Secret (NOT set here — it would end up in git). Set it once with:
+#   npx wrangler secret put GEMINI_API_KEY
+#
+# Optional vars below.
+
+[vars]
+# Only these origins get a CORS allow header. Add http://localhost:8532 while testing locally.
+ALLOWED_ORIGINS = "https://sharontsai1.github.io,http://localhost:8532"
+
+# A valid Firebase token only proves someone signed into the project, and sign-in is open —
+# so this is what keeps the Gemini quota to the owner. Fill it in after the first scan
+# (the Worker logs the uid, and GET /models returns it).
+ALLOWED_UIDS = ""
+
+# Leave empty to let the Worker discover a flash model at runtime. Set it to pin one,
+# e.g. MODEL = "gemini-2.5-flash".
+MODEL = ""
