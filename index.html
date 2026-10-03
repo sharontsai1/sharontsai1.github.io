@@ -70,7 +70,9 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item-list{display:grid;gap:7px}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
 .food{grid-template-columns:82px 1fr 62px 62px 30px}
-.expense{grid-template-columns:1fr 102px 86px 1fr 30px}
+.expense{grid-template-columns:1fr 92px 100px 86px 1fr 30px}
+.expense:not(.has-kind) [data-f=name]{grid-column:span 2}
+.orphan-row{grid-template-columns:1fr 176px}
 .ledger-add{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
 .fin-daygroup{margin-bottom:14px}
 .fin-daygroup .heading small{color:var(--deep);font-weight:700}
@@ -78,6 +80,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item-income{border-left:3px solid var(--leaf)}
 .item-expense{border-left:3px solid var(--coral)}
 .item-save{border-left:3px solid var(--sea)}
+.row-orphan{border-left-color:var(--sun);background:#fffaf0}
 .cat-row{grid-template-columns:1fr 90px 30px}
 .cat-row.cat-row-income{grid-template-columns:1fr 30px}
 .acc-row{grid-template-columns:1fr 100px}
@@ -213,7 +216,16 @@ textarea{min-height:80px;resize:vertical}
   .food{grid-template-columns:1fr 1fr;grid-template-areas:"meal meal" "name name" "cal protein" "del del"}
   .food select{grid-area:meal}.food input:nth-of-type(1){grid-area:name}.food input:nth-of-type(2){grid-area:cal}.food input:nth-of-type(3){grid-area:protein}.food .delete{grid-area:del;justify-self:end}
   .expense{grid-template-columns:1fr 88px 65px 29px}
+  .expense:not(.has-kind) [data-f=name]{grid-column:auto}
   .expense .expense-note{grid-column:span 3}
+  .expense.has-kind{grid-template-columns:1fr 88px 65px 29px;grid-template-areas:"name name name del" "kind cat amt amt" "note note note note"}
+  .expense.has-kind [data-f=name]{grid-area:name}
+  .expense.has-kind [data-f=kind]{grid-area:kind}
+  .expense.has-kind [data-f=category]{grid-area:cat}
+  .expense.has-kind [data-f=amount]{grid-area:amt}
+  .expense.has-kind .expense-note{grid-area:note}
+  .expense.has-kind .delete{grid-area:del;justify-self:end}
+  .orphan-row{grid-template-columns:1fr}
   .cat-row{grid-template-columns:1fr 70px 26px}
   .acc-row{grid-template-columns:1fr 86px}
   .acc-set-row{grid-template-columns:1fr 1fr}
@@ -368,6 +380,7 @@ textarea{min-height:80px;resize:vertical}
     <div class="budget-grid cats" id="finFixedGrid"></div>
     <p class="metric-sub" style="margin:14px 0 6px">🛍 變動支出</p>
     <div class="budget-grid cats" id="finVariableGrid"></div>
+    <div class="section hidden" id="finOrphanBox" style="margin-top:12px"></div>
   </section>
 
   <section class="card tape-coral"><h2 class="heading">🛡️ 幫未來先留位置 <small>預存支出的水位</small></h2>
@@ -487,6 +500,13 @@ textarea{min-height:80px;resize:vertical}
       </div>
     </div>
     <button class="btn" id="saveCategories" style="margin-top:10px">儲存分類設定</button>
+  </section>
+
+  <section class="card hidden" id="orphanFixBox">
+    <h2 class="heading">🧹 整理舊分類 <small>把舊紀錄用到的分類對應到現在的分類</small></h2>
+    <p class="metric-sub" style="margin:0 0 8px">這些名稱已經不在分類清單裡（改過名或刪掉了）。選一個現在的分類，舊紀錄就會跟著歸位；<b>不會改動任何舊紀錄本身</b>，只是記住對應關係，隨時可以再調整。</p>
+    <div id="orphanFixList" class="item-list"></div>
+    <button class="btn" id="applyOrphanFix" style="margin-top:10px">套用對照</button>
   </section>
 
   <section class="card tape-sea" id="accountsBox">
@@ -622,8 +642,22 @@ function normCatItem(x={}){return{id:x.id||id(),name:x.name||"",budget:+x.budget
 function normIncomeCat(x={}){return{id:x.id||id(),name:x.name||""}}
 function normPlan(p){const a=Array.isArray(p)?p:[];return Array.from({length:12},(_,i)=>+a[i]||0)}
 function normSinkingCat(x={}){return{id:x.id||id(),name:x.name||"",goal:+x.goal||0,initSaved:+x.initSaved||0,plan:normPlan(x.plan)}}
+// aliases map a retired category name to what it means today, so historical
+// entries keep resolving correctly without ever rewriting a journal doc.
+function normAliases(a={}){
+  const o={};
+  Object.keys(a||{}).forEach(k=>{
+    const v=a[k];
+    const to=typeof v==="string"?v:(v&&v.to);
+    if(!to)return;
+    const kind=v&&v.kind;
+    o[k]={to:String(to),kind:["fixed","variable","sinking","income"].includes(kind)?kind:""};
+  });
+  return o;
+}
 function normCategories(c={}){
   return{
+    aliases:normAliases(c.aliases),
     fixed:(c.fixed&&c.fixed.length?c.fixed:DEFAULT_CATEGORIES.fixed).map(normCatItem),
     variable:(c.variable&&c.variable.length?c.variable:DEFAULT_CATEGORIES.variable).map(normCatItem),
     sinking:(c.sinking||[]).map(normSinkingCat),
@@ -872,7 +906,74 @@ function renderCategorySettings(){
     const[group,i]=b.dataset.delcat.split(":");
     categories[group].splice(+i,1); renderCategorySettings();
   });
+  renderOrphanFix();
 }
+
+// ---- 整理舊分類 ----
+// Collects the category names in the loaded journal years that no longer resolve to a
+// live category, so each can be mapped onto a current one. The mapping is stored as an
+// alias in settings/categories; no journal doc is ever rewritten.
+let orphanPicks={};
+function orphanUsage(){
+  const out=new Map();
+  const add=(name,kind,amount)=>{
+    if(!name)return;
+    const r=resolveCat(name,kind);
+    if(!r.orphan)return;
+    // Key on the END of the alias chain: mapping that name extends the chain for every
+    // record pointing into it, including ones that arrive via an older alias.
+    const e=out.get(r.category)||{name:r.category,kinds:new Set(),total:0,count:0};
+    e.kinds.add(r.kind); e.total+=(+amount||0); e.count++;
+    out.set(r.category,e);
+  };
+  financeByDate.forEach(d=>{
+    d.expenses.forEach(e=>add(e.category,e.kind,e.amount));
+    d.saves.forEach(v=>add(v.bag,"sinking",v.amount));
+    d.incomes.forEach(v=>add(v.category,"income",v.amount));
+  });
+  return[...out.values()].sort((a,b)=>b.total-a.total);
+}
+function orphanOptions(o,sel){
+  const grp=(label,kind,list)=>(list||[]).length?'<optgroup label="'+label+'">'+(list||[]).map(c=>
+    '<option value="'+kind+":"+esc(c.name)+'"'+(sel===kind+":"+c.name?" selected":"")+">"+esc(c.name)+"</option>").join("")+"</optgroup>":"";
+  // Income rows only get income targets and expense rows only expense targets: mapping
+  // across that line would park the money in a box its own page never renders.
+  const incomeOnly=o.kinds.size===1&&o.kinds.has("income");
+  return'<option value=""'+(sel?"":" selected")+">— 先不處理 —</option>"
+    +(incomeOnly?grp("💰 收入","income",categories.income)
+      :grp("🛍 變動支出","variable",categories.variable)
+        +grp("🏠 固定支出","fixed",categories.fixed)
+        +grp("🛡️ 預存袋","sinking",categories.sinking));
+}
+function renderOrphanFix(){
+  if(!categories)return;
+  const list=orphanUsage();
+  $("orphanFixBox").classList.toggle("hidden",!list.length);
+  if(!list.length){orphanPicks={};return}
+  $("orphanFixList").innerHTML=list.map(o=>{
+    const kinds=[...o.kinds].map(k=>KIND_LABEL[k]||"💰 收入").join("、");
+    return'<div class="item orphan-row"><div><b>'+esc(o.name)+'</b><div class="metric-sub">'
+      +kinds+" · "+o.count+" 筆 · "+money(o.total)+'</div></div>'
+      +'<select data-oname="'+esc(o.name)+'">'+orphanOptions(o,orphanPicks[o.name]||"")+"</select></div>";
+  }).join("");
+  $("orphanFixList").querySelectorAll("[data-oname]").forEach(el=>el.onchange=()=>{
+    orphanPicks[el.dataset.oname]=el.value;
+  });
+}
+async function applyOrphanFix(){
+  if(!categories)return;
+  const picks=Object.keys(orphanPicks).filter(k=>orphanPicks[k]);
+  if(!picks.length){status("還沒有選到要對應的分類");return}
+  categories.aliases=categories.aliases||{};
+  picks.forEach(name=>{
+    const v=orphanPicks[name],i=v.indexOf(":");
+    categories.aliases[name]={to:v.slice(i+1),kind:v.slice(0,i)};
+  });
+  orphanPicks={};
+  await saveCategories();
+  renderOrphanFix();
+}
+
 function addCategoryRow(group){
   categories[group].push(group==="income"?normIncomeCat():group==="sinking"?normSinkingCat():normCatItem());
   renderCategorySettings();
@@ -1164,8 +1265,11 @@ function sinkingState(bag,y){
   financeByDate.forEach((d,k)=>{
     if(!k.startsWith(y))return;
     const i=+k.slice(5,7)-1;
-    d.saves.forEach(s=>{if(s.bag===bag.name)actual[i]+=(+s.amount||0)});
-    d.expenses.forEach(e=>{if(e.kind==="sinking"&&e.category===bag.name)spent+=(+e.amount||0)});
+    d.saves.forEach(s=>{if(resolveCat(s.bag,"sinking").category===bag.name)actual[i]+=(+s.amount||0)});
+    d.expenses.forEach(e=>{
+      const r=resolveCat(e.category,e.kind);
+      if(r.kind==="sinking"&&r.category===bag.name)spent+=(+e.amount||0);
+    });
   });
   const cy=today().slice(0,4);
   const curIdx=y<cy?11:y>cy?-1:+today().slice(5,7)-1;
@@ -1184,27 +1288,53 @@ function lockedRows(m){
   });
 }
 
+function catListFor(kind){
+  if(!categories)return[];
+  return kind==="income"?categories.income
+    :kind==="sinking"?(categories.sinking||[])
+    :kind==="fixed"?categories.fixed
+    :categories.variable;
+}
+const isLiveCat=(name,kind)=>catListFor(kind).some(c=>c.name===name);
+// Walks the alias chain until the name is a live category (or nothing maps it further).
+// An alias is only consulted when the stored name is NOT currently live, so a valid
+// category can never be overridden by a stale alias.
+function resolveCat(name,kind){
+  let n=name,k=kind||"variable",guard=0;
+  while(guard++<10){
+    if(isLiveCat(n,k))return{category:n,kind:k,orphan:false};
+    const a=categories&&categories.aliases&&categories.aliases[n];
+    if(!a)break;
+    const nk=a.kind||k;
+    if(a.to===n&&nk===k)break;
+    n=a.to; k=nk;
+  }
+  return{category:n,kind:k,orphan:!isLiveCat(n,k)};
+}
+
 function financeStats(m){
   let income=0,dailyExpense=0,sinkingExpense=0,todaySpend=0;
-  const catTotals={},fixedSpent={},variableSpent={};
+  const catTotals={},fixedSpent={},variableSpent={},orphans={};
   let kindFixed=0,kindVariable=0;
   const t=today();
   daysIn(m).forEach(d=>{
     d.incomes.forEach(v=>income+=(+v.amount||0));
     d.expenses.forEach(v=>{
       const a=+v.amount||0;
-      if(v.kind==="sinking"){sinkingExpense+=a;return}
+      const r=resolveCat(v.category,v.kind);
+      if(r.orphan)orphans[r.category]=(orphans[r.category]||0)+a;
+      if(r.kind==="sinking"){sinkingExpense+=a;return}
       dailyExpense+=a;
-      catTotals[v.category]=(catTotals[v.category]||0)+a;
-      if(v.kind==="fixed"){kindFixed+=a;fixedSpent[v.category]=(fixedSpent[v.category]||0)+a}
-      else{kindVariable+=a;variableSpent[v.category]=(variableSpent[v.category]||0)+a}
+      catTotals[r.category]=(catTotals[r.category]||0)+a;
+      if(r.kind==="fixed"){kindFixed+=a;fixedSpent[r.category]=(fixedSpent[r.category]||0)+a}
+      else{kindVariable+=a;variableSpent[r.category]=(variableSpent[r.category]||0)+a}
       if(d.date===t)todaySpend+=a;
     });
   });
   const rows=lockedRows(m);
   const locked=rows.reduce((s,r)=>s+r.amount,0);
   const balance=income-dailyExpense;
-  return{m,income,dailyExpense,sinkingExpense,todaySpend,catTotals,fixedSpent,variableSpent,
+  return{m,income,dailyExpense,sinkingExpense,todaySpend,catTotals,fixedSpent,variableSpent,orphans,
     kindFixed,kindVariable,rows,locked,balance,trueBalance:balance-locked};
 }
 
@@ -1233,6 +1363,18 @@ function renderBreakdown(s){
     +line("− 本月預存金",money(s.locked))
     +line("= 真實可動用餘額",money(s.trueBalance),true);
 }
+// Orphaned spending would otherwise sit inside 本期支出 but in no budget box at all,
+// silently understating every category. Surface it rather than hiding it.
+function renderOrphanBox(orphans){
+  const names=Object.keys(orphans||{});
+  const total=names.reduce((n,k)=>n+orphans[k],0);
+  $("finOrphanBox").classList.toggle("hidden",!names.length);
+  if(!names.length)return;
+  $("finOrphanBox").innerHTML='<p class="metric-sub" style="margin:0 0 6px">⚠️ 有 <b>'+money(total)+
+    '</b> 用到已改名或刪除的分類，目前沒有算進任何預算格。到「設定 → 整理舊分類」對應一次就好。</p>'+
+    '<div class="summary-list">'+names.sort((a,b)=>orphans[b]-orphans[a]).map(k=>
+      '<div class="summary-row"><span>'+esc(k)+'</span><b>'+money(orphans[k])+'</b></div>').join("")+'</div>';
+}
 function budgetBoxHtml(c,spent){
   const limit=+c.budget||0,p=limit?Math.round(spent/limit*100):0;
   const cls=!limit?"":p>100?"over":p>80?"warn":"";
@@ -1241,8 +1383,9 @@ function budgetBoxHtml(c,spent){
     <div class="budget-stat">${limit?`${money(spent)} / ${money(limit)}`:`已花 ${money(spent)}`}</div>
     <div class="metric-sub">${limit?`剩餘 ${money(limit-spent)}`:"尚未設定預算"}</div></div>`;
 }
-function renderBudgetBoxes(fixedSpent,variableSpent){
+function renderBudgetBoxes(fixedSpent,variableSpent,orphans){
   if(!categories)return;
+  renderOrphanBox(orphans);
   $("finFixedGrid").innerHTML=categories.fixed.map(c=>budgetBoxHtml(c,fixedSpent[c.name]||0)).join("")||'<div class="empty">尚未設定分類。</div>';
   $("finVariableGrid").innerHTML=categories.variable.map(c=>budgetBoxHtml(c,variableSpent[c.name]||0)).join("")||'<div class="empty">尚未設定分類。</div>';
 }
@@ -1273,18 +1416,26 @@ function renderFinDonut(s){
 }
 
 // ---- transaction list ----
+const KIND_LABEL={fixed:"🏠 固定",variable:"🛍 變動",sinking:"🛡️ 預存"};
 function financeRowHtml(date,field,i,e){
   const isSave=field==="saves",isIncome=field==="incomes";
-  const catList=isIncome?categories.income
-    :(isSave||e.kind==="sinking")?((categories&&categories.sinking)||[])
-    :e.kind==="fixed"?categories.fixed
-    :categories.variable;
+  const storedKind=isSave?"sinking":isIncome?"income":(e.kind||"variable");
+  const stored=isSave?e.bag:e.category;
+  const r=resolveCat(stored,storedKind);
+  const catList=catListFor(r.kind);
   const catField=isSave?"bag":"category";
-  const selected=isSave?e.bag:e.category;
   const cls=isIncome?"item-income":isSave?"item-save":"item-expense";
-  return `<div class="item expense ${cls}">
+  // An unresolvable value gets its own option instead of silently falling back to the
+  // first one — otherwise the row would display a category it was never filed under.
+  const opts=catList.map(c=>`<option ${r.category===c.name?"selected":""}>${esc(c.name)}</option>`).join("")
+    +(r.orphan?`<option selected>${esc(r.category)}</option>`:"");
+  const kindSel=(isSave||isIncome)?"":
+    `<select data-date="${date}" data-field="${field}" data-i="${i}" data-f="kind">${
+      ["variable","fixed","sinking"].map(k=>`<option value="${k}" ${r.kind===k?"selected":""}>${KIND_LABEL[k]}</option>`).join("")}</select>`;
+  return `<div class="item expense ${cls}${kindSel?" has-kind":""}${r.orphan?" row-orphan":""}">
     <input data-date="${date}" data-field="${field}" data-i="${i}" data-f="name" value="${esc(e.name)}" placeholder="項目">
-    <select data-date="${date}" data-field="${field}" data-i="${i}" data-f="${catField}">${catList.map(c=>`<option ${selected===c.name?"selected":""}>${esc(c.name)}</option>`).join("")}</select>
+    ${kindSel}
+    <select data-date="${date}" data-field="${field}" data-i="${i}" data-f="${catField}">${opts}</select>
     <input data-date="${date}" data-field="${field}" data-i="${i}" data-f="amount" type="number" min="0" value="${e.amount||""}" placeholder="金額">
     <input class="expense-note" data-date="${date}" data-field="${field}" data-i="${i}" data-f="note" value="${esc(e.note)}" placeholder="備註">
     <button class="delete" data-deldate="${date}" data-delfield="${field}" data-del="${i}">×</button>
@@ -1319,6 +1470,8 @@ function bindFinanceRowEvents(){
     updateFinanceSubtotal(date);
     if(categories)renderFinTotals(financeStats(finMonth()));
     scheduleFinanceSave(date);
+    // switching 固定/變動/預存 changes which categories are valid, so rebuild the list
+    if(f==="kind")renderFinance();
   });
   $("finList").querySelectorAll("[data-deldate]").forEach(b=>b.onclick=async()=>{
     const date=b.dataset.deldate,field=b.dataset.delfield;
@@ -1698,7 +1851,7 @@ function renderFinance(){
   if(!user||!categories)return;
   const s=financeStats(finMonth());
   renderFinTotals(s); renderBreakdown(s); renderSaveBagOptions(); renderBankAccOptions();
-  renderBudgetBoxes(s.fixedSpent,s.variableSpent);
+  renderBudgetBoxes(s.fixedSpent,s.variableSpent,s.orphans);
   renderSinkingGrid();
   if(isFinPage("finHome"))renderFinDonut(s);
   updateFinanceCategoryOptions();
@@ -1776,6 +1929,7 @@ $("date").onchange=day;
 $("insightMonth").onchange=insights;
 $("saveGoals").onclick=saveGoals;
 $("saveCategories").onclick=saveCategories;
+$("applyOrphanFix").onclick=applyOrphanFix;
 $("addCatFixed").onclick=()=>addCategoryRow("fixed");
 $("addCatVariable").onclick=()=>addCategoryRow("variable");
 $("addCatIncome").onclick=()=>addCategoryRow("income");
