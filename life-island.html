@@ -112,6 +112,72 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .acc-archived{opacity:.55}
 .neg{color:var(--coral)}
 
+/* transaction rows: read-only display; swipe left (touch) or tap to edit */
+.tx-list{display:grid;gap:7px}
+.tx{position:relative;overflow:hidden;border-radius:14px;touch-action:pan-y}
+.tx-actions{position:absolute;inset:1px 1px 1px auto;display:flex;border-radius:0 14px 14px 0;overflow:hidden}
+.tx-actions button{flex:none;box-sizing:border-box;width:68px;padding:0;font-size:12px;font-weight:700;color:white;border-radius:0}
+.tx-act-edit{background:var(--sea)}
+.tx-act-del{background:var(--coral)}
+.tx-main{position:relative;display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:9px 11px;transition:transform .2s ease}
+.tx.dragging .tx-main{transition:none}
+.tx-ico{flex:none;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:17px;background:#fbeee9}
+.tx-income .tx-ico{background:#edf6eb}
+.tx-save .tx-ico{background:#e6f4f8}
+.tx-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.tx-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-sub{font-size:11px;color:#9b8877;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-amt{flex:none;font-size:15px;font-weight:700;color:var(--coral)}
+.tx-income .tx-amt{color:var(--deep)}
+.tx-save .tx-amt{color:var(--sea)}
+.tx-orphan .tx-main{background:#fffaf0;border-color:var(--sun)}
+.tx-pen{flex:none;width:28px;height:28px;border-radius:50%;background:var(--cream);color:#8a7460;font-size:13px;display:none}
+@media(hover:hover){.tx-pen{display:grid;place-items:center;opacity:0;transition:opacity .15s}.tx:hover .tx-pen{opacity:1}}
+.badge{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:1px;background:#e6f4f8;color:#2a7f99}
+.swipe-hint{font-size:10px;color:#b3a291;font-weight:400}
+
+/* form sheet (edit transaction / edit recurring rule) */
+.fsheet-amount{display:flex;align-items:center;gap:6px;background:var(--cream);border-radius:14px;padding:10px 14px;margin:4px 0 12px}
+.fsheet-amount span{font-size:20px;font-weight:700;color:#8a7460}
+.fsheet-amount input{border:0;background:transparent;font-size:28px;font-weight:700;padding:0;color:var(--ink)}
+.flow-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.flow-chip{padding:7px 11px;border-radius:999px;background:#f3ebdd;color:#8a7460;font-size:12px;font-weight:700}
+.flow-chip.active{background:var(--deep);color:white}
+.fgroup{display:grid;gap:0;background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;overflow:hidden;margin-bottom:12px}
+.frow{display:flex;align-items:center;gap:10px;padding:4px 12px;min-height:46px;border-bottom:1px solid #f1e8d8}
+.frow:last-child{border-bottom:0}
+.frow>label{flex:none;width:72px;font-size:13px;color:#8a7460;font-weight:700}
+.frow input,.frow select{border:0;background:transparent;padding:8px 0;text-align:right;font-size:14px}
+.frow select{appearance:none;-webkit-appearance:none;text-align-last:right;padding-right:16px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='12'%3E%3Cpath d='M1 1l5 5-5 5' stroke='%23b3a291' stroke-width='2' fill='none'/%3E%3C/svg%3E") no-repeat right center}
+.frow .frow-val{flex:1;text-align:right;font-size:14px}
+.fsheet-hint{font-size:12px;color:var(--deep);background:#edf6eb;border-radius:10px;padding:9px 11px;margin:-4px 0 12px}
+.fsheet-hint.warn{color:#8a6a1f;background:#fdf6e3}
+.fsheet-actions{display:flex;gap:8px}
+.fsheet-actions .btn{flex:1;padding:12px}
+.btn-danger{background:transparent;color:var(--coral);font-weight:700;padding:12px 14px;border-radius:999px;border:1px solid #f0cfc9}
+
+/* full-screen sub page (slides in from the right) */
+.subpage{position:fixed;inset:0;z-index:55;background:var(--cream);overflow:auto;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+.subpage.open{transform:none;visibility:visible}
+.subpage-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:12px 14px;
+  background:#f7f2e2f0;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.subpage-head h2{flex:1;font-size:16px;margin:0;color:var(--deep)}
+.subpage-body{width:min(100% - 24px,560px);margin:14px auto 40px;display:flex;flex-direction:column;gap:14px}
+.recur-total{display:flex;justify-content:space-between;align-items:baseline;background:var(--paper);border-radius:18px;padding:14px 16px;box-shadow:var(--shadow)}
+.recur-total b{font-size:24px;color:var(--deep)}
+.recur-total span{font-size:12px;color:#8a7460}
+.recur-off .tx-ico,.recur-off .tx-body,.recur-off .tx-amt{opacity:.45}
+.entry-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:12px 14px}
+.entry-card b{display:block;font-size:14px}
+.entry-card span{font-size:11px;color:#9b8877}
+.entry-card .chev{margin-left:auto;font-size:18px;color:#b3a291}
+.switch{position:relative;flex:none;width:42px;height:24px;border-radius:99px;background:#d9cdb9;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px #0003}
+.switch.on{background:var(--leaf)}
+.switch.on::after{transform:translateX(18px)}
+
 /* finance section: bottom sub-nav + sub-pages */
 .fin-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
   background:#fffdf8f2;backdrop-filter:blur(6px);border-top:2px solid var(--line);
@@ -427,7 +493,7 @@ textarea{min-height:80px;resize:vertical}
     <div class="chart"><canvas id="finDonut"></canvas></div>
   </section>
 
-  <section class="section wide"><h2 class="heading">📋 本期紀錄明細</h2><div id="finList"></div></section>
+  <section class="section wide"><h2 class="heading">📋 本期紀錄明細 <small class="swipe-hint">點一筆可編輯・手機可左滑</small></h2><div id="finList"></div></section>
 </div>
 
 <div class="fin-page" id="finAssets">
@@ -511,6 +577,14 @@ textarea{min-height:80px;resize:vertical}
 </div>
 
 <div class="fin-page" id="finSettings">
+  <section class="card tape-sea">
+    <h2 class="heading">🔁 自動記帳 <small>訂閱、房租這類每月固定的花費</small></h2>
+    <button class="entry-card" id="openRecur">
+      <span style="font-size:24px">🗓</span>
+      <span><b>管理自動記帳</b><span id="recurSummary">每月到了指定日期就自動幫你記一筆</span></span>
+      <span class="chev">›</span>
+    </button>
+  </section>
   <section class="card tape-coral" id="categoriesBox">
     <h2 class="heading">🗂 記帳分類與預算 <small>套用在帳戶頁的預算條與分類選單</small></h2>
     <div class="day-grid">
@@ -609,6 +683,26 @@ textarea{min-height:80px;resize:vertical}
   </div>
 </div>
 
+<div class="subpage" id="recurPage" aria-hidden="true">
+  <div class="subpage-head">
+    <button class="nav" id="recurBack" title="返回">←</button>
+    <h2>🔁 自動記帳</h2>
+    <button class="btn" id="recurAdd" style="padding:8px 14px">＋ 新增</button>
+  </div>
+  <div class="subpage-body">
+    <div class="recur-total"><span>每月固定流出</span><b id="recurMonthly">$0</b></div>
+    <p class="metric-sub" style="margin:0">到了每月指定日期，會自動在那天記一筆。31 號遇到小月會記在月底。刪掉自動記的那筆不會再補回來。</p>
+    <div id="recurList" class="tx-list"></div>
+  </div>
+</div>
+
+<div class="sheet-wrap hidden" id="formSheet">
+  <div class="sheet">
+    <div class="sheet-head"><h3 id="formTitle"></h3><button class="sheet-x" data-form-close>×</button></div>
+    <div id="formBody"></div>
+  </div>
+</div>
+
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
@@ -654,10 +748,14 @@ function normExercise(x={}){
   return ex;
 }
 const EXPENSE_KINDS=["fixed","variable","sinking"];
+// Rows posted by 自動記帳 carry which rule and which month they came from. Kept only when
+// present, so ordinary rows stay byte-identical to before; dropping these on a re-save
+// would break the duplicate check in runRecurring().
+const recurTag=x=>x.recurId?{recurId:String(x.recurId),recurMonth:String(x.recurMonth||"")}:{};
 // addedAt = when the row was actually created, so 最近新增 can show back-dated entries.
-function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:EXPENSE_KINDS.includes(x.kind)?x.kind:"variable",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0}}
-function normIncome(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"薪資",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0}}
-function normSave(x={}){return{id:x.id||id(),name:x.name||"",bag:x.bag||"",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0}}
+function normExpense(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"餐飲",kind:EXPENSE_KINDS.includes(x.kind)?x.kind:"variable",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0,...recurTag(x)}}
+function normIncome(x={}){return{id:x.id||id(),name:x.name||"",category:x.category||"薪資",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0,...recurTag(x)}}
+function normSave(x={}){return{id:x.id||id(),name:x.name||"",bag:x.bag||"",amount:+x.amount||0,note:x.note||"",addedAt:+x.addedAt||0,...recurTag(x)}}
 
 function norm(d={}){
   const foods=d.foods?d.foods.map(normFood):
@@ -1783,29 +1881,51 @@ function renderFinDonut(s){
 }
 
 // ---- transaction list ----
+// Rows are read-only. Editing happens in a sheet (tap a row, or swipe left on touch).
+// Every lookup is by entry id, never by render-time index, so two quick edits/deletes
+// on the same day can't hit the wrong row.
 const KIND_LABEL={fixed:"🏠 固定",variable:"🛍 變動",sinking:"🛡️ 預存"};
-function financeRowHtml(date,field,i,e){
-  const isSave=field==="saves",isIncome=field==="incomes";
-  const storedKind=isSave?"sinking":isIncome?"income":(e.kind||"variable");
-  const stored=isSave?e.bag:e.category;
-  const r=resolveCat(stored,storedKind);
-  const catList=catListFor(r.kind);
-  const catField=isSave?"bag":"category";
-  const cls=isIncome?"item-income":isSave?"item-save":"item-expense";
-  // An unresolvable value gets its own option instead of silently falling back to the
-  // first one — otherwise the row would display a category it was never filed under.
-  const opts=catList.map(c=>`<option ${r.category===c.name?"selected":""}>${esc(c.name)}</option>`).join("")
-    +(r.orphan?`<option selected>${esc(r.category)}</option>`:"");
-  const kindSel=(isSave||isIncome)?"":
-    `<select data-date="${date}" data-field="${field}" data-i="${i}" data-f="kind">${
-      ["variable","fixed","sinking"].map(k=>`<option value="${k}" ${r.kind===k?"selected":""}>${KIND_LABEL[k]}</option>`).join("")}</select>`;
-  return `<div class="item expense ${cls}${kindSel?" has-kind":""}${r.orphan?" row-orphan":""}">
-    <input data-date="${date}" data-field="${field}" data-i="${i}" data-f="name" value="${esc(e.name)}" placeholder="項目">
-    ${kindSel}
-    <select data-date="${date}" data-field="${field}" data-i="${i}" data-f="${catField}">${opts}</select>
-    <input data-date="${date}" data-field="${field}" data-i="${i}" data-f="amount" type="number" min="0" value="${e.amount||""}" placeholder="金額">
-    <input class="expense-note" data-date="${date}" data-field="${field}" data-i="${i}" data-f="note" value="${esc(e.note)}" placeholder="備註">
-    <button class="delete" data-deldate="${date}" data-delfield="${field}" data-del="${i}">×</button>
+const FLOWS=["variable","fixed","sinking","save","income"];
+const FLOW_META={
+  variable:{label:"變動支出",ico:"🛍"},fixed:{label:"固定支出",ico:"🏠"},
+  sinking:{label:"花預存金",ico:"🛡️"},save:{label:"存入預備金",ico:"🐖"},income:{label:"收入",ico:"💰"}
+};
+const fieldOfFlow=f=>f==="income"?"incomes":f==="save"?"saves":"expenses";
+const flowOf=(field,e)=>field==="incomes"?"income":field==="saves"?"save":(e.kind||"variable");
+const catKindOfFlow=f=>f==="save"?"sinking":f;
+const catOf=(field,e)=>field==="saves"?e.bag:e.category;
+function makeEntry(flow,o){
+  const base={id:o.id,name:o.name,amount:o.amount,note:o.note,addedAt:o.addedAt,recurId:o.recurId,recurMonth:o.recurMonth};
+  if(flow==="income")return normIncome({...base,category:o.category});
+  if(flow==="save")return normSave({...base,bag:o.category});
+  return normExpense({...base,category:o.category,kind:flow});
+}
+// The flow a row should be shown/edited as: an alias may have re-filed an expense
+// under another expense kind, but never across into income/saves.
+function shownFlow(field,e,r){
+  const f=flowOf(field,e);
+  return field==="expenses"&&EXPENSE_KINDS.includes(r.kind)?r.kind:f;
+}
+function findTx(date,field,txId){
+  const d=financeByDate.get(date); if(!d)return null;
+  const i=d[field].findIndex(x=>x.id===txId);
+  return i<0?null:{day:d,i,e:d[field][i]};
+}
+
+function txRowHtml(date,field,e,showDate){
+  const r=resolveCat(catOf(field,e),catKindOfFlow(flowOf(field,e)));
+  const m=FLOW_META[shownFlow(field,e,r)]||FLOW_META.variable;
+  const cls=field==="incomes"?"tx-income":field==="saves"?"tx-save":"tx-expense";
+  const sign=field==="incomes"?"+":field==="saves"?"":"−";
+  const sub=[showDate?date.slice(5).replace("-","/"):"",r.category+(r.orphan?" ⚠️":""),m.label,e.note].filter(Boolean).map(esc).join("・");
+  return `<div class="tx ${cls}${r.orphan?" tx-orphan":""}" data-date="${date}" data-field="${field}" data-id="${esc(e.id)}">
+    <div class="tx-actions"><button class="tx-act-edit" data-act="edit">編輯</button><button class="tx-act-del" data-act="del">刪除</button></div>
+    <div class="tx-main" data-act="open" role="button" tabindex="0">
+      <span class="tx-ico">${m.ico}</span>
+      <span class="tx-body"><span class="tx-name">${esc(e.name||r.category||"未命名")}${e.recurId?'<span class="badge">🔁 自動</span>':""}</span><span class="tx-sub">${sub}</span></span>
+      <span class="tx-amt">${sign}${money(+e.amount||0)}</span>
+      <span class="tx-pen" aria-hidden="true">✎</span>
+    </div>
   </div>`;
 }
 function renderFinanceList(){
@@ -1814,54 +1934,174 @@ function renderFinanceList(){
     .map(d=>d.date).sort().reverse();
   $("finList").innerHTML=dates.map(date=>{
     const entry=financeByDate.get(date);
-    const rows=[...entry.expenses.map((e,i)=>financeRowHtml(date,"expenses",i,e)),
-                ...entry.saves.map((e,i)=>financeRowHtml(date,"saves",i,e)),
-                ...entry.incomes.map((e,i)=>financeRowHtml(date,"incomes",i,e))].join("");
+    const rows=[...entry.expenses.map(e=>txRowHtml(date,"expenses",e)),
+                ...entry.saves.map(e=>txRowHtml(date,"saves",e)),
+                ...entry.incomes.map(e=>txRowHtml(date,"incomes",e))].join("");
     const net=dayNet(entry);
     return `<div class="fin-daygroup" data-group="${date}">
       <div class="heading">${esc(date)} <small class="${net<0?"net-negative":""}">${net>=0?"+":"−"}${money(Math.abs(net))}</small></div>
-      <div class="item-list">${rows}</div>
+      <div class="tx-list">${rows}</div>
     </div>`;
   }).join("")||'<div class="empty">這個月還沒有紀錄。</div>';
-  bindFinanceRowEvents();
+  bindTxList($("finList"),txHandlers);
 }
 // Day subtotal is 收入 − 支出. Saves are shown as their own rows but deliberately left
 // out of it, because the card above subtracts `locked` (planned) rather than actual saves.
 function dayNet(entry){
   return entry.incomes.reduce((s,x)=>s+(+x.amount||0),0)-entry.expenses.reduce((s,x)=>s+(+x.amount||0),0);
 }
-function bindFinanceRowEvents(){
-  $("finList").querySelectorAll("[data-f]").forEach(el=>el.oninput=el.onchange=()=>{
-    const{date,field,i,f}=el.dataset;
-    financeByDate.get(date)[field][+i][f]=el.type==="number"?(+el.value||0):el.value;
-    updateFinanceSubtotal(date);
-    if(categories)renderFinTotals(financeStats(finMonth()));
-    scheduleFinanceSave(date);
-    // switching 固定/變動/預存 changes which categories are valid, so rebuild the list
-    if(f==="kind")renderFinance();
-  });
-  $("finList").querySelectorAll("[data-deldate]").forEach(b=>b.onclick=async()=>{
-    const date=b.dataset.deldate,field=b.dataset.delfield;
-    financeByDate.get(date)[field].splice(+b.dataset.del,1);
-    await commitFinanceDay(date);
-    renderFinance();
-  });
+
+// ---- swipe-to-reveal rows (shared by the ledger list and the 自動記帳 page) ----
+const SWIPE_W=136;
+let swipeOpen=null;
+function closeSwipe(){
+  if(!swipeOpen)return;
+  swipeOpen.querySelector(".tx-main").style.transform="";
+  swipeOpen=null;
 }
-function updateFinanceSubtotal(date){
-  const net=dayNet(financeByDate.get(date));
-  const el=document.querySelector(`.fin-daygroup[data-group="${date}"] .heading small`);
-  if(el){el.textContent=(net>=0?"+":"−")+money(Math.abs(net));el.classList.toggle("net-negative",net<0)}
+document.addEventListener("touchstart",ev=>{if(swipeOpen&&!swipeOpen.contains(ev.target))closeSwipe()},{passive:true});
+function bindTxList(root,handlers){
+  root.querySelectorAll(".tx").forEach(tx=>{
+    const main=tx.querySelector(".tx-main");
+    let x0=0,y0=0,dx=0,base=0,mode=null;
+    main.addEventListener("touchstart",ev=>{
+      const t=ev.touches[0]; x0=t.clientX; y0=t.clientY; mode=null;
+      base=swipeOpen===tx?-SWIPE_W:0; dx=base;
+    },{passive:true});
+    main.addEventListener("touchmove",ev=>{
+      const t=ev.touches[0],mx=t.clientX-x0,my=t.clientY-y0;
+      if(!mode){
+        if(Math.abs(mx)<8&&Math.abs(my)<8)return;
+        mode=Math.abs(mx)>Math.abs(my)?"h":"v";
+        if(mode==="h")tx.classList.add("dragging");
+      }
+      if(mode!=="h")return;
+      dx=Math.min(0,Math.max(-SWIPE_W-24,base+mx));
+      main.style.transform=`translateX(${dx}px)`;
+    },{passive:true});
+    main.addEventListener("touchend",()=>{
+      if(mode!=="h")return;
+      tx.classList.remove("dragging");
+      tx._swipedAt=Date.now();   // swallow the click some browsers fire after a drag
+      if(dx<-SWIPE_W/2){main.style.transform=`translateX(${-SWIPE_W}px)`; if(swipeOpen&&swipeOpen!==tx)closeSwipe(); swipeOpen=tx}
+      else{main.style.transform=""; if(swipeOpen===tx)swipeOpen=null}
+    });
+    tx.addEventListener("click",ev=>{
+      const btn=ev.target.closest("[data-act]"); if(!btn)return;
+      if(Date.now()-(tx._swipedAt||0)<400)return;
+      const act=btn.dataset.act;
+      if(act==="open"&&swipeOpen){closeSwipe(); return}   // first tap just closes an open row
+      closeSwipe();
+      handlers[act==="edit"?"open":act]?.(tx.dataset,ev);
+    });
+    main.addEventListener("keydown",ev=>{if(ev.key==="Enter")handlers.open?.(tx.dataset,ev)});
+  });
 }
 
-const financeSaveTimers=new Map();
-function scheduleFinanceSave(date){
-  clearTimeout(financeSaveTimers.get(date));
-  financeSaveTimers.set(date,setTimeout(()=>commitFinanceDay(date),600));
+const txHandlers={
+  open:d=>openTxEditor(d.date,d.field,d.id),
+  del:async d=>{
+    const hit=findTx(d.date,d.field,d.id); if(!hit)return;
+    hit.day[d.field].splice(hit.i,1);
+    await commitFinanceDay(d.date);
+    renderFinance();
+    status("已刪除「"+(hit.e.name||catOf(d.field,hit.e)||"這筆")+"」",true);
+  }
+};
+
+// ---- form sheet (edit transaction / edit 自動記帳 rule) ----
+function openForm(title,html){
+  $("formTitle").textContent=title;
+  $("formBody").innerHTML=html;
+  $("formSheet").classList.remove("hidden");
 }
+function closeForm(){
+  $("formSheet").classList.add("hidden");
+  $("formBody").innerHTML="";
+}
+function flowChipsHtml(sel,flows){
+  return `<div class="flow-chips">${flows.map(f=>
+    `<button type="button" class="flow-chip${f===sel?" active":""}" data-flow="${f}">${FLOW_META[f].ico} ${FLOW_META[f].label}</button>`).join("")}</div>`;
+}
+function bindFlowChips(onPick){
+  $("formBody").querySelectorAll("[data-flow]").forEach(b=>b.onclick=()=>{
+    $("formBody").querySelectorAll("[data-flow]").forEach(x=>x.classList.toggle("active",x===b));
+    onPick(b.dataset.flow);
+  });
+}
+// A stored name that's no longer a live category gets its own option, so opening the
+// editor never silently re-files the row under whatever happens to sort first.
+function catOptionsHtml(flow,sel){
+  const list=catListFor(catKindOfFlow(flow));
+  const html=list.map(c=>`<option${c.name===sel?" selected":""}>${esc(c.name)}</option>`).join("")
+    +(sel&&!list.some(c=>c.name===sel)?`<option selected>${esc(sel)}</option>`:"");
+  return html||'<option value="">（請先到設定新增分類）</option>';
+}
+// Two-tap delete inside a sheet: the first tap arms it, the second one acts.
+function armDelete(btn,act){
+  btn.onclick=()=>{
+    if(btn.dataset.armed){act(); return}
+    btn.dataset.armed="1"; btn.textContent="再按一次刪除";
+    setTimeout(()=>{if(btn.isConnected){delete btn.dataset.armed; btn.textContent="刪除"}},3000);
+  };
+}
+
+function openTxEditor(date,field,txId){
+  const hit=findTx(date,field,txId); if(!hit)return;
+  const e=hit.e;
+  const r=resolveCat(catOf(field,e),catKindOfFlow(flowOf(field,e)));
+  let flow=shownFlow(field,e,r);
+  openForm("編輯紀錄",`
+    <div class="fsheet-amount"><span>$</span><input id="txAmt" type="number" inputmode="decimal" min="0" value="${e.amount||""}" placeholder="0"></div>
+    ${flowChipsHtml(flow,FLOWS)}
+    <div class="fgroup">
+      <div class="frow"><label>分類</label><select id="txCat">${catOptionsHtml(flow,r.category)}</select></div>
+      <div class="frow"><label>項目</label><input id="txName" value="${esc(e.name)}" placeholder="例：午餐"></div>
+      <div class="frow"><label>日期</label><input id="txDate" type="date" value="${date}"></div>
+      <div class="frow"><label>備註</label><input id="txNote" value="${esc(e.note)}" placeholder="選填"></div>
+    </div>
+    ${e.recurId?'<p class="fsheet-hint">🔁 這筆是自動記帳記的。在這裡修改只影響這一筆，不會改到規則。</p>':""}
+    <p class="fsheet-hint warn hidden" id="txErr"></p>
+    <div class="fsheet-actions"><button class="btn-danger" id="txDel">刪除</button><button class="btn" id="txSave">儲存</button></div>`);
+  bindFlowChips(f=>{flow=f; $("txCat").innerHTML=catOptionsHtml(f,"")});
+  armDelete($("txDel"),async()=>{closeForm(); await txHandlers.del({date,field,id:txId})});
+  $("txSave").onclick=async()=>{
+    const err=m=>{$("txErr").textContent=m; $("txErr").classList.remove("hidden")};
+    const amount=+$("txAmt").value||0;
+    if(!amount)return err("請輸入金額");
+    const category=$("txCat").value;
+    if(!category)return err("這個類型還沒有分類，請先到設定新增");
+    const newDate=$("txDate").value||date;
+    const cur=findTx(date,field,txId);
+    if(!cur){closeForm(); return}
+    const updated=makeEntry(flow,{...cur.e,name:$("txName").value.trim(),amount,category,note:$("txNote").value.trim()});
+    const newField=fieldOfFlow(flow);
+    $("txSave").disabled=true;
+    if(newDate===date){
+      if(newField===field)cur.day[field][cur.i]=updated;
+      else{cur.day[field].splice(cur.i,1); cur.day[newField].push(updated)}
+      await commitFinanceDay(date);
+    }else{
+      // Write the destination day first: if the second write fails the row is
+      // duplicated (visible, fixable) rather than lost.
+      await ensureYear(newDate.slice(0,4));
+      const target=await getOrLoadDay(newDate);
+      target[newField].push(updated);
+      await commitFinanceDay(newDate);
+      cur.day[field].splice(cur.i,1);
+      await commitFinanceDay(date);
+    }
+    closeForm(); renderFinance();
+    status(newDate.slice(0,7)===finMonth()?"已更新 ✿":`已更新，這筆移到 ${newDate.slice(0,7)} 了`,true);
+  };
+}
+
 async function commitFinanceDay(date){
   const entry=financeByDate.get(date);
+  // `date` must be written too: every range query filters on it, so a day doc created
+  // from the ledger alone (no diary that day) would otherwise never load again.
   await setDoc(doc(db,"users",user.uid,"journal",date),
-    {expenses:entry.expenses,incomes:entry.incomes,saves:entry.saves,updatedAt:serverTimestamp()},{merge:true});
+    {date,expenses:entry.expenses,incomes:entry.incomes,saves:entry.saves,updatedAt:serverTimestamp()},{merge:true});
   if(data&&data.date===date){data.expenses=entry.expenses;data.incomes=entry.incomes;data.saves=entry.saves; totals()}
 }
 async function getOrLoadDay(date){
@@ -2179,6 +2419,242 @@ async function balanceToBank(){
   renderFinTotals(financeStats(finMonth()));
 }
 
+// ---- 自動記帳 (recurring entries) ----
+// Rules live in users/{uid}/settings/recurring = {items:[rule]} (covered by the existing
+// settings/{docId} Firestore rule). Each posted row is an ordinary journal entry tagged
+// {recurId, recurMonth}; nothing else in the app needs to know it was automatic.
+// Two guards against double-posting: `lastPosted` on the rule (so deleting an auto row
+// does NOT bring it back), and a recurId+recurMonth scan of the freshly read day doc
+// (covers a crash between the two writes, and two devices running at once).
+let recurCfg=null,recurLoadFailed=false,recurRunning=null;
+const MONTH_RE=/^\d{4}-\d{2}$/;
+const addMonths=(m,n)=>{const d=new Date(+m.slice(0,4),+m.slice(5,7)-1+n,1);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")};
+const recurDate=(m,day)=>{const dim=new Date(+m.slice(0,4),+m.slice(5,7),0).getDate();return m+"-"+String(Math.min(day,dim)).padStart(2,"0")};
+function normRecur(x={}){return{
+  id:x.id||id(),name:x.name||"",amount:+x.amount||0,
+  flow:FLOWS.includes(x.flow)?x.flow:"fixed",category:x.category||"",
+  day:Math.min(31,Math.max(1,Math.round(+x.day)||1)),note:x.note||"",
+  startMonth:MONTH_RE.test(x.startMonth||"")?x.startMonth:today().slice(0,7),
+  endMonth:MONTH_RE.test(x.endMonth||"")?x.endMonth:"",
+  active:x.active!==false,
+  lastPosted:MONTH_RE.test(x.lastPosted||"")?x.lastPosted:""
+}}
+// The months a rule still owes, oldest first, capped at 24 so a far-past start can't
+// flood the ledger. Stops at the first date that hasn't arrived yet.
+function pendingRuns(r,limit=24){
+  const t=today(),tm=t.slice(0,7),out=[];
+  let m=r.lastPosted&&addMonths(r.lastPosted,1)>r.startMonth?addMonths(r.lastPosted,1):r.startMonth;
+  const floor=addMonths(tm,-limit+1); if(m<floor)m=floor;
+  while(m<=tm&&(!r.endMonth||m<=r.endMonth)){
+    const date=recurDate(m,r.day);
+    if(date>t)break;
+    out.push({m,date}); m=addMonths(m,1);
+  }
+  return out;
+}
+function nextRunDate(r){
+  const t=today();
+  let m=r.lastPosted&&addMonths(r.lastPosted,1)>r.startMonth?addMonths(r.lastPosted,1):r.startMonth;
+  for(let i=0;i<36;i++,m=addMonths(m,1)){
+    if(r.endMonth&&m>r.endMonth)return"";
+    const d=recurDate(m,r.day); if(d>t)return d;
+  }
+  return"";
+}
+
+async function loadRecurring(){
+  if(!user)return;
+  try{
+    const s=await getDoc(doc(db,"users",user.uid,"settings","recurring"));
+    recurCfg={items:((s.exists()&&s.data().items)||[]).map(normRecur)};
+    recurLoadFailed=false;
+  }catch(e){
+    recurCfg={items:[]}; recurLoadFailed=true;
+  }
+  renderRecurSummary();
+}
+async function saveRecurCfg(){
+  // Never write after a failed load: it would replace the real rules with an empty list.
+  if(recurLoadFailed){status("自動記帳設定讀取失敗，請重新整理後再試"); return false}
+  try{
+    await setDoc(doc(db,"users",user.uid,"settings","recurring"),{items:recurCfg.items,updatedAt:serverTimestamp()},{merge:true});
+    return true;
+  }catch(e){
+    status("自動記帳儲存失敗"); return false;
+  }
+}
+
+// Fire-and-forget from callers: setDoc doesn't resolve while offline, so awaiting this
+// on an open path would hang the page. Returns how many rows were posted.
+function runRecurring(){
+  if(recurRunning)return recurRunning;
+  recurRunning=(async()=>{
+    if(!user||!categories)return 0;
+    await loadRecurring();   // fresh lastPosted, in case another device just ran
+    if(recurLoadFailed)return 0;
+    let posted=0,changed=false;
+    for(const r of recurCfg.items){
+      if(!r.active||!r.amount||!r.category)continue;
+      for(const{m,date}of pendingRuns(r)){
+        await ensureYear(date.slice(0,4));
+        const snap=await getDoc(doc(db,"users",user.uid,"journal",date));
+        const entry=norm(snap.exists()?snap.data():{date});
+        financeByDate.set(date,entry);
+        const dup=[...entry.expenses,...entry.incomes,...entry.saves].some(x=>x.recurId===r.id&&x.recurMonth===m);
+        if(!dup){
+          entry[fieldOfFlow(r.flow)].push(makeEntry(r.flow,{name:r.name,amount:r.amount,category:r.category,note:r.note,addedAt:Date.now(),recurId:r.id,recurMonth:m}));
+          await commitFinanceDay(date);
+          posted++;
+        }
+        r.lastPosted=m; changed=true;
+      }
+    }
+    if(changed)await saveRecurCfg();
+    return posted;
+  })().catch(()=>0).finally(()=>{recurRunning=null});
+  return recurRunning;
+}
+function runRecurringAndReport(){
+  runRecurring().then(n=>{
+    if(!n)return;
+    status(`🔁 已自動記入 ${n} 筆固定項目`,true);
+    if($("financePane").classList.contains("active"))renderFinance();
+    if($("recurPage").classList.contains("open"))renderRecurPage();
+  });
+}
+
+const recurMonthlyOut=()=>(recurCfg?recurCfg.items:[]).filter(r=>r.active&&r.flow!=="income").reduce((s,r)=>s+r.amount,0);
+function renderRecurSummary(){
+  if(!recurCfg)return;
+  const on=recurCfg.items.filter(r=>r.active).length;
+  $("recurSummary").textContent=recurCfg.items.length
+    ?`${on} 項啟用中・每月約 ${money(recurMonthlyOut())}`
+    :"每月到了指定日期就自動幫你記一筆";
+}
+function recurRowHtml(r){
+  const live=!r.category||isLiveCat(r.category,catKindOfFlow(r.flow));
+  const m=FLOW_META[r.flow];
+  const next=r.active?nextRunDate(r):"";
+  const when=`每月 ${r.day} 日・`+(next?"下次 "+next.slice(5).replace("-","/"):(r.active?"已結束":"已暫停"));
+  const sub=esc(when)+"<br>"+[r.category+(live?"":" ⚠️"),m.label].map(esc).join("・");
+  const cls=r.flow==="income"?"tx-income":r.flow==="save"?"tx-save":"tx-expense";
+  return `<div class="tx ${cls}${r.active?"":" recur-off"}" data-rid="${esc(r.id)}">
+    <div class="tx-actions"><button class="tx-act-edit" data-act="edit">編輯</button><button class="tx-act-del" data-act="del">刪除</button></div>
+    <div class="tx-main" data-act="open" role="button" tabindex="0">
+      <span class="tx-ico">${m.ico}</span>
+      <span class="tx-body"><span class="tx-name">${esc(r.name||r.category||"未命名")}</span><span class="tx-sub">${sub}</span></span>
+      <span class="tx-amt">${r.flow==="income"?"+":r.flow==="save"?"":"−"}${money(r.amount)}</span>
+      <button class="switch${r.active?" on":""}" data-act="toggle" aria-label="${r.active?"暫停":"啟用"}"></button>
+    </div>
+  </div>`;
+}
+function renderRecurPage(){
+  if(!recurCfg)return;
+  $("recurMonthly").textContent=money(recurMonthlyOut());
+  const items=[...recurCfg.items].sort((a,b)=>(b.active-a.active)||(a.day-b.day));
+  $("recurList").innerHTML=items.map(recurRowHtml).join("")
+    ||'<div class="empty" style="text-align:center;padding:24px 0">還沒有自動記帳。<br>按右上角「＋ 新增」，把 Netflix、房租、保費放進來吧。</div>';
+  bindTxList($("recurList"),recurHandlers);
+  renderRecurSummary();
+}
+const findRule=rid=>recurCfg.items.find(r=>r.id===rid);
+const recurHandlers={
+  open:d=>openRecurEditor(d.rid),
+  toggle:async d=>{
+    const r=findRule(d.rid); if(!r)return;
+    r.active=!r.active;
+    // Resuming must not back-fill the months it sat paused; this month still counts.
+    if(r.active){const prev=addMonths(today().slice(0,7),-1); if(!r.lastPosted||r.lastPosted<prev)r.lastPosted=prev}
+    renderRecurPage();
+    if(await saveRecurCfg()){status(r.active?"已啟用「"+r.name+"」":"已暫停「"+r.name+"」",true); if(r.active)runRecurringAndReport()}
+  },
+  del:async d=>{
+    const r=findRule(d.rid); if(!r)return;
+    recurCfg.items=recurCfg.items.filter(x=>x!==r);
+    renderRecurPage();
+    if(await saveRecurCfg())status("已刪除規則「"+r.name+"」，已記過的帳不受影響",true);
+  }
+};
+
+function openRecurPage(){
+  if(!user||!categories)return;
+  renderRecurPage();
+  $("recurPage").classList.add("open"); $("recurPage").setAttribute("aria-hidden","false");
+  document.body.style.overflow="hidden";
+  history.pushState({recur:1},"");   // so the phone's back gesture closes the page
+  loadRecurring().then(renderRecurPage);
+}
+function closeRecurPage(fromPop){
+  if(!$("recurPage").classList.contains("open"))return;
+  closeForm(); closeSwipe();
+  $("recurPage").classList.remove("open"); $("recurPage").setAttribute("aria-hidden","true");
+  document.body.style.overflow="";
+  if(!fromPop&&history.state&&history.state.recur)history.back();
+  renderRecurSummary();
+}
+window.addEventListener("popstate",()=>{
+  if(!$("formSheet").classList.contains("hidden")){closeForm(); if($("recurPage").classList.contains("open"))history.pushState({recur:1},""); return}
+  closeRecurPage(true);
+});
+
+function openRecurEditor(rid){
+  const existing=rid?findRule(rid):null;
+  const tm=today().slice(0,7),tday=+today().slice(8,10);
+  const r=existing?{...existing}:normRecur({
+    flow:"fixed",day:tday,
+    category:(categories.fixed.find(c=>c.name==="訂閱")||categories.fixed[0]||{}).name||"",
+    // the default day is today, which has already "arrived" — start next month so
+    // saving a new rule never surprises with an immediate entry
+    startMonth:addMonths(tm,1)
+  });
+  const dayOpts=Array.from({length:31},(_,i)=>`<option value="${i+1}"${i+1===r.day?" selected":""}>${i+1} 日</option>`).join("");
+  openForm(existing?"編輯自動記帳":"新增自動記帳",`
+    <div class="fsheet-amount"><span>$</span><input id="rcAmt" type="number" inputmode="decimal" min="0" value="${r.amount||""}" placeholder="0"></div>
+    ${flowChipsHtml(r.flow,["fixed","variable","sinking","save","income"])}
+    <div class="fgroup">
+      <div class="frow"><label>名稱</label><input id="rcName" value="${esc(r.name)}" placeholder="例：Netflix"></div>
+      <div class="frow"><label>分類</label><select id="rcCat">${catOptionsHtml(r.flow,r.category)}</select></div>
+      <div class="frow"><label>每月</label><select id="rcDay">${dayOpts}</select></div>
+    </div>
+    <div class="fgroup">
+      <div class="frow"><label>開始月份</label><input id="rcStart" type="month" value="${r.startMonth}"></div>
+      <div class="frow"><label>結束月份</label><input id="rcEnd" type="month" value="${r.endMonth}" placeholder="不限（選填）"></div>
+      <div class="frow"><label>備註</label><input id="rcNote" value="${esc(r.note)}" placeholder="選填"></div>
+    </div>
+    <p class="fsheet-hint" id="rcHint"></p>
+    <div class="fsheet-actions">${existing?'<button class="btn-danger" id="rcDel">刪除</button>':""}<button class="btn" id="rcSave">儲存</button></div>`);
+  let flow=r.flow;
+  const draft=()=>normRecur({...r,flow,day:+$("rcDay").value,startMonth:$("rcStart").value||tm,endMonth:$("rcEnd").value});
+  const hint=()=>{
+    const d=draft(),runs=pendingRuns(d),next=nextRunDate(d),h=$("rcHint");
+    h.classList.toggle("warn",runs.length>0);
+    h.textContent=d.endMonth&&d.endMonth<d.startMonth?"⚠️ 結束月份比開始月份早，這條規則不會記任何一筆"
+      :runs.length?`⚠️ 儲存後會立刻補記 ${runs.length} 筆（${runs[0].date}${runs.length>1?" 起":""}）。如果已經手動記過，把「開始月份」改到下個月。`
+      :next?`下一次會在 ${next} 自動記帳`:"這條規則已經結束，不會再記帳";
+  };
+  bindFlowChips(f=>{flow=f; $("rcCat").innerHTML=catOptionsHtml(f,"")});
+  ["rcDay","rcStart","rcEnd"].forEach(k=>$(k).addEventListener("input",hint));
+  ["rcDay","rcStart","rcEnd"].forEach(k=>$(k).addEventListener("change",hint));
+  hint();
+  if(existing)armDelete($("rcDel"),()=>{closeForm(); recurHandlers.del({rid})});
+  $("rcSave").onclick=async()=>{
+    const err=m=>{$("rcHint").textContent=m; $("rcHint").classList.add("warn")};
+    const amount=+$("rcAmt").value||0;
+    if(!amount)return err("請輸入金額");
+    const category=$("rcCat").value;
+    if(!category)return err("這個類型還沒有分類，請先到設定新增");
+    const rule=normRecur({...draft(),name:$("rcName").value.trim()||category,amount,category,note:$("rcNote").value.trim()});
+    // Moving the start later than what was already posted is fine; moving it earlier
+    // does not back-fill (lastPosted wins), which is the safe direction.
+    if(existing)Object.assign(existing,rule); else recurCfg.items.push(rule);
+    $("rcSave").disabled=true;
+    if(!await saveRecurCfg()){$("rcSave").disabled=false; return}
+    closeForm(); renderRecurPage();
+    status(existing?"已更新規則 ✿":"已新增自動記帳 ✿",true);
+    runRecurringAndReport();
+  };
+}
+
 // ---- 記帳 page ----
 function updateFinanceCategoryOptions(){
   if(!categories)return;
@@ -2195,17 +2671,12 @@ function updateFinanceCategoryOptions(){
 // fall back to their date, which keeps the old ordering for existing data.
 function renderFinRecent(){
   const all=[];
-  const add=(d,e,tag,name,amount)=>all.push({date:d.date,tag,name,amount,
-    key:e.addedAt||Date.parse(d.date+"T00:00:00")||0});
-  daysIn(finMonth()).forEach(d=>{
-    d.expenses.forEach(e=>add(d,e,e.kind==="sinking"?"🛡️ 花預存":e.kind==="fixed"?"🏠 固定":"🛍 變動",e.name||e.category,-(+e.amount||0)));
-    d.saves.forEach(e=>add(d,e,"🐖 存入",e.name||e.bag,+e.amount||0));
-    d.incomes.forEach(e=>add(d,e,"💰 收入",e.name||e.category,+e.amount||0));
-  });
+  daysIn(finMonth()).forEach(d=>["expenses","saves","incomes"].forEach(field=>d[field].forEach(e=>
+    all.push({date:d.date,field,e,key:e.addedAt||Date.parse(d.date+"T00:00:00")||0}))));
   all.sort((a,b)=>b.key-a.key);
-  $("finRecent").innerHTML=all.slice(0,5).map(x=>
-    `<div class="summary-row"><span>${esc(x.date)}　${x.tag}　${esc(x.name)}</span><b>${x.amount<0?"−":"+"}${money(Math.abs(x.amount))}</b></div>`
-  ).join("")||'<div class="empty">這個月還沒有紀錄。</div>';
+  $("finRecent").innerHTML=all.length?`<div class="tx-list">${all.slice(0,5).map(x=>txRowHtml(x.date,x.field,x.e,true)).join("")}</div>`
+    :'<div class="empty">這個月還沒有紀錄。</div>';
+  bindTxList($("finRecent"),txHandlers);
 }
 
 // ---- orchestration ----
@@ -2231,6 +2702,7 @@ async function openFinance(){
   if(!$("assetMonth").value)$("assetMonth").value=$("finMonth").value;
   if(!$("finDate").value)$("finDate").value=today();
   await loadFinanceData();
+  runRecurringAndReport();
   fillAssetForm($("assetMonth").value);
   renderFinance();
 }
@@ -2248,7 +2720,7 @@ function showFinancePage(subId){
   if(!categories)return;
   if(subId==="finHome")renderFinDonut(financeStats(finMonth()));
   if(subId==="finAssets")renderAssetsPage();
-  if(subId==="finSettings"){renderCategorySettings(); renderAccountSettings()}
+  if(subId==="finSettings"){renderCategorySettings(); renderAccountSettings(); renderRecurSummary()}
 }
 
 // ---------- calendar ----------
@@ -2367,6 +2839,10 @@ $("saveAssets").onclick=saveAssets;
 $("deleteAssets").onclick=deleteAssets;
 $("finToReserve").onclick=balanceToReserve;
 $("finToBank").onclick=balanceToBank;
+$("openRecur").onclick=openRecurPage;
+$("recurBack").onclick=()=>closeRecurPage(false);
+$("recurAdd").onclick=()=>openRecurEditor(null);
+$("formSheet").onclick=e=>{if(e.target===$("formSheet")||e.target.closest("[data-form-close]"))closeForm()};
 
 $("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"; document.body.classList.add("settings-open")};
 $("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"; document.body.classList.remove("settings-open")};
@@ -2407,6 +2883,7 @@ onAuthStateChanged(auth,async u=>{
   // fire-and-forget: a slow or blocked network must never delay sign-in
   if(Date.now()-accountsCfg.ratesUpdatedAt>RATE_MAX_AGE)fetchRates(false);
   await day();
+  runRecurringAndReport();
 });
 </script>
 </body></html>
