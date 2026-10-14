@@ -2517,7 +2517,7 @@ function runRecurring(){
 function runRecurringAndReport(){
   runRecurring().then(n=>{
     if(!n)return;
-    status(`🔁 已自動記入 ${n} 筆固定項目`,true);
+    status(`🔁 已自動記入 ${n} 筆`,true);
     if($("financePane").classList.contains("active"))renderFinance();
     if($("recurPage").classList.contains("open"))renderRecurPage();
   });
