@@ -279,7 +279,7 @@ textarea{min-height:80px;resize:vertical}
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px dashed var(--line);font-size:13px}
 .summary-row:last-child{border-bottom:0}
 .summary-row b{font-size:15px;color:var(--deep)}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
 .dow{text-align:center;font-size:12px;font-weight:700;color:#9a8673;padding-bottom:2px}
 .cal-day{min-height:96px;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px;text-align:left;
   display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -293,7 +293,7 @@ textarea{min-height:80px;resize:vertical}
 .cal-kw{font-size:11px;font-weight:700;color:var(--deep);background:#e8f2e4;border-radius:6px;padding:2px 5px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;align-self:flex-start}
 /* fixed slots: 1 運動 / 2 睡眠 / 3 熱量 — an unmet slot stays as empty space, never collapses */
-.marks{display:grid;grid-template-columns:repeat(3,1fr);margin-top:auto;text-align:center}
+.marks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:auto;justify-items:center}
 .calendar-mark{display:block;font-size:15px;line-height:1.2}
 .kw-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .kw-row label{flex:none;font-size:12px;font-weight:700;color:#8a7460}
@@ -340,8 +340,9 @@ textarea{min-height:80px;resize:vertical}
   .cal-day{min-height:84px;padding:5px 3px;border-radius:10px}
   .number{font-size:12px}
   .face{font-size:14px}
-  .cal-kw{font-size:9px;padding:1px 3px;border-radius:4px}
-  .calendar-mark{font-size:11px}
+  .cal-kw{font-size:9px;line-height:1.25;padding:1px 2px;border-radius:4px;white-space:normal;word-break:break-all;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .calendar-mark{font-size:9px;letter-spacing:-1px}
   .tabs{width:100%;justify-content:space-between;gap:3px;padding:4px}
   .tab{padding:8px 6px;font-size:11px}
   .datebar{flex-wrap:wrap}
