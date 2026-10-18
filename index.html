@@ -281,14 +281,22 @@ textarea{min-height:80px;resize:vertical}
 .summary-row b{font-size:15px;color:var(--deep)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
 .dow{text-align:center;font-size:12px;font-weight:700;color:#9a8673;padding-bottom:2px}
-.cal-day{min-height:86px;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:9px;text-align:left}
+.cal-day{min-height:96px;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px;text-align:left;
+  display:flex;flex-direction:column;gap:3px;min-width:0}
 .cal-day.muted{opacity:.38}
 .cal-day.has-note{border-color:#95bd8c;background:#f3f9f0}
 .cal-day.selected{outline:2px solid var(--sun)}
+.cal-top{display:flex;align-items:center;justify-content:space-between;gap:2px}
 .number{font-size:15px;font-weight:700}
-.face{display:block;font-size:22px;margin-top:6px}
-.marks{display:flex;gap:4px;margin-top:5px;flex-wrap:wrap}
-.calendar-mark{display:block;font-size:15px;line-height:1}
+.face{font-size:20px;line-height:1}
+/* one short line, so a long keyword can never push the marks row out of place */
+.cal-kw{font-size:11px;font-weight:700;color:var(--deep);background:#e8f2e4;border-radius:6px;padding:2px 5px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;align-self:flex-start}
+/* fixed slots: 1 運動 / 2 睡眠 / 3 熱量 — an unmet slot stays as empty space, never collapses */
+.marks{display:grid;grid-template-columns:repeat(3,1fr);margin-top:auto;text-align:center}
+.calendar-mark{display:block;font-size:15px;line-height:1.2}
+.kw-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.kw-row label{flex:none;font-size:12px;font-weight:700;color:#8a7460}
 .entry-preview{margin-top:14px;background:#f7efe1;border-radius:15px;padding:13px;font-size:13px;line-height:1.7}
 .footer{text-align:center;font-size:11px;opacity:.6;margin:19px}
 .empty{font-size:12px;color:#9b8877;padding:5px 0}
@@ -328,10 +336,12 @@ textarea{min-height:80px;resize:vertical}
   .exercise-main{grid-template-columns:1fr 90px 30px}
   .chart{height:195px}
   .goals-grid{grid-template-columns:repeat(2,1fr)}
-  .cal-day{min-height:72px;padding:6px}
-  .number{font-size:13px}
-  .face{font-size:19px;margin-top:4px}
-  .calendar-mark{font-size:13px}
+  .cal-grid{gap:4px}
+  .cal-day{min-height:84px;padding:5px 3px;border-radius:10px}
+  .number{font-size:12px}
+  .face{font-size:14px}
+  .cal-kw{font-size:9px;padding:1px 3px;border-radius:4px}
+  .calendar-mark{font-size:11px}
   .tabs{width:100%;justify-content:space-between;gap:3px;padding:4px}
   .tab{padding:8px 6px;font-size:11px}
   .datebar{flex-wrap:wrap}
@@ -413,7 +423,9 @@ textarea{min-height:80px;resize:vertical}
       <button class="add" id="addExercise">＋ 新增運動</button>
     </section>
 
-    <section class="section wide"><h2 class="heading">📝 小小日記</h2><textarea id="note" placeholder="今天有什麼想記下來的事？"></textarea></section>
+    <section class="section wide"><h2 class="heading">📝 小小日記</h2>
+      <div class="kw-row"><label for="keyword">🏷 今日關鍵字</label><input id="keyword" maxlength="12" placeholder="例：爬山、看展、加班"></div>
+      <textarea id="note" placeholder="今天有什麼想記下來的事？"></textarea></section>
   </div>
   <div class="save-row"><span id="status" class="status">修改會自動儲存</span><button id="save" class="btn">儲存今天的手帳 ✿</button></div>
 </div>
@@ -644,7 +656,7 @@ textarea{min-height:80px;resize:vertical}
 
 <div class="pane" id="calendarPane">
   <div class="calendar-head"><button class="nav" id="prevMonth">‹</button><h2 id="calendarTitle">日記曆</h2><button class="nav" id="nextMonth">›</button></div>
-  <p class="legend-note">🏃 有運動・🌙 睡眠達標・🥗 熱量達標</p>
+  <p class="legend-note">🏷 每日關鍵字・圖示固定位置：① 🏃 有運動　② 🌙 睡眠達標　③ 🥗 熱量達標</p>
   <div id="calendar" class="cal-grid"></div>
   <div class="entry-preview" id="entryPreview">點選日期回顧那天的小日記。</div>
 </div>
@@ -767,7 +779,7 @@ function norm(d={}){
     ((d.expenseAmount||d.expenseNote)?[normExpense({name:d.expenseNote,category:d.expenseCategory,amount:d.expenseAmount})]:[]);
   const incomes=d.incomes?d.incomes.map(normIncome):[];
   const saves=d.saves?d.saves.map(normSave):[];
-  return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",water:+d.water||0,foods,exercises,expenses,incomes,saves};
+  return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",keyword:d.keyword||"",water:+d.water||0,foods,exercises,expenses,incomes,saves};
 }
 function normGoals(g={}){return{calorie:+g.calorie||DEFAULT_GOALS.calorie,protein:+g.protein||DEFAULT_GOALS.protein,water:+g.water||DEFAULT_GOALS.water,sleep:+g.sleep||DEFAULT_GOALS.sleep}}
 
@@ -1275,6 +1287,7 @@ function exercises(){
 function render(){
   $("sleep").value=data.sleep||"";
   $("note").value=data.note||"";
+  $("keyword").value=data.keyword||"";
   document.querySelectorAll(".mood").forEach(b=>b.classList.toggle("active",+b.dataset.mood===data.mood));
   foods(); exercises(); totals();
 }
@@ -2734,20 +2747,20 @@ async function calendar(){
   $("calendarTitle").textContent=calendarMonth.getFullYear()+" 年 "+(calendarMonth.getMonth()+1)+" 月";
   for(let i=0;i<o;i++)h+='<div class="cal-day muted"></div>';
   for(let i=1;i<=days;i++){
-    const k=m+"-"+String(i).padStart(2,"0"),x=mp[k],active=x&&(x.note||x.mood||x.exercises.length);
+    const k=m+"-"+String(i).padStart(2,"0"),x=mp[k],active=x&&(x.note||x.keyword||x.mood||x.exercises.length);
     const dayCal=x?x.foods.reduce((a,v)=>a+(+v.cal||0),0):0;
     const sleepMet=x&&x.sleep>0&&x.sleep>=(goals.sleep||7);
     const dietMet=x&&dayCal>0&&dayCal<=goals.calorie;
     h+=`<button class="cal-day ${active?"has-note":""} ${k===$("date").value?"selected":""}" data-k="${k}">
-      <span class="number">${i}</span>
-      ${x?.mood?`<span class="face">${FACE[x.mood]}</span>`:""}
-      <span class="marks">${x?.exercises.length?'<span class="calendar-mark">🏃</span>':""}${sleepMet?'<span class="calendar-mark">🌙</span>':""}${dietMet?'<span class="calendar-mark">🥗</span>':""}</span>
+      <span class="cal-top"><span class="number">${i}</span>${x?.mood?`<span class="face">${FACE[x.mood]}</span>`:""}</span>
+      ${x?.keyword?`<span class="cal-kw" title="${esc(x.keyword)}">${esc(x.keyword)}</span>`:""}
+      <span class="marks"><span class="calendar-mark">${x?.exercises.length?"🏃":""}</span><span class="calendar-mark">${sleepMet?"🌙":""}</span><span class="calendar-mark">${dietMet?"🥗":""}</span></span>
     </button>`;
   }
   $("calendar").innerHTML=h;
   $("calendar").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
     const x=mp[b.dataset.k];
-    $("entryPreview").innerHTML=x?`<b>${b.dataset.k}　${FACE[x.mood]||""}${x.exercises.length?"　🏃 有運動":""}</b><br>${esc(x.note||"這天沒有留下日記文字。")}`:"這天還沒有寫日記。";
+    $("entryPreview").innerHTML=x?`<b>${b.dataset.k}　${FACE[x.mood]||""}${x.exercises.length?"　🏃 有運動":""}</b>${x.keyword?`<br>🏷 <b>${esc(x.keyword)}</b>`:""}<br>${esc(x.note||"這天沒有留下日記文字。")}`:"這天還沒有寫日記。";
   });
 }
 
@@ -2764,6 +2777,7 @@ $("scanSheet").onclick=e=>{
 $("addExercise").onclick=()=>{data.exercises.push(normExercise()); render(); save()};
 $("sleep").oninput=e=>{data.sleep=+e.target.value||0; schedule()};
 $("note").oninput=e=>{data.note=e.target.value; schedule()};
+$("keyword").oninput=e=>{data.keyword=e.target.value.trim(); schedule()};
 $("water250").onclick=()=>{data.water=(+data.water||0)+250; totals(); waterCups(data.water); save()};
 $("water500").onclick=()=>{data.water=(+data.water||0)+500; totals(); waterCups(data.water); save()};
 $("waterReset").onclick=()=>{data.water=0; totals(); waterCups(0); save()};
