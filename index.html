@@ -112,6 +112,74 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .acc-archived{opacity:.55}
 .neg{color:var(--coral)}
 
+/* 體態 section: same bottom-nav pattern as 財務, own page class so the two never toggle each other */
+.bd-page{display:none}
+.bd-page.active{display:flex;flex-direction:column;gap:14px}
+.bd-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 12px}
+.bd-hero div{background:var(--cream);border-radius:14px;padding:10px 8px;text-align:center}
+.bd-hero span{display:block;font-size:10px;font-weight:700;color:#8a7460}
+.bd-hero b{font-size:18px;color:var(--deep);white-space:nowrap}
+.bd-hero small{display:block;font-size:10px;color:#9b8877}
+.bd-bar{position:relative;height:12px;background:#e2d6c4;border-radius:9px;overflow:hidden;margin:6px 0 4px}
+.bd-bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--leaf),var(--deep));border-radius:9px;transition:width .4s}
+.bd-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:#9b8877}
+.bd-note{font-size:11px;color:#9b8877;margin:6px 0 0;line-height:1.6}
+.bd-trend{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.bd-trend b{font-size:26px;color:var(--deep)}
+.bd-pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}
+.bd-pill.good{background:#e5f1e5;color:var(--deep)}
+.bd-pill.flat{background:#fdf6e3;color:#8a6a1f}
+.bd-pill.bad{background:#fbe6e0;color:var(--coral)}
+.bd-pill.none{background:#f1ebe0;color:#9b8877}
+.bd-range{position:relative;height:26px;margin:12px 4px 6px;background:#f1ebe0;border-radius:8px}
+.bd-range .band{position:absolute;top:0;bottom:0;background:#cfe6cb;border-radius:8px}
+.bd-range .dot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--deep);box-shadow:0 0 0 3px white}
+.bd-range-labels{display:flex;justify-content:space-between;font-size:10px;color:#9b8877;margin:0 4px}
+.bd-tasks{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+.bd-tasks li{font-size:13px;display:flex;gap:8px;align-items:flex-start}
+.bd-week{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.bd-week div{background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:9px 11px}
+.bd-week span{display:block;font-size:11px;color:#8a7460;font-weight:700}
+.bd-week b{font-size:17px}
+.bd-week small{font-size:11px;color:#9b8877;font-weight:400}
+.check-list{display:grid;gap:6px}
+.check-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:9px 11px;font-size:13px}
+.check-item .box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid #d9cdb9;display:grid;place-items:center;font-size:13px;color:white}
+.check-item.done .box{background:var(--leaf);border-color:var(--leaf)}
+.check-item small{margin-left:auto;font-size:11px;color:#9b8877}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:8px 12px;border-radius:999px;background:#f3ebdd;color:#8a7460;font-size:13px;font-weight:700}
+.chip.active{background:var(--deep);color:white}
+.bd-weight{display:flex;align-items:center;gap:8px;background:var(--cream);border-radius:16px;padding:12px 16px}
+.bd-weight input{border:0;background:transparent;font-size:34px;font-weight:700;padding:0;text-align:center}
+.bd-weight span{font-size:18px;font-weight:700;color:#8a7460}
+.bd-q{display:grid;gap:6px;margin-top:12px}
+.bd-q>label{font-size:12px;font-weight:700;color:#8a7460}
+.tpl{display:grid;gap:6px}
+.tpl-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 2px;border-bottom:1px dashed var(--line)}
+.tpl-row:last-child{border-bottom:0}
+.tpl-row span{color:#9b8877;font-size:12px;white-space:nowrap}
+.lift-tag{font-size:10px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px}
+.lift-tag.up{background:#e5f1e5;color:var(--deep)}
+.lift-tag.down{background:#fbe6e0;color:var(--coral)}
+.lift-tag.add{background:#fdf0d5;color:#9a6a12}
+.lift-tag.flat{background:#f1ebe0;color:#8a7460}
+.ck-q{margin-bottom:12px}
+.ck-q>b{display:block;font-size:13px;margin-bottom:6px}
+.ck-q>b small{font-weight:400;color:#9b8877;font-size:11px}
+.ck-result{background:#edf6eb;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.7;margin-bottom:10px}
+.ck-result.warn{background:#fdf6e3}
+.ck-result.stop{background:#fbe6e0}
+.ck-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ck-actions .btn,.ck-actions .ghost-btn{flex:1;min-width:120px;padding:11px}
+.ghost-btn{background:#f3ebdd;color:var(--deep);font-weight:700;border-radius:999px}
+.bd-onboard dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;margin:8px 0 12px}
+.bd-onboard dt{color:#8a7460;font-weight:700}
+.bd-onboard dd{margin:0}
+.tpl-apply{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.tpl-apply .add{margin-top:0;flex:1}
+.part-load{grid-column:1/-1;display:flex;align-items:center;gap:5px;font-size:11px;color:#8a7460}
+.part-load input{width:62px;padding:6px}
 /* transaction rows: read-only display; swipe left (touch) or tap to edit */
 .tx-list{display:grid;gap:7px}
 .tx{position:relative;overflow:hidden;border-radius:14px;touch-action:pan-y}
@@ -182,9 +250,9 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .fin-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
   background:#fffdf8f2;backdrop-filter:blur(6px);border-top:2px solid var(--line);
   padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px #2b230012}
-body.finance-mode .fin-nav{display:flex}
-body.finance-mode.settings-open .fin-nav{display:none}
-body.finance-mode{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
+body.finance-mode #financeNav,body.body-mode #bodyNav{display:flex}
+body.settings-open .fin-nav{display:none}
+body.finance-mode,body.body-mode{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
 @media(min-width:721px){.fin-nav{left:50%;transform:translateX(-50%);width:min(1120px,calc(100% - 26px));
   border:2px solid #fffdfa;border-bottom:0;border-radius:20px 20px 0 0}}
 .fin-nav-btn{flex:1;max-width:150px;margin:0 auto;background:transparent;border-radius:14px;padding:6px 2px;
@@ -361,6 +429,7 @@ textarea{min-height:80px;resize:vertical}
 <section class="card" id="mainCard">
 <nav class="tabs">
   <button class="tab active" data-pane="todayPane">☀️ 今日</button>
+  <button class="tab" data-pane="bodyPane">💪 體態</button>
   <button class="tab" data-pane="insightsPane">📊 洞察</button>
   <button class="tab" data-pane="financePane">💰 財務</button>
   <button class="tab" data-pane="calendarPane">📖 日記曆</button>
@@ -422,6 +491,7 @@ textarea{min-height:80px;resize:vertical}
     <section class="section wide"><h2 class="heading">🏃 運動 <small>不記時長，記做了什麼</small></h2>
       <div id="exerciseList" class="item-list"></div>
       <button class="add" id="addExercise">＋ 新增運動</button>
+      <div class="tpl-apply hidden" id="tplApply"><button class="add" data-tpl-apply="A">📋 套用 A 日課表</button><button class="add" data-tpl-apply="B">📋 套用 B 日課表</button></div>
     </section>
 
     <section class="section wide"><h2 class="heading">📝 小小日記</h2>
@@ -452,6 +522,117 @@ textarea{min-height:80px;resize:vertical}
     <section class="card chart-card wide"><h2>🌙 本月睡眠與熱量</h2><p>長條為熱量，虛線為 7 小時睡眠目標</p><div class="chart"><canvas id="lifeChart"></canvas></div></section>
     <section class="card chart-card wide"><h2>🌼 本月摘要</h2><div id="monthSummary" class="summary-list">—</div></section>
   </div>
+</div>
+
+<div class="pane" id="bodyPane">
+<p id="bodyStatus" class="status"></p>
+
+<div class="bd-page active" id="bdHome">
+  <section class="card tape-sea hidden bd-onboard" id="bdOnboard">
+    <h2 class="heading">💪 開始減脂計畫</h2>
+    <p class="metric-sub" style="font-size:12px;opacity:.8;margin:0">依照你和 ChatGPT 討論的計畫建立。之後都可以在「⚙️ 計畫設定」修改。</p>
+    <dl>
+      <dt>起點</dt><dd>57.2 kg・體脂 32.5%・骨骼肌 20.8 kg</dd>
+      <dt>目標</dt><dd>體脂低於 25%，保留肌肉</dd>
+      <dt>每日</dt><dd>1,400 kcal・蛋白質 100 g（今日頁的目標會一起更新）</dd>
+      <dt>重訓</dt><dd>每週 2 次為目標，忙的時候 1 次也算數</dd>
+    </dl>
+    <button class="btn" id="bdStart" style="width:100%">開始計畫 ✿</button>
+  </section>
+
+  <div id="bdDash" class="hidden" style="display:contents">
+    <section class="card tape-sea">
+      <h2 class="heading">🎯 離 25% 還有多遠 <small><button class="ghost-btn" id="bdPlanBtn" style="padding:4px 10px;font-size:11px">⚙️ 計畫設定</button></small></h2>
+      <div class="bd-hero">
+        <div><span>目前體脂</span><b id="bdBF">—</b><small id="bdBFDate"></small></div>
+        <div><span>已減脂肪</span><b id="bdFatLost">—</b><small id="bdFatGoal"></small></div>
+        <div><span>估計目標體重</span><b id="bdTargetW">—</b><small>僅供參考</small></div>
+      </div>
+      <div class="bd-bar"><i id="bdBFBar" style="width:0"></i></div>
+      <div class="bd-bar-labels"><span id="bdBFStart"></span><span id="bdBFTarget"></span></div>
+      <p class="bd-note">目標體重假設肌肉量不變；如果長了肌肉，體重比較高也能達標，不用硬追這個數字。</p>
+    </section>
+
+    <section class="card tape-coral">
+      <h2 class="heading">⚖️ 體重趨勢 <small>看 7 天平均，不看單日</small></h2>
+      <div class="bd-trend"><b id="bdAvg7">—</b><span class="bd-pill none" id="bdRate">再量幾天</span></div>
+      <p class="bd-note" id="bdRateNote"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="heading">🗓 <span id="bdPhaseName">本月階段</span> <small id="bdPhaseDates"></small></h2>
+      <p style="margin:0;font-size:13px;font-weight:700" id="bdPhaseFocus"></p>
+      <div class="bd-range" id="bdPhaseRange"><div class="band"></div><div class="dot hidden"></div></div>
+      <div class="bd-range-labels"><span id="bdRangeMin"></span><span id="bdRangeTxt"></span><span id="bdRangeMax"></span></div>
+      <ul class="bd-tasks" id="bdPhaseTasks"></ul>
+    </section>
+
+    <section class="card tape-sea">
+      <h2 class="heading">📅 本週 <small id="bdWeekRange"></small></h2>
+      <div class="bd-week" id="bdWeek"></div>
+    </section>
+
+    <section class="card tape-coral">
+      <h2 class="heading">✅ 今日任務 <small id="bdTodayScore"></small></h2>
+      <div class="check-list" id="bdChecklist"></div>
+      <p class="bd-note">不用每天完美。最值得投資的是：每週重訓真的有效、蛋白質穩定達標、有精神持續好幾個月。</p>
+    </section>
+
+    <section class="card">
+      <h2 class="heading">🔍 進度檢查 <small id="bdCheckDue"></small></h2>
+      <p class="bd-note" style="margin:0 0 8px">每 2～3 週看一次趨勢再調整，不因為某一天的數字改變計畫。</p>
+      <button class="btn" id="bdCheckOpen" style="width:100%">開始進度檢查</button>
+      <div id="bdCheckHistory" class="summary-list" style="margin-top:8px"></div>
+    </section>
+  </div>
+</div>
+
+<div class="bd-page" id="bdLog">
+  <section class="card tape-sea">
+    <div class="datebar" style="margin:0 0 12px"><b>📝 身體紀錄</b>
+      <div class="date-control"><button class="nav" id="bdPrevDay">‹</button><input type="date" id="bdDate" style="max-width:150px"><button class="nav" id="bdNextDay">›</button></div>
+    </div>
+    <div class="bd-weight"><span>⚖️</span><input id="bdWeightIn" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0.0"><span>kg</span></div>
+    <p class="bd-note">早上起床、上完廁所後量最準。</p>
+    <div class="bd-q"><label>飢餓感</label><div class="chip-row" data-bdq="hunger">
+      <button class="chip" data-v="1">😌 不太餓</button><button class="chip" data-v="2">🙂 有點餓</button><button class="chip" data-v="3">😣 常常餓</button></div></div>
+    <div class="bd-q"><label>精神與恢復</label><div class="chip-row" data-bdq="energy">
+      <button class="chip" data-v="1">😴 很累</button><button class="chip" data-v="2">🙂 普通</button><button class="chip" data-v="3">⚡ 很好</button></div></div>
+    <div class="bd-q"><label>今天</label><div class="chip-row">
+      <button class="chip" data-bdt="veg">🥦 有吃蔬果和適量澱粉</button><button class="chip" data-bdt="period">🩸 生理期</button></div></div>
+  </section>
+
+  <section class="card tape-coral">
+    <h2 class="heading">📏 每週量一次 <small>腰圍每週同一天量；體脂計有量再填</small></h2>
+    <div class="fgroup" style="margin:0">
+      <div class="frow"><label>腰圍 cm</label><input id="bdWaistIn" type="number" inputmode="decimal" step="0.1" min="0" placeholder="cm"></div>
+      <div class="frow"><label>體脂 %</label><input id="bdBFIn" type="number" inputmode="decimal" step="0.1" min="0" placeholder="%"></div>
+      <div class="frow"><label>骨骼肌 kg</label><input id="bdMuscleIn" type="number" inputmode="decimal" step="0.1" min="0" placeholder="kg"></div>
+    </div>
+  </section>
+
+  <section class="section wide"><h2 class="heading">🗂 紀錄 <small class="swipe-hint">點一筆可修改・手機可左滑刪除</small></h2>
+    <div id="bdHistory" class="tx-list"></div>
+  </section>
+</div>
+
+<div class="bd-page" id="bdLift">
+  <section class="card tape-sea">
+    <h2 class="heading">🏋️ 課表 <small>在今日頁「運動」可一鍵套用</small></h2>
+    <div class="seg" id="bdTplSeg"><button class="seg-btn active" data-tpl="A">A 日</button><button class="seg-btn" data-tpl="B">B 日</button><button class="seg-btn" data-tpl="C">C 日選做</button></div>
+    <div class="tpl" id="bdTpl"></div>
+    <p class="bd-note">每組結束時還能再做 2～3 下、姿勢正確就好，不用做到力竭。連續兩次都做到範圍上限，就小幅加重。</p>
+  </section>
+  <section class="section wide"><h2 class="heading">📈 動作進度 <small>點一個動作看折線</small></h2>
+    <div id="bdLifts" class="tx-list"></div>
+  </section>
+</div>
+
+<div class="bd-page" id="bdTrend">
+  <section class="card chart-card tape-sea"><h2>⚖️ 體重與 7 天平均</h2><p>綠色區塊是各月的規劃範圍</p><div class="chart"><canvas id="bdWeightChart"></canvas></div></section>
+  <section class="card chart-card tape-coral"><h2>📏 腰圍</h2><p>體重沒變但腰圍變小，也是在進步</p><div class="chart"><canvas id="bdWaistChart"></canvas></div></section>
+  <section class="card chart-card"><h2>🧬 體脂率與骨骼肌</h2><p>有量的那幾天</p><div class="chart"><canvas id="bdCompChart"></canvas></div></section>
+</div>
 </div>
 
 <div class="pane" id="financePane">
@@ -689,6 +870,13 @@ textarea{min-height:80px;resize:vertical}
   <button class="fin-nav-btn" data-sub="finSettings"><span class="fin-ico">🗂</span><span class="fin-lab">設定</span><span class="fin-sub">整理</span></button>
 </nav>
 
+<nav id="bodyNav" class="fin-nav">
+  <button class="fin-nav-btn active" data-bsub="bdHome"><span class="fin-ico">🎯</span><span class="fin-lab">總覽</span><span class="fin-sub">目標</span></button>
+  <button class="fin-nav-btn" data-bsub="bdLog"><span class="fin-ico">📝</span><span class="fin-lab">記錄</span><span class="fin-sub">每天</span></button>
+  <button class="fin-nav-btn" data-bsub="bdLift"><span class="fin-ico">🏋️</span><span class="fin-lab">重訓</span><span class="fin-sub">進度</span></button>
+  <button class="fin-nav-btn" data-bsub="bdTrend"><span class="fin-ico">📈</span><span class="fin-lab">趨勢</span><span class="fin-sub">圖表</span></button>
+</nav>
+
 <div class="sheet-wrap hidden" id="scanSheet">
   <div class="sheet">
     <div class="sheet-head"><h3 id="scanTitle"></h3><button class="sheet-x" data-scan-close>×</button></div>
@@ -754,7 +942,8 @@ const today=()=>{
 // ---------- data normalization (keeps old records readable) ----------
 const FOOD_SRCS=["manual","barcode","ai-label","ai-photo"];
 function normFood(f={}){return{id:f.id||id(),meal:f.meal||"早餐",name:f.name||"",cal:+f.cal||0,protein:+f.protein||0,src:FOOD_SRCS.includes(f.src)?f.src:"manual",confidence:+f.confidence||0}}
-function normPart(p={}){return{id:p.id||id(),muscle:p.muscle||"",movement:p.movement||""}}
+// kg / reps / sets only exist when filled, so parts logged before weights were tracked stay unchanged
+function normPart(p={}){const o={id:p.id||id(),muscle:p.muscle||"",movement:p.movement||""};["kg","reps","sets"].forEach(k=>{if(+p[k]>0)o[k]=+p[k]});return o}
 function normExercise(x={}){
   const ex={id:x.id||id(),type:x.type||"跑步",minutes:+x.minutes||0,parts:(x.parts||[]).map(normPart)};
   if(!ex.parts.length&&(x.muscle||x.movement))ex.parts=[normPart({muscle:x.muscle,movement:x.movement})];
@@ -780,7 +969,7 @@ function norm(d={}){
     ((d.expenseAmount||d.expenseNote)?[normExpense({name:d.expenseNote,category:d.expenseCategory,amount:d.expenseAmount})]:[]);
   const incomes=d.incomes?d.incomes.map(normIncome):[];
   const saves=d.saves?d.saves.map(normSave):[];
-  return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",keyword:d.keyword||"",water:+d.water||0,foods,exercises,expenses,incomes,saves};
+  return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",keyword:d.keyword||"",water:+d.water||0,foods,exercises,expenses,incomes,saves,body:normBody(d.body)};
 }
 function normGoals(g={}){return{calorie:+g.calorie||DEFAULT_GOALS.calorie,protein:+g.protein||DEFAULT_GOALS.protein,water:+g.water||DEFAULT_GOALS.water,sleep:+g.sleep||DEFAULT_GOALS.sleep}}
 
@@ -1261,6 +1450,11 @@ function exercises(){
             <select data-pi="${i}" data-pj="${j}" data-pf="muscle">${MUSCLES.map(v=>`<option ${p.muscle===v?"selected":""}>${v}</option>`).join("")}</select>
             <input data-pi="${i}" data-pj="${j}" data-pf="movement" value="${esc(p.movement)}" placeholder="動作，例如：臥推">
             <button class="delete small" data-delpart="${i}:${j}">×</button>
+            <div class="part-load">
+              <input data-pi="${i}" data-pj="${j}" data-pf="kg" type="number" inputmode="decimal" step="0.5" min="0" value="${p.kg||""}" placeholder="重量"><span>kg ×</span>
+              <input data-pi="${i}" data-pj="${j}" data-pf="reps" type="number" inputmode="numeric" min="0" value="${p.reps||""}" placeholder="次數"><span>下 ×</span>
+              <input data-pi="${i}" data-pj="${j}" data-pf="sets" type="number" inputmode="numeric" min="0" value="${p.sets||""}" placeholder="組"><span>組</span>
+            </div>
           </div>`).join("")||'<div class="empty">還沒有動作，新增第一個吧。</div>'}
         <button class="add small" data-addpart="${i}">＋ 新增動作</button>
       </div>`:""}
@@ -1273,7 +1467,7 @@ function exercises(){
   });
   $("exerciseList").querySelectorAll("[data-pi]").forEach(el=>el.oninput=el.onchange=()=>{
     const i=+el.dataset.pi,j=+el.dataset.pj,f=el.dataset.pf;
-    data.exercises[i].parts[j][f]=el.value; schedule();
+    data.exercises[i].parts[j][f]=["kg","reps","sets"].includes(f)?(+el.value||0):el.value; schedule();
   });
   $("exerciseList").querySelectorAll("[data-addpart]").forEach(b=>b.onclick=()=>{
     data.exercises[+b.dataset.addpart].parts.push(normPart()); render(); save();
@@ -1300,7 +1494,8 @@ async function save(){
   try{
     // expenses / incomes / saves are owned exclusively by the finance page —
     // never write them from here, or the today page's autosave clobbers ledger edits.
-    const{expenses,incomes,saves,...rest}=data;
+    // body is owned by the 體態 page (commitBodyDay) for the same reason.
+    const{expenses,incomes,saves,body,...rest}=data;
     await setDoc(doc(db,"users",user.uid,"journal",data.date),{...rest,updatedAt:serverTimestamp()},{merge:true});
     status("已自動同步 ✿",true);
     if($("insightsPane").classList.contains("active"))insights();
@@ -2737,6 +2932,503 @@ function showFinancePage(subId){
   if(subId==="finSettings"){renderCategorySettings(); renderAccountSettings(); renderRecurSummary()}
 }
 
+// ---------- 體態 section ----------
+// Daily body metrics live on the journal day doc as `body`. commitBodyDay() is their ONLY
+// writer and the today page's save() excludes `body` — same single-writer rule as finance.
+// Kcal/protein targets are NOT duplicated here: settings/goals stays the one source.
+const BODY_NUM=["weight","waist","bodyFat","muscle"];
+const BODY_KEYS=[...BODY_NUM,"hunger","energy","period","veg"];
+function normBody(b){
+  const o={};
+  if(!b||typeof b!=="object")return o;
+  BODY_NUM.forEach(k=>{const v=+b[k]; if(isFinite(v)&&v>0)o[k]=v});
+  ["hunger","energy"].forEach(k=>{const v=+b[k]; if(v>=1&&v<=3)o[k]=v});
+  if(b.period)o.period=true;
+  if(b.veg)o.veg=true;
+  return o;
+}
+const LIFT_A=[["腿推 Leg Press","腿",3,8,12],["啞鈴羅馬尼亞硬舉","臀",3,8,12],["胸推機 Chest Press","胸",3,8,12],
+  ["高位下拉 Lat Pulldown","背",3,8,12],["臀推 Hip Thrust","臀",2,10,12],["Dead Bug","核心",2,8,12]];
+const LIFT_B=[["高腳杯深蹲／哈克深蹲","腿",3,8,12],["腿後勾 Leg Curl","腿",3,10,15],["坐姿划船 Seated Row","背",3,8,12],
+  ["上斜胸推機","胸",3,8,12],["啞鈴肩推","肩",2,8,12],["Cable Pallof Press","核心",2,10,12]];
+const tplItems=a=>a.map(([movement,muscle,sets,lo,hi])=>({movement,muscle,sets,lo,hi}));
+const DEFAULT_BODY_PLAN={
+  startDate:"2026-10-20",start:{weight:57.2,bodyFat:32.5,muscle:20.8,fatMass:18.8},
+  targetBodyFat:24.9,bmr:1199,macros:{fat:45,carbs:149},gymGoal:2,gymMin:1,checkEvery:14,
+  phases:[
+    {name:"第 1 月",from:"2026-10-20",to:"2026-11-19",lo:56.0,hi:56.7,focus:"建立習慣，先觀察身體反應",tasks:["每天平均約 1,400 kcal","蛋白質約 100 g","每週完成 2 次重訓，建立動作紀錄"]},
+    {name:"第 2 月",from:"2026-11-20",to:"2026-12-19",lo:54.8,hi:56.0,focus:"穩定減脂，逐步提高訓練能力",tasks:["每週 2～3 次重訓","增加日常走路與短時間有氧","檢查腰圍是否下降、訓練重量是否維持"]},
+    {name:"第 3 月",from:"2026-12-20",to:"2027-01-19",lo:53.6,hi:55.2,focus:"評估中期成果",tasks:["檢查體脂率、脂肪量及腰圍趨勢","力量下滑或疲勞累積時，先調整恢復與飲食，不急著加訓練量"]},
+    {name:"第 4 月",from:"2027-01-20",to:"2027-02-19",lo:52.4,hi:54.4,focus:"接近目標，重新評估體組成",tasks:["觀察是否已接近 27～29% 體脂","肌肉穩定、腰圍持續下降，體重慢一點也不用調整"]},
+    {name:"第 5～6 月",from:"2027-02-20",to:"2027-04-19",lo:51.5,hi:53.0,focus:"爭取低於 25%",tasks:["依體脂、肌肉量和腰圍決定是否繼續減脂","肌肉增加的話，不必為了 51.5 kg 犧牲訓練表現"]}
+  ],
+  templates:{A:tplItems(LIFT_A),B:tplItems(LIFT_B)},
+  checkins:[]
+};
+const TPL_C=["有打排球：以排球為主，不必額外做完整重訓","沒打排球：快走或飛輪 20～30 分鐘，或補做較弱的肌群","這週很累：休息也完全可以"];
+const KCAL_FLOOR=()=>Math.max(1300,(bodyPlan&&bodyPlan.bmr)||1199);
+
+let bodyPlan=null,bodyPlanMissing=false,bodyByDate=new Map(),bodyLoaded=false;
+const bodySaveTimers=new Map();   // per date, so switching days mid-debounce never drops a save
+let bdWeightChart,bdWaistChart,bdCompChart,bdLiftChart;
+
+function normBodyPlan(p={}){
+  const d=DEFAULT_BODY_PLAN,num=(v,f)=>isFinite(+v)&&+v>0?+v:f;
+  const s=p.start||{};
+  return{
+    startDate:/^d{4}-d{2}-d{2}$/.test(p.startDate||"")?p.startDate:d.startDate,
+    start:{weight:num(s.weight,d.start.weight),bodyFat:num(s.bodyFat,d.start.bodyFat),muscle:num(s.muscle,d.start.muscle),fatMass:p.start?num(s.fatMass,0):d.start.fatMass},
+    targetBodyFat:num(p.targetBodyFat,d.targetBodyFat),bmr:num(p.bmr,d.bmr),
+    macros:{fat:num((p.macros||{}).fat,d.macros.fat),carbs:num((p.macros||{}).carbs,d.macros.carbs)},
+    gymGoal:num(p.gymGoal,d.gymGoal),gymMin:num(p.gymMin,d.gymMin),checkEvery:num(p.checkEvery,d.checkEvery),
+    phases:Array.isArray(p.phases)&&p.phases.length?p.phases:d.phases,
+    templates:{A:(p.templates&&p.templates.A)||d.templates.A,B:(p.templates&&p.templates.B)||d.templates.B},
+    checkins:Array.isArray(p.checkins)?p.checkins:[]
+  };
+}
+async function loadBodyPlan(){
+  if(!user)return;
+  try{
+    const s=await getDoc(doc(db,"users",user.uid,"settings","bodyPlan"));
+    bodyPlanMissing=!s.exists();
+    bodyPlan=normBodyPlan(s.exists()?s.data():{});
+  }catch(e){bodyPlan=normBodyPlan({}); bodyPlanMissing=true}
+  renderTplApply();
+}
+async function saveBodyPlan(){
+  try{
+    await setDoc(doc(db,"users",user.uid,"settings","bodyPlan"),{...bodyPlan,updatedAt:serverTimestamp()});
+    bodyPlanMissing=false; return true;
+  }catch(e){bodyStatus("計畫儲存失敗"); return false}
+}
+async function setCalorieGoal(kcal,protein){
+  goals=normGoals({...goals,calorie:kcal,protein:protein||goals.protein});
+  await setDoc(doc(db,"users",user.uid,"settings","goals"),{...goals,updatedAt:serverTimestamp()},{merge:true});
+  $("goalCalorie").value=goals.calorie; $("goalProtein").value=goals.protein;
+  if(data)totals();
+}
+function bodyStatus(msg,ok){const el=$("bodyStatus"); el.textContent=msg; el.className="status"+(ok?" ok":"")}
+
+// ---- data ----
+const dayNum=s=>Math.round(Date.parse(s+"T00:00:00Z")/864e5);
+const dayStr=n=>new Date(n*864e5).toISOString().slice(0,10);
+const addDays=(s,n)=>dayStr(dayNum(s)+n);
+const r1=n=>Math.round(n*10)/10;
+async function loadBodyData(force){
+  if(bodyLoaded&&!force)return;
+  const t=today(),from=[addDays(t,-90),bodyPlan.startDate].sort()[0];
+  bodyByDate=new Map((await rangeDocs(from,t)).map(d=>[d.date,d]));
+  bodyLoaded=true;
+}
+async function bodyDay(date){
+  if(bodyByDate.has(date))return bodyByDate.get(date);
+  const s=await getDoc(doc(db,"users",user.uid,"journal",date));
+  const e=norm(s.exists()?s.data():{date}); e.date=date;
+  bodyByDate.set(date,e); return e;
+}
+async function commitBodyDay(date){
+  const e=bodyByDate.get(date);
+  // Every key is written explicitly (null when empty): merge:true deep-merges maps, so a
+  // key left out would silently keep its old value instead of being cleared.
+  const out={}; BODY_KEYS.forEach(k=>out[k]=e.body[k]===undefined?null:e.body[k]);
+  await setDoc(doc(db,"users",user.uid,"journal",date),{date,body:out,updatedAt:serverTimestamp()},{merge:true});
+  if(data&&data.date===date)data.body=e.body;
+}
+function scheduleBodySave(date){
+  clearTimeout(bodySaveTimers.get(date));
+  bodySaveTimers.set(date,setTimeout(async()=>{
+    try{await commitBodyDay(date); bodyStatus("已儲存 ✿",true)}catch(e){bodyStatus("儲存失敗，請稍後再試")}
+    renderBodyAll();
+  },600));
+}
+const docsSorted=()=>[...bodyByDate.values()].sort((a,b)=>a.date<b.date?-1:1);
+const weights=()=>docsSorted().filter(d=>d.body.weight).map(d=>({date:d.date,w:d.body.weight}));
+function avg7(end,pts=weights()){
+  const e=dayNum(end),win=pts.filter(p=>{const n=dayNum(p.date);return n<=e&&n>e-7});
+  return win.length>=3?win.reduce((s,p)=>s+p.w,0)/win.length:null;
+}
+// kg per week, negative = losing. Regression over 21 days when there's enough data,
+// otherwise the difference between this week's and two weeks ago's 7-day averages.
+function weeklyRate(end=today()){
+  const pts=weights(),e=dayNum(end);
+  const win=pts.filter(p=>{const n=dayNum(p.date);return n<=e&&n>e-21});
+  if(win.length>=8){
+    const xs=win.map(p=>dayNum(p.date)),ys=win.map(p=>p.w);
+    const mx=xs.reduce((a,b)=>a+b,0)/xs.length,my=ys.reduce((a,b)=>a+b,0)/ys.length;
+    let num=0,den=0; xs.forEach((x,i)=>{num+=(x-mx)*(ys[i]-my);den+=(x-mx)**2});
+    return den?num/den*7:null;
+  }
+  const a=avg7(end,pts),b=avg7(addDays(end,-14),pts);
+  return a!=null&&b!=null?(a-b)/2:null;
+}
+function rateClass(r){
+  if(r==null)return{k:"none",cls:"none",label:"再量幾天",note:"7 天內至少量 3 次，才算得出平均；要看每週速度需要約 2 週的紀錄。"};
+  const loss=-r;
+  if(loss>0.5)return{k:"fast",cls:"bad",label:`每週 −${r1(loss)} kg・偏快`,note:"掉太快容易流失肌肉。先不要再減熱量，留意是否吃太少、睡不夠或練太多。"};
+  if(loss>=0.15)return{k:"good",cls:"good",label:`每週 −${r1(loss)} kg・剛好`,note:"在計畫的每週 0.2～0.4 kg 附近，精神和力量也正常的話就照現在的做。"};
+  if(loss>-0.1)return{k:"flat",cls:"flat",label:"幾乎持平",note:"持平先別急：腰圍變小或力量進步，代表體態可能正在改善。到進度檢查時再一起看。"};
+  return{k:"up",cls:"bad",label:`每週 +${r1(-loss)} kg`,note:"平均在上升。到進度檢查時會先確認飲食紀錄（飲料、油、醬汁、週末）與活動量。"};
+}
+const latestWith=k=>{const d=docsSorted().filter(x=>x.body[k]).pop();return d?{date:d.date,v:d.body[k]}:null};
+const dayKcal=d=>d.foods.reduce((s,f)=>s+(+f.cal||0),0);
+const dayProtein=d=>d.foods.reduce((s,f)=>s+(+f.protein||0),0);
+const isGym=d=>d.exercises.some(x=>x.type==="重訓");
+function currentPhase(t=today()){
+  const ps=bodyPlan.phases;
+  return ps.find(p=>t>=p.from&&t<=p.to)||(t<ps[0].from?ps[0]:ps[ps.length-1]);
+}
+function weekBounds(t=today()){
+  const wd=(new Date(t+"T12:00:00").getDay()+6)%7;   // Monday = 0
+  const from=addDays(t,-wd); return{from,to:addDays(from,6)};
+}
+
+// ---- 總覽 ----
+function renderBodyHome(){
+  $("bdOnboard").classList.toggle("hidden",!bodyPlanMissing);
+  $("bdDash").classList.toggle("hidden",bodyPlanMissing);
+  if(bodyPlanMissing)return;
+  const p=bodyPlan,s=p.start,t=today();
+  // lean mass from the starting measurement; the scale's own fat-mass reading wins when given
+  const startFat=s.fatMass||s.weight*s.bodyFat/100,lean=s.weight-startFat;
+  const targetW=lean/(1-p.targetBodyFat/100),fatGoal=startFat-targetW*p.targetBodyFat/100;
+  const bf=latestWith("bodyFat"),curBF=bf?bf.v:s.bodyFat;
+  const wAtBF=bf&&((bodyByDate.get(bf.date).body.weight)||avg7(bf.date));
+  const curFat=bf&&wAtBF?wAtBF*curBF/100:null;
+  $("bdBF").textContent=r1(curBF)+"%";
+  $("bdBFDate").textContent=bf?"量於 "+bf.date.slice(5).replace("-","/"):"起點數值";
+  $("bdFatLost").textContent=curFat!=null?r1(startFat-curFat)+" kg":"—";
+  $("bdFatGoal").textContent="目標約 "+r1(fatGoal)+" kg";
+  $("bdTargetW").textContent="≈"+r1(targetW)+" kg";
+  const prog=Math.max(0,Math.min(100,(s.bodyFat-curBF)/(s.bodyFat-p.targetBodyFat)*100));
+  $("bdBFBar").style.width=prog+"%";
+  $("bdBFStart").textContent="起點 "+s.bodyFat+"%";
+  $("bdBFTarget").textContent="目標 "+p.targetBodyFat+"%";
+
+  const a=avg7(t),rc=rateClass(weeklyRate(t));
+  $("bdAvg7").textContent=a!=null?r1(a)+" kg":"—";
+  $("bdRate").className="bd-pill "+rc.cls; $("bdRate").textContent=rc.label;
+  $("bdRateNote").textContent=rc.note;
+
+  const ph=currentPhase(t);
+  $("bdPhaseName").textContent=ph.name; $("bdPhaseDates").textContent=ph.from.slice(5).replace("-","/")+"–"+ph.to.slice(5).replace("-","/");
+  $("bdPhaseFocus").textContent=ph.focus;
+  const mn=Math.floor(ph.lo-1),mx=Math.ceil(ph.hi+1),pos=v=>Math.max(0,Math.min(100,(v-mn)/(mx-mn)*100));
+  const band=$("bdPhaseRange").querySelector(".band"),dot=$("bdPhaseRange").querySelector(".dot");
+  band.style.left=pos(ph.lo)+"%"; band.style.width=(pos(ph.hi)-pos(ph.lo))+"%";
+  dot.classList.toggle("hidden",a==null); if(a!=null)dot.style.left=pos(a)+"%";
+  $("bdRangeMin").textContent=mn; $("bdRangeMax").textContent=mx;
+  $("bdRangeTxt").textContent=`規劃 ${(+ph.lo).toFixed(1)}～${(+ph.hi).toFixed(1)} kg`+(a!=null?`・你在 ${r1(a)}`:"");
+  $("bdPhaseTasks").innerHTML=ph.tasks.map(x=>`<li>🌱 <span>${esc(x)}</span></li>`).join("");
+
+  const w=weekBounds(t),wk=docsSorted().filter(d=>d.date>=w.from&&d.date<=t);
+  const gym=wk.filter(isGym).length,fed=wk.filter(d=>dayKcal(d)>0);
+  const avgK=fed.length?Math.round(fed.reduce((s,d)=>s+dayKcal(d),0)/fed.length):null;
+  const avgP=fed.length?Math.round(fed.reduce((s,d)=>s+dayProtein(d),0)/fed.length):null;
+  const weighed=wk.filter(d=>d.body.weight).length;
+  $("bdWeekRange").textContent=w.from.slice(5).replace("-","/")+"–"+w.to.slice(5).replace("-","/");
+  const gymNote=gym>=p.gymGoal?"達標 ✿":gym>=p.gymMin?"有練就很好":"還有時間";
+  $("bdWeek").innerHTML=[
+    ["🏋️ 重訓",`${gym} / ${p.gymGoal} 次`,gymNote],
+    ["⚖️ 量體重",`${weighed} 天`,"量越多天，平均越準"],
+    ["🔥 平均熱量",avgK!=null?avgK+" kcal":"—",`目標 ${goals.calorie}`],
+    ["🥚 平均蛋白質",avgP!=null?avgP+" g":"—",`目標 ${goals.protein} g`]
+  ].map(([a,b,c])=>`<div><span>${a}</span><b>${b}</b><br><small>${esc(c)}</small></div>`).join("");
+
+  const td=bodyByDate.get(t)||norm({date:t}),src=data&&data.date===t?data:td;
+  const k=dayKcal(src),pr=dayProtein(src);
+  const items=[
+    ["kcal",k>=goals.calorie*0.9&&k<=goals.calorie*1.1,`熱量約 ${goals.calorie} kcal`,k?k+" kcal":"還沒記"],
+    ["protein",pr>=goals.protein*0.95,`蛋白質約 ${goals.protein} g`,pr?pr+" g":"還沒記"],
+    ["move",src.exercises.length>0,"重訓、排球或散步",src.exercises.length?src.exercises.map(x=>x.type).join("、"):"今日頁記運動"],
+    ["veg",!!td.body.veg,"有吃蔬菜、水果和適量澱粉","點一下打勾"],
+    ["rest",(src.sleep||0)>=(goals.sleep||7)&&td.body.energy!==1,"睡飽、有精神，不為減脂犧牲",src.sleep?src.sleep+" 小時":"今日頁記睡眠"]
+  ];
+  $("bdTodayScore").textContent=items.filter(x=>x[1]).length+" / 5";
+  $("bdChecklist").innerHTML=items.map(([id,ok,label,hint])=>
+    `<button class="check-item${ok?" done":""}" data-check="${id}"><span class="box">${ok?"✓":""}</span><span>${esc(label)}</span><small>${esc(hint)}</small></button>`).join("");
+  $("bdChecklist").querySelector('[data-check="veg"]').onclick=async()=>{
+    const e=await bodyDay(t); e.body.veg=!e.body.veg; if(!e.body.veg)delete e.body.veg;
+    renderBodyHome(); await commitBodyDay(t);
+  };
+
+  const last=p.checkins.length?p.checkins[p.checkins.length-1].date:p.startDate;
+  const due=dayNum(last)+p.checkEvery-dayNum(t);
+  $("bdCheckDue").textContent=due>0?`再 ${due} 天`:"可以檢查了";
+  $("bdCheckOpen").textContent=due>0?"提早做進度檢查":"開始進度檢查 ✿";
+  $("bdCheckHistory").innerHTML=p.checkins.slice(-3).reverse().map(c=>
+    `<div class="summary-row"><span>${esc(c.date)}　${esc(c.title||"")}</span><b>${c.kcalAfter!==c.kcalBefore?c.kcalBefore+"→"+c.kcalAfter:"維持 "+c.kcalAfter}</b></div>`).join("");
+}
+
+// ---- 記錄 ----
+async function renderBodyLog(){
+  const date=$("bdDate").value||today();
+  const e=await bodyDay(date),b=e.body;
+  const setVal=(id,v)=>{if(document.activeElement!==$(id))$(id).value=v||""};
+  setVal("bdWeightIn",b.weight); setVal("bdWaistIn",b.waist); setVal("bdBFIn",b.bodyFat); setVal("bdMuscleIn",b.muscle);
+  document.querySelectorAll("#bdLog [data-bdq]").forEach(g=>g.querySelectorAll(".chip").forEach(c=>c.classList.toggle("active",+c.dataset.v===b[g.dataset.bdq])));
+  document.querySelectorAll("#bdLog [data-bdt]").forEach(c=>c.classList.toggle("active",!!b[c.dataset.bdt]));
+  const rows=docsSorted().filter(d=>Object.keys(d.body).length).reverse();
+  const wList=rows.filter(d=>d.body.weight).map(d=>d.date);
+  $("bdHistory").innerHTML=rows.slice(0,60).map(d=>{
+    const x=d.body,i=wList.indexOf(d.date),prev=i>=0&&i<wList.length-1?bodyByDate.get(wList[i+1]).body.weight:null;
+    const delta=x.weight&&prev?x.weight-prev:null;
+    const sub=[x.waist?`腰 ${x.waist} cm`:"",x.bodyFat?`體脂 ${x.bodyFat}%`:"",x.muscle?`肌肉 ${x.muscle} kg`:"",
+      x.hunger?["","不太餓","有點餓","常常餓"][x.hunger]:"",x.energy?["","很累","精神普通","精神很好"][x.energy]:"",x.period?"🩸":""].filter(Boolean).join("・");
+    return `<div class="tx tx-save" data-date="${d.date}">
+      <div class="tx-actions"><button class="tx-act-edit" data-act="edit">修改</button><button class="tx-act-del" data-act="del">刪除</button></div>
+      <div class="tx-main" data-act="open" role="button" tabindex="0">
+        <span class="tx-ico">${x.weight?"⚖️":x.waist?"📏":"📝"}</span>
+        <span class="tx-body"><span class="tx-name">${d.date.slice(5).replace("-","/")}　${x.weight?x.weight+" kg":""}</span><span class="tx-sub">${esc(sub)||"&nbsp;"}</span></span>
+        <span class="tx-amt" style="color:${delta==null?"#9b8877":delta<=0?"var(--deep)":"var(--coral)"}">${delta==null?"":(delta>0?"+":"")+r1(delta)}</span>
+      </div></div>`;
+  }).join("")||'<div class="empty">還沒有紀錄。從上面量第一次體重開始吧。</div>';
+  bindTxList($("bdHistory"),{
+    open:d=>{$("bdDate").value=d.date; renderBodyLog(); window.scrollTo({top:0,behavior:"smooth"})},
+    del:async d=>{const e=await bodyDay(d.date); e.body={}; await commitBodyDay(d.date); bodyStatus("已刪除 "+d.date+" 的身體紀錄",true); renderBodyAll()}
+  });
+}
+async function editBodyField(k,v){
+  const date=$("bdDate").value||today(),e=await bodyDay(date);
+  if(v===undefined||v===null||v===""||v===false||(typeof v==="number"&&!(v>0)))delete e.body[k]; else e.body[k]=v;
+  bodyStatus("儲存中…"); scheduleBodySave(date);
+}
+
+// ---- 重訓 ----
+// One entry per movement per day (best set by estimated 1RM), oldest first.
+function liftHistory(){
+  const m=new Map();
+  docsSorted().forEach(d=>d.exercises.filter(x=>x.type==="重訓").forEach(x=>x.parts.forEach(p=>{
+    const name=(p.movement||"").trim(); if(!name||!(p.kg>0)||!(p.reps>0))return;
+    const e1=p.kg*(1+p.reps/30),arr=m.get(name)||[];
+    const same=arr.find(s=>s.date===d.date);
+    if(same){if(e1>same.e1)Object.assign(same,{kg:p.kg,reps:p.reps,sets:p.sets||0,e1})}
+    else arr.push({date:d.date,kg:p.kg,reps:p.reps,sets:p.sets||0,e1});
+    m.set(name,arr);
+  })));
+  return m;
+}
+const tplFor=name=>[...bodyPlan.templates.A,...bodyPlan.templates.B].find(t=>t.movement===name);
+function liftTag(name,s){
+  if(!s.length)return null;
+  const hi=(tplFor(name)||{}).hi||12;
+  const l2=s.slice(-2);
+  // hitting the top of the rep range twice IS progress, so it counts as "up" for the checker
+  if(l2.length===2&&l2[0].kg===l2[1].kg&&l2.every(x=>x.reps>=hi))return{cls:"add",label:"⬆ 可以加重",trend:"up"};
+  if(s.length>=4){
+    const m=a=>a.reduce((x,y)=>x+y.e1,0)/a.length,ch=m(s.slice(-2))/m(s.slice(-4,-2))-1;
+    if(ch<-0.05)return{cls:"down",label:"退步",trend:"down"};
+    if(ch>0.025)return{cls:"up",label:"進步",trend:"up"};
+    return{cls:"flat",label:"維持",trend:"flat"};
+  }
+  return null;
+}
+function strengthTrend(){
+  const ts=[...liftHistory()].map(([n,s])=>liftTag(n,s)).filter(t=>t&&t.trend);
+  if(!ts.length)return"none";
+  const up=ts.filter(t=>t.trend==="up").length,down=ts.filter(t=>t.trend==="down").length;
+  return down>up?"down":up>down?"up":"flat";
+}
+function renderBodyLift(){
+  const tab=$("bdTplSeg").querySelector(".active").dataset.tpl;
+  $("bdTpl").innerHTML=tab==="C"?TPL_C.map(x=>`<div class="tpl-row">${esc(x)}</div>`).join("")
+    :bodyPlan.templates[tab].map(t=>`<div class="tpl-row"><b>${esc(t.movement)}</b><span>${t.sets} 組 × ${t.lo}～${t.hi} 下</span></div>`).join("");
+  const h=liftHistory();
+  const names=[...h.keys()].sort((a,b)=>h.get(b).at(-1).date.localeCompare(h.get(a).at(-1).date));
+  $("bdLifts").innerHTML=names.map(n=>{
+    const s=h.get(n),tag=liftTag(n,s);
+    const recent=s.slice(-3).reverse().map(x=>`${x.kg}kg×${x.reps}`).join("、");
+    return `<div class="tx tx-income" data-lift="${esc(n)}"><div class="tx-actions"></div>
+      <div class="tx-main" data-act="open" role="button" tabindex="0">
+        <span class="tx-ico">🏋️</span>
+        <span class="tx-body"><span class="tx-name">${esc(n)}</span><span class="tx-sub">${tag?`<span class="lift-tag ${tag.cls}" style="margin:0 4px 0 0">${tag.label}</span>`:""}${esc(recent)}</span></span>
+        <span class="tx-amt">${s.at(-1).kg} kg</span>
+      </div></div>`;
+  }).join("")||'<div class="empty">在今日頁記重訓時填上重量和次數，這裡就會出現每個動作的進度。</div>';
+  bindTxList($("bdLifts"),{open:d=>openLiftDetail(d.lift)});
+}
+function openLiftDetail(name){
+  const s=liftHistory().get(name)||[];
+  openForm(name,`<div class="chart" style="height:220px"><canvas id="bdLiftCanvas"></canvas></div>
+    <div class="summary-list" style="margin-top:8px">${s.slice().reverse().slice(0,12).map(x=>
+      `<div class="summary-row"><span>${x.date}</span><b>${x.kg} kg × ${x.reps}${x.sets?" × "+x.sets+" 組":""}</b></div>`).join("")}</div>`);
+  if(bdLiftChart)bdLiftChart.destroy();
+  bdLiftChart=draw("bdLiftCanvas","line",{labels:s.map(x=>x.date.slice(5)),datasets:[
+    {label:"重量 kg",data:s.map(x=>x.kg),borderColor:"#457850",backgroundColor:"#457850",tension:.3},
+    {label:"估計最大重量",data:s.map(x=>r1(x.e1)),borderColor:"#e8c26a",backgroundColor:"#e8c26a",borderDash:[4,4],tension:.3}]});
+}
+// "套用 A／B 日" on the today page: prefill each movement with the last weight/reps used.
+function renderTplApply(){
+  const box=$("tplApply"); if(!box)return;
+  box.classList.toggle("hidden",!bodyPlan||bodyPlanMissing);
+}
+async function applyTemplate(which){
+  if(!bodyPlan)return;
+  if(!bodyLoaded)await loadBodyData();
+  const h=liftHistory();
+  const parts=bodyPlan.templates[which].map(t=>{
+    const last=(h.get(t.movement)||[]).filter(x=>x.date<data.date).at(-1);
+    return normPart({muscle:t.muscle,movement:t.movement,sets:t.sets,kg:last?last.kg:0,reps:last?last.reps:0});
+  });
+  data.exercises.push(normExercise({type:"重訓",minutes:0,parts}));
+  render(); save();
+  status(`已套用 ${which} 日課表，重量帶入上次的紀錄`,true);
+}
+
+// ---- 趨勢 ----
+function renderBodyTrend(){
+  if(!isBodyPage("bdTrend"))return;   // Chart.js can't size a canvas inside display:none
+  const t=today(),pts=weights(),first=[pts.length?pts[0].date:t,bodyPlan.startDate].sort()[0];
+  // run the axis to the end of the current phase so the target band ahead is visible
+  const end=[t,currentPhase(t).to].sort()[1];
+  const n=Math.min(240,dayNum(end)-dayNum(first)+1),labels=Array.from({length:n},(_,i)=>addDays(first,i));
+  const wMap=Object.fromEntries(pts.map(p=>[p.date,p.w]));
+  const phaseAt=d=>bodyPlan.phases.find(p=>d>=p.from&&d<=p.to);
+  if(bdWeightChart)bdWeightChart.destroy();
+  bdWeightChart=draw("bdWeightChart","line",{labels:labels.map(d=>d.slice(5)),datasets:[
+    {label:"每日體重",data:labels.map(d=>wMap[d]??null),showLine:false,pointRadius:3,borderColor:"#96c7cd",backgroundColor:"#96c7cd"},
+    {label:"7 天平均",data:labels.map(d=>{if(d>t)return null;const a=avg7(d,pts);return a==null?null:r1(a)}),borderColor:"#457850",backgroundColor:"#457850",pointRadius:0,tension:.3,spanGaps:true},
+    {label:"規劃下限",data:labels.map(d=>(phaseAt(d)||{}).lo??null),borderColor:"transparent",pointRadius:0,stepped:true},
+    {label:"規劃範圍",data:labels.map(d=>(phaseAt(d)||{}).hi??null),borderColor:"transparent",backgroundColor:"#cfe6cb88",pointRadius:0,stepped:true,fill:"-1"}
+  ]},{plugins:{legend:{labels:{boxWidth:10,font:{family:"Huninn",size:10},filter:i=>i.text!=="規劃下限"}}}});
+  const wd=docsSorted().filter(d=>d.body.waist);
+  if(bdWaistChart)bdWaistChart.destroy();
+  bdWaistChart=draw("bdWaistChart","line",{labels:wd.map(d=>d.date.slice(5)),datasets:[
+    {label:"腰圍 cm",data:wd.map(d=>d.body.waist),borderColor:"#e98772",backgroundColor:"#e98772",tension:.3}]});
+  const cd=docsSorted().filter(d=>d.body.bodyFat||d.body.muscle);
+  if(bdCompChart)bdCompChart.destroy();
+  bdCompChart=draw("bdCompChart","line",{labels:cd.map(d=>d.date.slice(5)),datasets:[
+    {label:"體脂率 %",data:cd.map(d=>d.body.bodyFat??null),borderColor:"#f2b461",backgroundColor:"#f2b461",yAxisID:"y",spanGaps:true},
+    {label:"骨骼肌 kg",data:cd.map(d=>d.body.muscle??null),borderColor:"#457850",backgroundColor:"#457850",yAxisID:"y1",spanGaps:true}
+  ]},{scales:{y:{position:"left"},y1:{position:"right",grid:{drawOnChartArea:false}}}});
+}
+
+// ---- 進度檢查 ----
+const CK_Q={
+  weight:{label:"最近 2～3 週的平均體重",opts:[["fast","每週掉超過 0.5 kg"],["good","每週掉約 0.2～0.4 kg"],["flat","幾乎沒變，持平 2～3 週"],["up","平均在上升"]]},
+  waist:{label:"腰圍",opts:[["down","變小了"],["flat","差不多"],["up","變大了"],["none","沒有量"]]},
+  strength:{label:"重訓表現",opts:[["up","重量或次數增加"],["flat","大致維持"],["down","持續退步"],["none","沒有紀錄"]]},
+  recovery:{label:"精神與恢復",opts:[["ok","精神正常、恢復良好"],["tired","常常累、很餓或恢復不好"],["warn","頭暈、明顯虛弱或月經異常"]]}
+};
+function autoCheck(){
+  const t=today(),rc=rateClass(weeklyRate(t));
+  const wd=docsSorted().filter(d=>d.body.waist);
+  let waist="none";
+  if(wd.length>=2){
+    const last=wd.at(-1),base=wd.filter(d=>dayNum(last.date)-dayNum(d.date)>=10).at(-1)||wd[0];
+    const ch=last.body.waist-base.body.waist; waist=last===base?"none":ch<=-0.5?"down":ch>=0.5?"up":"flat";
+  }
+  const recent=docsSorted().filter(d=>dayNum(t)-dayNum(d.date)<14);
+  const en=recent.filter(d=>d.body.energy).map(d=>d.body.energy),hu=recent.filter(d=>d.body.hunger).map(d=>d.body.hunger);
+  const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const tired=(mean(en)!=null&&mean(en)<=1.6)||(mean(hu)!=null&&mean(hu)>=2.5);
+  return{weight:rc.k==="none"?"":rc.k,waist,strength:strengthTrend(),recovery:tired?"tired":"ok"};
+}
+// The adjustment rules from the plan, in priority order. Never suggests eating less when
+// weight is dropping fast, strength is falling or recovery is poor.
+function checkAdvice(a){
+  const k=goals.calorie,floor=KCAL_FLOOR();
+  if(a.recovery==="warn")return{cls:"stop",title:"暫停調整",text:"出現頭暈、明顯虛弱或月經異常時，先暫停任何減脂調整，並尋求醫療專業評估。",options:[]};
+  if(!a.weight)return{cls:"warn",title:"資料不足",text:"體重紀錄還不夠，先連續量 1～2 週（每天早上），再回來檢查。",options:[]};
+  if(a.weight==="fast"||a.strength==="down"||a.recovery==="tired"){
+    const plus=a.recovery==="tired"||a.weight==="fast";
+    return{cls:"warn",title:"不要再減熱量",text:"體重掉太快、力量退步或常常疲倦時，不要再減少熱量。先檢查是否吃得不足、睡眠不足或訓練過量。"+(plus?" 常常餓或累的話，可以每天加約 100 kcal（多半加在蛋白質或澱粉）。":""),
+      options:plus?[["+100",k+100],["維持",k]]:[["維持",k]]};
+  }
+  if(a.weight==="good")return{cls:"",title:"照現在的做",text:"體重穩定下降、力量維持，不用改變飲食，繼續執行。",options:[["維持",k]]};
+  if(a.waist==="down"||a.strength==="up")return{cls:"",title:"體態在改善",text:"體重持平，但腰圍變小或力量進步，可能正在改善身體組成。先不要急著減熱量。",options:[["維持",k]]};
+  const can=k-100>=floor;
+  return{cls:"warn",title:"先確認紀錄，再微調",text:"體重和腰圍都沒有變化。先確認飲食紀錄（飲料、油、醬汁、週末餐點）和日常活動，再二選一：每天少約 100 kcal，或每天多走一點路。"
+    +(can?"":` 目前已經在下限 ${floor} kcal，建議選擇多走路，不再減少熱量。`),
+    options:can?[["−100 kcal",k-100],["改成多走路",k]]:[["改成多走路",k]]};
+}
+function openBodyCheck(){
+  const ans=autoCheck();
+  const draw_=()=>{
+    const adv=checkAdvice(ans);
+    $("ckResult").className="ck-result "+adv.cls;
+    $("ckResult").innerHTML=`<b>${esc(adv.title)}</b><br>${esc(adv.text)}`;
+    $("ckActions").innerHTML=adv.options.map(([label,kcal],i)=>
+      `<button class="${i?"ghost-btn":"btn"}" data-kcal="${kcal}" data-label="${esc(label)}">${esc(label)}${kcal!==goals.calorie?`（${kcal} kcal）`:""}</button>`).join("");
+    $("ckActions").querySelectorAll("[data-kcal]").forEach(b=>b.onclick=async()=>{
+      const kcal=Math.max(KCAL_FLOOR(),+b.dataset.kcal),before=goals.calorie;
+      b.disabled=true;
+      if(kcal!==before)await setCalorieGoal(kcal);
+      bodyPlan.checkins.push({date:today(),answers:{...ans},title:adv.title+(b.dataset.label==="改成多走路"?"（多走路）":""),kcalBefore:before,kcalAfter:kcal});
+      await saveBodyPlan();
+      closeForm(); renderBodyAll();
+      bodyStatus(kcal!==before?`每日熱量目標已改成 ${kcal} kcal，今日頁同步更新`:"已記下這次檢查，繼續照計畫 ✿",true);
+    });
+  };
+  openForm("🔍 進度檢查",Object.entries(CK_Q).map(([k,q])=>
+    `<div class="ck-q"><b>${q.label} <small>${ans[k]?"已依紀錄自動選好，可以改":"請選一個"}</small></b><div class="chip-row" data-ck="${k}">${
+      q.opts.map(([v,l])=>`<button class="chip${ans[k]===v?" active":""}" data-v="${v}">${l}</button>`).join("")}</div></div>`).join("")
+    +`<div id="ckResult"></div><div class="ck-actions" id="ckActions"></div>
+    <p class="bd-note">此工具是規劃參考，不是醫療診斷。若出現明顯不適，請優先處理健康問題。</p>`);
+  $("formBody").querySelectorAll("[data-ck]").forEach(g=>g.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+    ans[g.dataset.ck]=c.dataset.v;
+    g.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===c));
+    draw_();
+  }));
+  draw_();
+}
+
+// ---- 計畫設定 ----
+function openBodyPlanEditor(){
+  const p=bodyPlan;
+  openForm("⚙️ 計畫設定",`
+    <div class="fgroup">
+      <div class="frow"><label>開始日期</label><input id="bpStart" type="date" value="${p.startDate}"></div>
+      <div class="frow"><label>起點體重</label><input id="bpW" type="number" step="0.1" value="${p.start.weight}"></div>
+      <div class="frow"><label>起點體脂</label><input id="bpBF" type="number" step="0.1" value="${p.start.bodyFat}"></div>
+      <div class="frow"><label>起點肌肉</label><input id="bpM" type="number" step="0.1" value="${p.start.muscle}"></div>
+      <div class="frow"><label>目標體脂</label><input id="bpT" type="number" step="0.1" value="${p.targetBodyFat}"></div>
+    </div>
+    <div class="fgroup">
+      <div class="frow"><label>每週重訓</label><select id="bpGym">${[1,2,3].map(n=>`<option${n===p.gymGoal?" selected":""}>${n}</option>`).join("")}</select></div>
+      <div class="frow"><label>每日熱量</label><span class="frow-val">${goals.calorie} kcal・蛋白質 ${goals.protein} g</span></div>
+    </div>
+    <p class="bd-note">熱量和蛋白質跟今日頁共用，到 ⚙️ 設定 → 每日目標修改，或透過進度檢查調整。</p>
+    <div class="fsheet-actions"><button class="btn" id="bpSave">儲存</button></div>`);
+  $("bpSave").onclick=async()=>{
+    bodyPlan=normBodyPlan({...bodyPlan,startDate:$("bpStart").value,targetBodyFat:$("bpT").value,gymGoal:$("bpGym").value,
+      start:{...bodyPlan.start,weight:$("bpW").value,bodyFat:$("bpBF").value,muscle:$("bpM").value,
+        // a changed start point makes the scale's fat-mass reading stale; fall back to weight × %
+        fatMass:(+$("bpW").value===bodyPlan.start.weight&&+$("bpBF").value===bodyPlan.start.bodyFat)?bodyPlan.start.fatMass:0}});
+    if(await saveBodyPlan()){closeForm(); renderBodyAll(); bodyStatus("計畫已更新 ✿",true)}
+  };
+}
+
+// ---- orchestration ----
+const isBodyPage=x=>$(x).classList.contains("active");
+function renderBodyAll(){
+  if(!bodyPlan)return;
+  renderBodyHome();
+  if(isBodyPage("bdLog"))renderBodyLog();
+  if(isBodyPage("bdLift"))renderBodyLift();
+  renderBodyTrend();
+}
+async function openBody(){
+  if(!user)return;
+  if(!bodyPlan)await loadBodyPlan();
+  if(!$("bdDate").value)$("bdDate").value=today();
+  await loadBodyData(true);
+  renderBodyAll();
+}
+function showBodyPage(id){
+  document.querySelectorAll(".bd-page").forEach(p=>p.classList.toggle("active",p.id===id));
+  document.querySelectorAll("#bodyNav .fin-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.bsub===id));
+  window.scrollTo({top:0});
+  if(bodyPlan)renderBodyAll();
+}
+async function startBodyPlan(){
+  bodyPlan=normBodyPlan({});
+  $("bdStart").disabled=true;
+  if(!await saveBodyPlan()){$("bdStart").disabled=false; return}
+  await setCalorieGoal(1400,100);
+  renderTplApply(); renderBodyAll();
+  bodyStatus("計畫開始了！每日目標已改成 1,400 kcal・蛋白質 100 g ✿",true);
+}
+
 // ---------- calendar ----------
 async function calendar(){
   if(!user)return;
@@ -2804,6 +3496,8 @@ document.querySelectorAll("#mainCard>.tabs .tab").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("#mainCard>.tabs .tab").forEach(x=>x.classList.toggle("active",x===b));
   document.querySelectorAll(".pane").forEach(x=>x.classList.toggle("active",x.id===b.dataset.pane));
   document.body.classList.toggle("finance-mode",b.dataset.pane==="financePane");
+  document.body.classList.toggle("body-mode",b.dataset.pane==="bodyPane");
+  if(b.dataset.pane==="bodyPane")openBody();
   if(b.dataset.pane==="insightsPane")insights();
   if(b.dataset.pane==="financePane")openFinance();
   if(b.dataset.pane==="calendarPane")calendar();
@@ -2855,6 +3549,24 @@ $("deleteAssets").onclick=deleteAssets;
 $("finToReserve").onclick=balanceToReserve;
 $("finToBank").onclick=balanceToBank;
 $("openRecur").onclick=openRecurPage;
+document.querySelectorAll("#bodyNav .fin-nav-btn").forEach(b=>b.onclick=()=>showBodyPage(b.dataset.bsub));
+$("bdStart").onclick=startBodyPlan;
+$("bdPlanBtn").onclick=openBodyPlanEditor;
+$("bdCheckOpen").onclick=openBodyCheck;
+$("bdDate").onchange=renderBodyLog;
+$("bdPrevDay").onclick=()=>{$("bdDate").value=addDays($("bdDate").value||today(),-1); renderBodyLog()};
+$("bdNextDay").onclick=()=>{$("bdDate").value=addDays($("bdDate").value||today(),1); renderBodyLog()};
+[["bdWeightIn","weight"],["bdWaistIn","waist"],["bdBFIn","bodyFat"],["bdMuscleIn","muscle"]].forEach(([el,k])=>$(el).oninput=e=>editBodyField(k,+e.target.value||0));
+document.querySelectorAll("#bdLog [data-bdq]").forEach(g=>g.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+  const on=!c.classList.contains("active");
+  g.querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",on&&x===c));
+  editBodyField(g.dataset.bdq,on?+c.dataset.v:0);
+}));
+document.querySelectorAll("#bdLog [data-bdt]").forEach(c=>c.onclick=()=>{const on=c.classList.toggle("active"); editBodyField(c.dataset.bdt,on)});
+$("bdTplSeg").querySelectorAll(".seg-btn").forEach(b=>b.onclick=()=>{
+  $("bdTplSeg").querySelectorAll(".seg-btn").forEach(x=>x.classList.toggle("active",x===b)); renderBodyLift();
+});
+document.querySelectorAll("[data-tpl-apply]").forEach(b=>b.onclick=()=>applyTemplate(b.dataset.tplApply));
 $("recurBack").onclick=()=>closeRecurPage(false);
 $("recurAdd").onclick=()=>openRecurEditor(null);
 $("formSheet").onclick=e=>{if(e.target===$("formSheet")||e.target.closest("[data-form-close]"))closeForm()};
@@ -2895,6 +3607,7 @@ onAuthStateChanged(auth,async u=>{
   await loadGoals();
   await loadCategories();
   await loadAccounts();
+  await loadBodyPlan();
   // fire-and-forget: a slow or blocked network must never delay sign-in
   if(Date.now()-accountsCfg.ratesUpdatedAt>RATE_MAX_AGE)fetchRates(false);
   await day();
