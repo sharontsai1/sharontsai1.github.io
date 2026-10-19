@@ -184,11 +184,11 @@ async function pickModel(env) {
 // and the arithmetic happens on the page where the user can see it.
 const LABEL_PROMPT = `You are reading a packaged food's nutrition panel from a photo. Reply in Traditional Chinese (zh-Hant) for any text fields.
 
-Report energy and protein PER SINGLE SERVING.
+Report energy, protein, fat and carbohydrate PER SINGLE SERVING. For carbohydrate use total carbohydrate (碳水化合物), not sugar.
 
 - If the panel lists values per 100g/100ml and states a serving size, convert to per-serving and set basis to "converted_from_100g".
 - If it lists values per serving directly, set basis to "per_serving".
-- If it only gives whole-package values, put those in serving_kcal/serving_protein_g, set servings_per_pack to 1 and basis to "per_pack".
+- If it only gives whole-package values, put those in serving_kcal/serving_protein_g/serving_fat_g/serving_carbs_g, set servings_per_pack to 1 and basis to "per_pack".
 - servings_per_pack is how many servings the package contains (本包裝含X份). Use 1 if it is a single-serving package. Never guess a number that is not derivable from the label.
 - Convert kJ to kcal by dividing by 4.184 and say so in note.
 - If the image is not a nutrition panel, or is too blurry to read the numbers, set ok to false and explain briefly in note. Do not invent numbers.
@@ -206,18 +206,20 @@ const LABEL_SCHEMA = {
     },
     serving_kcal: { type: "number" },
     serving_protein_g: { type: "number" },
+    serving_fat_g: { type: "number" },
+    serving_carbs_g: { type: "number" },
     serving_size: { type: "string" },
     servings_per_pack: { type: "number" },
     confidence: { type: "number" },
     note: { type: "string" },
   },
-  required: ["ok", "product", "basis", "serving_kcal", "serving_protein_g", "servings_per_pack", "confidence", "note"],
+  required: ["ok", "product", "basis", "serving_kcal", "serving_protein_g", "serving_fat_g", "serving_carbs_g", "servings_per_pack", "confidence", "note"],
 };
 
 const PHOTO_PROMPT = `You are estimating the nutrition of a plate of food from a photo. Reply in Traditional Chinese (zh-Hant) for any text fields.
 
 Portion size is genuinely hard to judge from an image, so:
-- Break the meal into the dishes you can identify, each with its own kcal and protein estimate.
+- Break the meal into the dishes you can identify, each with its own kcal, protein, fat and carbohydrate estimate. Include cooking oil in fat.
 - total_kcal_low and total_kcal_high must express your real uncertainty as a range, not a token spread around the midpoint. A rice bowl photographed from above can easily vary by a factor of two.
 - Assume typical Taiwanese home or restaurant portions and cooking oil unless the photo clearly shows otherwise.
 - If the image contains no food, set ok to false and say so in note. Do not invent a meal.
@@ -237,18 +239,22 @@ const PHOTO_SCHEMA = {
           name: { type: "string" },
           kcal: { type: "number" },
           protein_g: { type: "number" },
+          fat_g: { type: "number" },
+          carbs_g: { type: "number" },
         },
-        required: ["name", "kcal", "protein_g"],
+        required: ["name", "kcal", "protein_g", "fat_g", "carbs_g"],
       },
     },
     total_kcal: { type: "number" },
     total_protein_g: { type: "number" },
+    total_fat_g: { type: "number" },
+    total_carbs_g: { type: "number" },
     total_kcal_low: { type: "number" },
     total_kcal_high: { type: "number" },
     confidence: { type: "number" },
     note: { type: "string" },
   },
-  required: ["ok", "meal_name", "items", "total_kcal", "total_protein_g", "total_kcal_low", "total_kcal_high", "confidence", "note"],
+  required: ["ok", "meal_name", "items", "total_kcal", "total_protein_g", "total_fat_g", "total_carbs_g", "total_kcal_low", "total_kcal_high", "confidence", "note"],
 };
 
 // ---------------------------------------------------------------- Gemini

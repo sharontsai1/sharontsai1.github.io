@@ -92,7 +92,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .food-db{border-left:3px solid var(--leaf)}
 .food-ai{border-left:3px solid var(--sun)}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
-.food{grid-template-columns:82px 1fr 62px 62px 30px}
+.food{grid-template-columns:82px 1fr 58px 58px 58px 58px 30px}
 .expense{grid-template-columns:1fr 92px 100px 86px 1fr 30px}
 .expense:not(.has-kind) [data-f=name]{grid-column:span 2}
 .orphan-row{grid-template-columns:1fr 176px}
@@ -284,7 +284,7 @@ body.finance-mode,body.body-mode{padding-bottom:calc(78px + env(safe-area-inset-
 .delete.small{width:24px;height:24px;font-size:12px}
 .add{margin-top:9px;border:1px dashed var(--leaf);background:#edf6eb;color:var(--deep);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700}
 .add.small{margin-top:2px;padding:6px 9px}
-.total{font-size:12px;text-align:right;margin:8px 1px 0;display:flex;justify-content:flex-end;gap:14px}
+.total{font-size:12px;text-align:right;margin:8px 1px 0;display:flex;justify-content:flex-end;gap:6px 14px;flex-wrap:wrap}
 .total b{color:var(--deep);font-size:15px}
 .label{display:block;font-size:10px;font-weight:700;color:#897464;margin:2px 0 4px}
 .moods{display:flex;justify-content:space-between;gap:4px}
@@ -329,7 +329,7 @@ textarea{min-height:80px;resize:vertical}
 .legend-note{font-size:13px;color:#8a7460;margin:2px 0 14px;font-weight:700}
 .budget-grid,.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .budget-grid.cats{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
-.goals-grid{grid-template-columns:repeat(4,1fr)}
+.goals-grid{grid-template-columns:repeat(3,1fr)}
 .budget-box,.goal-box{background:#f8efe1;border-radius:14px;padding:12px}
 .budget-box{padding:18px}
 .budget-box>b{font-size:15px}
@@ -378,8 +378,10 @@ textarea{min-height:80px;resize:vertical}
   .summary{grid-template-columns:repeat(2,1fr)}
   .metric{padding:9px 8px}
   .metric b{font-size:15px}
-  .food{grid-template-columns:1fr 1fr;grid-template-areas:"meal meal" "name name" "cal protein" "del del"}
-  .food select{grid-area:meal}.food input:nth-of-type(1){grid-area:name}.food input:nth-of-type(2){grid-area:cal}.food input:nth-of-type(3){grid-area:protein}.food .delete{grid-area:del;justify-self:end}
+  .food{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"meal meal meal meal" "name name name name" "cal protein fat carbs" ". . . del"}
+  .food select{grid-area:meal}.food input:nth-of-type(1){grid-area:name}.food input:nth-of-type(2){grid-area:cal}.food input:nth-of-type(3){grid-area:protein}
+  .food input:nth-of-type(4){grid-area:fat}.food input:nth-of-type(5){grid-area:carbs}.food .delete{grid-area:del;justify-self:end}
+  .food input[type=number]{padding:7px 5px}
   .expense{grid-template-columns:1fr 88px 65px 29px}
   .sheet-wrap{align-items:flex-end;padding:0}
   .sheet{width:100%;max-width:none;border-radius:20px 20px 0 0;max-height:92vh}
@@ -459,7 +461,7 @@ textarea{min-height:80px;resize:vertical}
         <button class="add scan-btn" id="scanPhoto">🍽 食物照估算</button>
       </div>
       <input type="file" accept="image/*" id="scanFile" class="hidden">
-      <div class="total">熱量　<b id="foodTotal">0 kcal</b>蛋白質　<b id="foodProteinTotal">0 g</b></div>
+      <div class="total"><span>熱量　<b id="foodTotal">0 kcal</b></span><span>蛋白質　<b id="foodProteinTotal">0 g</b></span><span>脂肪　<b id="foodFatTotal">0 g</b></span><span>碳水　<b id="foodCarbsTotal">0 g</b></span></div>
     </section>
 
     <section class="section"><h2 class="heading">🌙 睡眠 <small>目標 7 小時</small></h2>
@@ -534,7 +536,7 @@ textarea{min-height:80px;resize:vertical}
     <dl>
       <dt>起點</dt><dd>57.2 kg・體脂 32.5%・骨骼肌 20.8 kg</dd>
       <dt>目標</dt><dd>體脂低於 25%，保留肌肉</dd>
-      <dt>每日</dt><dd>1,400 kcal・蛋白質 100 g（今日頁的目標會一起更新）</dd>
+      <dt>每日</dt><dd>1,400 kcal・蛋白質 100 g・脂肪 45 g・碳水約 149 g（今日頁的目標會一起更新）</dd>
       <dt>重訓</dt><dd>每週 2 次為目標，忙的時候 1 次也算數</dd>
     </dl>
     <button class="btn" id="bdStart" style="width:100%">開始計畫 ✿</button>
@@ -851,6 +853,8 @@ textarea{min-height:80px;resize:vertical}
     <div class="goals-grid">
       <div class="goal-box"><b>熱量 kcal</b><input id="goalCalorie" type="number" min="0" placeholder="例如 2000"></div>
       <div class="goal-box"><b>蛋白質 g</b><input id="goalProtein" type="number" min="0" placeholder="例如 100"></div>
+      <div class="goal-box"><b>脂肪 g</b><input id="goalFat" type="number" min="0" placeholder="例如 45"></div>
+      <div class="goal-box"><b>碳水 g</b><input id="goalCarbs" type="number" min="0" placeholder="例如 149"></div>
       <div class="goal-box"><b>喝水 ml</b><input id="goalWater" type="number" min="0" placeholder="例如 2000"></div>
       <div class="goal-box"><b>睡眠 小時</b><input id="goalSleep" type="number" min="0" step=".5" placeholder="例如 7"></div>
     </div>
@@ -918,7 +922,8 @@ const EX_TYPES=["跑步","健走","瑜伽","游泳","重訓","排球","其他"];
 const MUSCLES=["胸","背","腿","肩","手臂","核心","臀","全身","其他"];
 const EXP_CATS=["餐飲","交通","生活","購物","娛樂","其他"];
 const WEEKDAYS=["一","二","三","四","五","六","日"];
-const DEFAULT_GOALS={calorie:2000,protein:100,water:2000,sleep:7};
+// fat / carbs default to 0 = "no target set", so existing users see totals without a goal
+const DEFAULT_GOALS={calorie:2000,protein:100,fat:0,carbs:0,water:2000,sleep:7};
 const CAT_PALETTE=["#f2b461","#8ebd88","#96c7cd","#e98772","#ba9bc8","#d8c371","#e0a8c0","#9fb8d9","#c9b28f","#7fb0a0"];
 const CURRENCIES=["TWD","USD","JPY"];
 const CUR_SYMBOL={TWD:"NT$",USD:"US$",JPY:"¥"};
@@ -941,7 +946,7 @@ const today=()=>{
 
 // ---------- data normalization (keeps old records readable) ----------
 const FOOD_SRCS=["manual","barcode","ai-label","ai-photo"];
-function normFood(f={}){return{id:f.id||id(),meal:f.meal||"早餐",name:f.name||"",cal:+f.cal||0,protein:+f.protein||0,src:FOOD_SRCS.includes(f.src)?f.src:"manual",confidence:+f.confidence||0}}
+function normFood(f={}){return{id:f.id||id(),meal:f.meal||"早餐",name:f.name||"",cal:+f.cal||0,protein:+f.protein||0,fat:+f.fat||0,carbs:+f.carbs||0,src:FOOD_SRCS.includes(f.src)?f.src:"manual",confidence:+f.confidence||0}}
 // kg / reps / sets only exist when filled, so parts logged before weights were tracked stay unchanged
 function normPart(p={}){const o={id:p.id||id(),muscle:p.muscle||"",movement:p.movement||""};["kg","reps","sets"].forEach(k=>{if(+p[k]>0)o[k]=+p[k]});return o}
 function normExercise(x={}){
@@ -971,7 +976,7 @@ function norm(d={}){
   const saves=d.saves?d.saves.map(normSave):[];
   return{date:d.date||$("date").value,sleep:+d.sleep||0,mood:+d.mood||0,note:d.note||"",keyword:d.keyword||"",water:+d.water||0,foods,exercises,expenses,incomes,saves,body:normBody(d.body)};
 }
-function normGoals(g={}){return{calorie:+g.calorie||DEFAULT_GOALS.calorie,protein:+g.protein||DEFAULT_GOALS.protein,water:+g.water||DEFAULT_GOALS.water,sleep:+g.sleep||DEFAULT_GOALS.sleep}}
+function normGoals(g={}){return{calorie:+g.calorie||DEFAULT_GOALS.calorie,protein:+g.protein||DEFAULT_GOALS.protein,fat:+g.fat||0,carbs:+g.carbs||0,water:+g.water||DEFAULT_GOALS.water,sleep:+g.sleep||DEFAULT_GOALS.sleep}}
 
 const DEFAULT_CATEGORIES={
   fixed:["房租","水電","保險","訂閱","其他固定"].map(name=>({id:id(),name,budget:0})),
@@ -1060,6 +1065,10 @@ function totals(){
   $("sumExpense").textContent="$"+exp.toLocaleString();
   $("foodTotal").textContent=cal+" kcal";
   $("foodProteinTotal").textContent=pro+" g";
+  const fat=data.foods.reduce((a,x)=>a+(+x.fat||0),0),carb=data.foods.reduce((a,x)=>a+(+x.carbs||0),0);
+  const g1=n=>Math.round(n*10)/10;
+  $("foodFatTotal").textContent=g1(fat)+(goals.fat?" / "+goals.fat:"")+" g";
+  $("foodCarbsTotal").textContent=g1(carb)+(goals.carbs?" / "+goals.carbs:"")+" g";
 
   setBar("calorieBar","calorieBarWrap",cal,goals.calorie,true);
   setBar("proteinBar","proteinBarWrap",pro,goals.protein,false);
@@ -1106,6 +1115,8 @@ function foods(){
       <input data-i="${i}" data-f="name" value="${esc(x.name)}" placeholder="吃了什麼？">
       <input data-i="${i}" data-f="cal" type="number" min="0" value="${x.cal||""}" placeholder="kcal">
       <input data-i="${i}" data-f="protein" type="number" min="0" value="${x.protein||""}" placeholder="蛋白質g">
+      <input data-i="${i}" data-f="fat" type="number" min="0" step="any" value="${x.fat||""}" placeholder="脂肪g">
+      <input data-i="${i}" data-f="carbs" type="number" min="0" step="any" value="${x.carbs||""}" placeholder="碳水g">
       <button class="delete" data-del="${i}">×</button>
     </div>`).join("")||'<div class="empty">還沒有紀錄，新增第一筆食物吧。</div>';
   inputs("foodList",data.foods); bindDelete("foodList","foods");
@@ -1243,9 +1254,11 @@ function confirmSheet(title, pre, rows, src, confidence) {
     const name = ($("sf0").value || "").trim();
     const cal = num($("sf1").value, 0);
     const protein = num($("sf2").value, 0);
+    const fat = $("sf3") ? num($("sf3").value, 0) : 0;
+    const carbs = $("sf4") ? num($("sf4").value, 0) : 0;
     if (!name && !cal) { status("至少要有名稱或熱量"); return; }
     data.foods.push(normFood({
-      meal: $("sfMeal").value, name, cal, protein,
+      meal: $("sfMeal").value, name, cal, protein, fat, carbs,
       src, confidence: num(confidence, 0),
     }));
     closeSheet();
@@ -1304,6 +1317,8 @@ async function barcodeResult(code) {
   const perServing = num(n["energy-kcal_serving"], 0) > 0;
   const cal = perServing ? num(n["energy-kcal_serving"], 0) : num(n["energy-kcal_100g"], 0);
   const protein = perServing ? num(n.proteins_serving, 0) : num(n.proteins_100g, 0);
+  const fat = perServing ? num(n.fat_serving, 0) : num(n.fat_100g, 0);
+  const carbs = perServing ? num(n.carbohydrates_serving, 0) : num(n.carbohydrates_100g, 0);
   const basis = perServing
     ? "每份" + (p.serving_size ? "（" + p.serving_size + "）" : "")
     : "每 100 克／毫升";
@@ -1326,6 +1341,8 @@ async function barcodeResult(code) {
       { label: "名稱", value: name },
       { label: "熱量 kcal", value: Math.round(cal), type: "number" },
       { label: "蛋白質 g", value: Math.round(protein * 10) / 10, type: "number" },
+      { label: "脂肪 g", value: Math.round(fat * 10) / 10, type: "number" },
+      { label: "碳水 g", value: Math.round(carbs * 10) / 10, type: "number" },
     ], "barcode", 1);
 }
 
@@ -1340,6 +1357,7 @@ async function tierLabel(file) {
 
   const packs = Math.max(1, num(r.servings_per_pack, 1));
   const kcal = num(r.serving_kcal, 0), pro = num(r.serving_protein_g, 0);
+  const fatS = num(r.serving_fat_g, 0), carbS = num(r.serving_carbs_g, 0);
   const basisText = {
     per_serving: "標示本來就是每份值",
     converted_from_100g: "標示是每 100g 值，已換算成每份",
@@ -1370,6 +1388,8 @@ async function tierLabel(file) {
         { label: "名稱", value: (r.product || "") + (servings !== 1 ? "（" + servings + " 份）" : "") },
         { label: "熱量 kcal", value: Math.round(kcal * servings), type: "number" },
         { label: "蛋白質 g", value: Math.round(pro * servings * 10) / 10, type: "number" },
+        { label: "脂肪 g", value: Math.round(fatS * servings * 10) / 10, type: "number" },
+        { label: "碳水 g", value: Math.round(carbS * servings * 10) / 10, type: "number" },
       ], "ai-label", num(r.confidence, 0));
   };
   $("sfServGo").onclick = go;
@@ -1400,6 +1420,8 @@ async function tierPhoto(file) {
       { label: "名稱", value: r.meal_name || "" },
       { label: "熱量 kcal", value: Math.round(num(r.total_kcal, 0)), type: "number" },
       { label: "蛋白質 g", value: Math.round(num(r.total_protein_g, 0) * 10) / 10, type: "number" },
+      { label: "脂肪 g", value: Math.round(num(r.total_fat_g, 0) * 10) / 10, type: "number" },
+      { label: "碳水 g", value: Math.round(num(r.total_carbs_g, 0) * 10) / 10, type: "number" },
     ], "ai-photo", num(r.confidence, 0));
 }
 
@@ -1513,11 +1535,12 @@ async function loadGoals(){
     status("目標讀取失敗，請確認 Firestore Rules 已加入 settings 集合");
   }
   $("goalCalorie").value=goals.calorie; $("goalProtein").value=goals.protein;
+  $("goalFat").value=goals.fat||""; $("goalCarbs").value=goals.carbs||"";
   $("goalWater").value=goals.water; $("goalSleep").value=goals.sleep;
 }
 async function saveGoals(){
   if(!user)return;
-  goals=normGoals({calorie:$("goalCalorie").value,protein:$("goalProtein").value,water:$("goalWater").value,sleep:$("goalSleep").value});
+  goals=normGoals({calorie:$("goalCalorie").value,protein:$("goalProtein").value,fat:$("goalFat").value,carbs:$("goalCarbs").value,water:$("goalWater").value,sleep:$("goalSleep").value});
   try{
     await setDoc(doc(db,"users",user.uid,"settings","goals"),{...goals,updatedAt:serverTimestamp()},{merge:true});
   }catch(e){
@@ -3001,10 +3024,11 @@ async function saveBodyPlan(){
     bodyPlanMissing=false; return true;
   }catch(e){bodyStatus("計畫儲存失敗"); return false}
 }
-async function setCalorieGoal(kcal,protein){
-  goals=normGoals({...goals,calorie:kcal,protein:protein||goals.protein});
+async function setCalorieGoal(kcal,protein,macros){
+  goals=normGoals({...goals,calorie:kcal,protein:protein||goals.protein,...(macros||{})});
   await setDoc(doc(db,"users",user.uid,"settings","goals"),{...goals,updatedAt:serverTimestamp()},{merge:true});
   $("goalCalorie").value=goals.calorie; $("goalProtein").value=goals.protein;
+  $("goalFat").value=goals.fat||""; $("goalCarbs").value=goals.carbs||"";
   if(data)totals();
 }
 function bodyStatus(msg,ok){const el=$("bodyStatus"); el.textContent=msg; el.className="status"+(ok?" ok":"")}
@@ -3072,6 +3096,8 @@ function rateClass(r){
 const latestWith=k=>{const d=docsSorted().filter(x=>x.body[k]).pop();return d?{date:d.date,v:d.body[k]}:null};
 const dayKcal=d=>d.foods.reduce((s,f)=>s+(+f.cal||0),0);
 const dayProtein=d=>d.foods.reduce((s,f)=>s+(+f.protein||0),0);
+const dayFat=d=>d.foods.reduce((s,f)=>s+(+f.fat||0),0);
+const dayCarbs=d=>d.foods.reduce((s,f)=>s+(+f.carbs||0),0);
 const isGym=d=>d.exercises.some(x=>x.type==="重訓");
 function currentPhase(t=today()){
   const ps=bodyPlan.phases;
@@ -3125,13 +3151,17 @@ function renderBodyHome(){
   const avgK=fed.length?Math.round(fed.reduce((s,d)=>s+dayKcal(d),0)/fed.length):null;
   const avgP=fed.length?Math.round(fed.reduce((s,d)=>s+dayProtein(d),0)/fed.length):null;
   const weighed=wk.filter(d=>d.body.weight).length;
+  const avgOf=fn=>fed.length?Math.round(fed.reduce((s,d)=>s+fn(d),0)/fed.length):null;
+  const avgF=avgOf(dayFat),avgC=avgOf(dayCarbs);
   $("bdWeekRange").textContent=w.from.slice(5).replace("-","/")+"–"+w.to.slice(5).replace("-","/");
   const gymNote=gym>=p.gymGoal?"達標 ✿":gym>=p.gymMin?"有練就很好":"還有時間";
   $("bdWeek").innerHTML=[
     ["🏋️ 重訓",`${gym} / ${p.gymGoal} 次`,gymNote],
     ["⚖️ 量體重",`${weighed} 天`,"量越多天，平均越準"],
     ["🔥 平均熱量",avgK!=null?avgK+" kcal":"—",`目標 ${goals.calorie}`],
-    ["🥚 平均蛋白質",avgP!=null?avgP+" g":"—",`目標 ${goals.protein} g`]
+    ["🥚 平均蛋白質",avgP!=null?avgP+" g":"—",`目標 ${goals.protein} g`],
+    ["🥑 平均脂肪",avgF!=null?avgF+" g":"—",goals.fat?`目標 ${goals.fat} g`:"未設目標"],
+    ["🍚 平均碳水",avgC!=null?avgC+" g":"—",goals.carbs?`目標 ${goals.carbs} g`:"未設目標"]
   ].map(([a,b,c])=>`<div><span>${a}</span><b>${b}</b><br><small>${esc(c)}</small></div>`).join("");
 
   const td=bodyByDate.get(t)||norm({date:t}),src=data&&data.date===t?data:td;
@@ -3385,9 +3415,9 @@ function openBodyPlanEditor(){
     </div>
     <div class="fgroup">
       <div class="frow"><label>每週重訓</label><select id="bpGym">${[1,2,3].map(n=>`<option${n===p.gymGoal?" selected":""}>${n}</option>`).join("")}</select></div>
-      <div class="frow"><label>每日熱量</label><span class="frow-val">${goals.calorie} kcal・蛋白質 ${goals.protein} g</span></div>
+      <div class="frow"><label>每日熱量</label><span class="frow-val">${goals.calorie} kcal・蛋白質 ${goals.protein}・脂肪 ${goals.fat||"—"}・碳水 ${goals.carbs||"—"} g</span></div>
     </div>
-    <p class="bd-note">熱量和蛋白質跟今日頁共用，到 ⚙️ 設定 → 每日目標修改，或透過進度檢查調整。</p>
+    <p class="bd-note">熱量和三大營養素跟今日頁共用，到 ⚙️ 設定 → 每日目標修改，或透過進度檢查調整。</p>
     <div class="fsheet-actions"><button class="btn" id="bpSave">儲存</button></div>`);
   $("bpSave").onclick=async()=>{
     bodyPlan=normBodyPlan({...bodyPlan,startDate:$("bpStart").value,targetBodyFat:$("bpT").value,gymGoal:$("bpGym").value,
@@ -3424,7 +3454,7 @@ async function startBodyPlan(){
   bodyPlan=normBodyPlan({});
   $("bdStart").disabled=true;
   if(!await saveBodyPlan()){$("bdStart").disabled=false; return}
-  await setCalorieGoal(1400,100);
+  await setCalorieGoal(1400,100,{fat:bodyPlan.macros.fat,carbs:bodyPlan.macros.carbs});
   renderTplApply(); renderBodyAll();
   bodyStatus("計畫開始了！每日目標已改成 1,400 kcal・蛋白質 100 g ✿",true);
 }
