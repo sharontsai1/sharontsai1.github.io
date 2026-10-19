@@ -95,6 +95,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .food{grid-template-columns:82px 1fr 62px 62px 62px 62px 30px;align-items:end}
 /* each number carries its own label, so a filled row still says which box is which */
 .nf{display:flex;flex-direction:column;gap:2px;font-size:10px;font-weight:700;color:#9b8877;min-width:0}
+.nf input{font-size:14px;font-weight:400;color:var(--ink)}
 .food>select,.food>input,.food>.delete{align-self:end}
 .expense{grid-template-columns:1fr 92px 100px 86px 1fr 30px}
 .expense:not(.has-kind) [data-f=name]{grid-column:span 2}
@@ -1117,10 +1118,10 @@ function foods(){
     <div class="item food${foodSrcClass(x.src)}" title="${esc(FOOD_SRC_LABEL[x.src]||FOOD_SRC_LABEL.manual)}">
       <select data-i="${i}" data-f="meal">${MEALS.map(v=>`<option ${x.meal===v?"selected":""}>${v}</option>`).join("")}</select>
       <input data-i="${i}" data-f="name" value="${esc(x.name)}" placeholder="吃了什麼？">
-      <label class="nf nf-cal">熱量 kcal<input data-i="${i}" data-f="cal" type="number" inputmode="decimal" min="0" value="${x.cal||""}" placeholder="0"></label>
-      <label class="nf nf-protein">蛋白質 g<input data-i="${i}" data-f="protein" type="number" inputmode="decimal" min="0" step="any" value="${x.protein||""}" placeholder="0"></label>
-      <label class="nf nf-fat">脂肪 g<input data-i="${i}" data-f="fat" type="number" inputmode="decimal" min="0" step="any" value="${x.fat||""}" placeholder="0"></label>
-      <label class="nf nf-carbs">碳水 g<input data-i="${i}" data-f="carbs" type="number" inputmode="decimal" min="0" step="any" value="${x.carbs||""}" placeholder="0"></label>
+      <label class="nf nf-cal">熱量 kcal<input data-i="${i}" data-f="cal" type="number" inputmode="decimal" min="0" value="${x.cal||""}" placeholder="—"></label>
+      <label class="nf nf-protein">蛋白質 g<input data-i="${i}" data-f="protein" type="number" inputmode="decimal" min="0" step="any" value="${x.protein||""}" placeholder="—"></label>
+      <label class="nf nf-fat">脂肪 g<input data-i="${i}" data-f="fat" type="number" inputmode="decimal" min="0" step="any" value="${x.fat||""}" placeholder="—"></label>
+      <label class="nf nf-carbs">碳水 g<input data-i="${i}" data-f="carbs" type="number" inputmode="decimal" min="0" step="any" value="${x.carbs||""}" placeholder="—"></label>
       <button class="delete" data-del="${i}">×</button>
     </div>`).join("")||'<div class="empty">還沒有紀錄，新增第一筆食物吧。</div>';
   inputs("foodList",data.foods); bindDelete("foodList","foods");
