@@ -539,7 +539,7 @@ textarea{min-height:80px;resize:vertical}
     <h2 class="heading">💪 開始減脂計畫</h2>
     <p class="metric-sub" style="font-size:12px;opacity:.8;margin:0">依照你和 ChatGPT 討論的計畫建立。之後都可以在「⚙️ 計畫設定」修改。</p>
     <dl>
-      <dt>起點</dt><dd>57.2 kg・體脂 32.5%・骨骼肌 20.8 kg</dd>
+      <dt>起點</dt><dd id="bdOnboardStart">57.2 kg・體脂 32.5%・骨骼肌 20.8 kg</dd>
       <dt>目標</dt><dd>體脂低於 25%，保留肌肉</dd>
       <dt>每日</dt><dd>1,400 kcal・蛋白質 100 g・脂肪 45 g・碳水約 149 g（今日頁的目標會一起更新）</dd>
       <dt>重訓</dt><dd>每週 2 次為目標，忙的時候 1 次也算數</dd>
@@ -558,6 +558,7 @@ textarea{min-height:80px;resize:vertical}
       <div class="bd-bar"><i id="bdBFBar" style="width:0"></i></div>
       <div class="bd-bar-labels"><span id="bdBFStart"></span><span id="bdBFTarget"></span></div>
       <p class="bd-note">目標體重假設肌肉量不變；如果長了肌肉，體重比較高也能達標，不用硬追這個數字。</p>
+      <p class="fsheet-hint warn hidden" id="bdProvisional" style="margin:8px 0 0">體脂起點是暫定值：早上空腹量一次體脂，填進記錄頁後，到 ⚙️ 計畫設定按「🔄 重新校正」。</p>
     </section>
 
     <section class="card tape-coral">
@@ -3004,14 +3005,15 @@ function normBodyPlan(p={}){
   const d=DEFAULT_BODY_PLAN,num=(v,f)=>isFinite(+v)&&+v>0?+v:f;
   const s=p.start||{};
   return{
-    startDate:/^d{4}-d{2}-d{2}$/.test(p.startDate||"")?p.startDate:d.startDate,
-    start:{weight:num(s.weight,d.start.weight),bodyFat:num(s.bodyFat,d.start.bodyFat),muscle:num(s.muscle,d.start.muscle),fatMass:p.start?num(s.fatMass,0):d.start.fatMass},
+    startDate:/^\d{4}-\d{2}-\d{2}$/.test(p.startDate||"")?p.startDate:d.startDate,
+    start:{weight:num(s.weight,d.start.weight),bodyFat:num(s.bodyFat,d.start.bodyFat),muscle:num(s.muscle,d.start.muscle),fatMass:p.start?num(s.fatMass,0):d.start.fatMass,provisional:!!s.provisional},
     targetBodyFat:num(p.targetBodyFat,d.targetBodyFat),bmr:num(p.bmr,d.bmr),
     macros:{fat:num((p.macros||{}).fat,d.macros.fat),carbs:num((p.macros||{}).carbs,d.macros.carbs)},
     gymGoal:num(p.gymGoal,d.gymGoal),gymMin:num(p.gymMin,d.gymMin),checkEvery:num(p.checkEvery,d.checkEvery),
     phases:Array.isArray(p.phases)&&p.phases.length?p.phases:d.phases,
     templates:{A:(p.templates&&p.templates.A)||d.templates.A,B:(p.templates&&p.templates.B)||d.templates.B},
-    checkins:Array.isArray(p.checkins)?p.checkins:[]
+    checkins:Array.isArray(p.checkins)?p.checkins:[],
+    calibrations:Array.isArray(p.calibrations)?p.calibrations:[]
   };
 }
 async function loadBodyPlan(){
@@ -3114,14 +3116,82 @@ function weekBounds(t=today()){
 }
 
 // ---- 總覽 ----
+// lean mass from the starting measurement; a scale fat-mass reading wins when given
+function planTargets(p){
+  const s=p.start,startFat=s.fatMass||s.weight*s.bodyFat/100,lean=s.weight-startFat;
+  const targetW=lean/(1-p.targetBodyFat/100);
+  return{startFat,lean,targetW,fatGoal:startFat-targetW*p.targetBodyFat/100};
+}
+// The morning baseline. Anchored to the FIRST week of weigh-ins around the plan start, not
+// the latest week: re-running this a month in would otherwise fold real fat loss into the
+// "start" and slide every target down with it. Body fat likewise uses the first reading.
+function calibratedStart(base){
+  const from=addDays(base.startDate,-7),pts=weights().filter(p=>p.date>=from&&p.date<=today());
+  if(!pts.length)return null;
+  let used=pts.filter(p=>dayNum(p.date)<dayNum(pts[0].date)+7);
+  if(used.length<3)used=pts.slice(0,Math.min(7,pts.length));
+  if(used.length<3)return{need:3-used.length,used};
+  const comp=docsSorted().find(d=>d.date>=from&&d.body.bodyFat);
+  return{weight:r1(used.reduce((a,p)=>a+p.w,0)/used.length),used,
+    bodyFat:comp?comp.body.bodyFat:null,muscle:comp?(comp.body.muscle||null):null,compDate:comp?comp.date:null};
+}
+// Shifts every phase range by the same amount the start moved, so the plan keeps its shape.
+function calibratedPlan(base,c){
+  const shift=r1(c.weight-base.start.weight);
+  const bf=c.bodyFat||base.start.bodyFat,mu=c.muscle||base.start.muscle;
+  const plan=normBodyPlan({...base,
+    // fatMass 0: the old 18.8 kg reading came from the evening, so derive it from weight × %
+    start:{weight:c.weight,bodyFat:bf,muscle:mu,fatMass:0,provisional:!c.bodyFat},
+    phases:base.phases.map(p=>({...p,lo:r1(+p.lo+shift),hi:r1(+p.hi+shift)})),
+    calibrations:[...(base.calibrations||[]),{date:today(),shift,
+      from:{weight:base.start.weight,bodyFat:base.start.bodyFat,muscle:base.start.muscle},
+      to:{weight:c.weight,bodyFat:bf,muscle:mu}}]});
+  return{shift,plan};
+}
+function openCalibrate(){
+  const base=bodyPlanMissing?normBodyPlan({}):bodyPlan,c=calibratedStart(base);
+  if(!c||c.need){
+    openForm("🔄 重新校正起點",`<p class="fsheet-hint warn">早上體重還不夠，${c?"再量 "+c.need+" 天":"至少要量 3 天"}就能校正。每天起床、上完廁所後量。</p>
+      <div class="fsheet-actions"><button class="btn" data-form-close>好</button></div>`);
+    return;
+  }
+  const {shift,plan}=calibratedPlan(base,c),o=planTargets(base),n=planTargets(plan);
+  const fmt=v=>(+v).toFixed(1);
+  openForm("🔄 重新校正起點",`
+    <p class="bd-note" style="margin-top:0">用計畫開始那週的早上體重當起點，每月規劃範圍一起平移 <b>${shift>0?"+":""}${fmt(shift)} kg</b>。</p>
+    <div class="fgroup">
+      <div class="frow"><label>起點體重</label><span class="frow-val">${fmt(base.start.weight)} → <b>${fmt(c.weight)} kg</b></span></div>
+      <div class="frow"><label>起點體脂</label><span class="frow-val">${c.bodyFat?fmt(base.start.bodyFat)+" → <b>"+fmt(c.bodyFat)+"%</b>（"+c.compDate.slice(5).replace("-","/")+" 量）":fmt(base.start.bodyFat)+"%（暫定）"}</span></div>
+      <div class="frow"><label>目標體重</label><span class="frow-val">≈${fmt(o.targetW)} → <b>≈${fmt(n.targetW)} kg</b></span></div>
+      <div class="frow"><label>要減脂肪</label><span class="frow-val">約 ${fmt(o.fatGoal)} → <b>約 ${fmt(n.fatGoal)} kg</b></span></div>
+    </div>
+    <div class="summary-list" style="margin-bottom:10px">${base.phases.map((p,i)=>
+      `<div class="summary-row"><span>${esc(p.name)}</span><b>${fmt(p.lo)}～${fmt(p.hi)} → ${fmt(plan.phases[i].lo)}～${fmt(plan.phases[i].hi)}</b></div>`).join("")}</div>
+    <p class="bd-note">用到的體重（如果有晚上量的，先到「記錄」頁刪掉再回來）：<br>${c.used.map(p=>p.date.slice(5).replace("-","/")+" "+fmt(p.w)).join("、")}</p>
+    ${c.bodyFat?"":'<p class="fsheet-hint warn">體脂還是暫定值。早上空腹量一次體脂、填進記錄頁後，再校正一次，目標體重和要減的脂肪會再更新。</p>'}
+    <div class="fsheet-actions"><button class="ghost-btn" data-form-close style="padding:12px 16px">取消</button><button class="btn" id="calApply">套用</button></div>`);
+  $("calApply").onclick=async()=>{
+    $("calApply").disabled=true;
+    if(bodyPlanMissing){closeForm(); await startBodyPlan(); return}
+    bodyPlan=plan;
+    if(await saveBodyPlan()){closeForm(); renderBodyAll(); bodyStatus(`已校正：起點 ${fmt(c.weight)} kg，每月範圍平移 ${fmt(shift)} kg ✿`,true)}
+    else $("calApply").disabled=false;
+  };
+}
+
 function renderBodyHome(){
   $("bdOnboard").classList.toggle("hidden",!bodyPlanMissing);
   $("bdDash").classList.toggle("hidden",bodyPlanMissing);
-  if(bodyPlanMissing)return;
+  if(bodyPlanMissing){
+    const c=calibratedStart(normBodyPlan({}));
+    $("bdOnboardStart").innerHTML=c&&!c.need
+      ?`早上平均 ${c.weight.toFixed(1)} kg・體脂 ${c.bodyFat||32.5}%${c.bodyFat?"":"（暫定）"}<br><span class="metric-sub" style="font-size:11px">依你記錄的早上體重自動校正</span>`
+      :"57.2 kg・體脂 32.5%・骨骼肌 20.8 kg";
+    return;
+  }
   const p=bodyPlan,s=p.start,t=today();
-  // lean mass from the starting measurement; the scale's own fat-mass reading wins when given
-  const startFat=s.fatMass||s.weight*s.bodyFat/100,lean=s.weight-startFat;
-  const targetW=lean/(1-p.targetBodyFat/100),fatGoal=startFat-targetW*p.targetBodyFat/100;
+  const {startFat,targetW,fatGoal}=planTargets(p);
+  $("bdProvisional").classList.toggle("hidden",!s.provisional);
   const bf=latestWith("bodyFat"),curBF=bf?bf.v:s.bodyFat;
   const wAtBF=bf&&((bodyByDate.get(bf.date).body.weight)||avg7(bf.date));
   const curFat=bf&&wAtBF?wAtBF*curBF/100:null;
@@ -3129,7 +3199,7 @@ function renderBodyHome(){
   $("bdBFDate").textContent=bf?"量於 "+bf.date.slice(5).replace("-","/"):"起點數值";
   $("bdFatLost").textContent=curFat!=null?r1(startFat-curFat)+" kg":"—";
   $("bdFatGoal").textContent="目標約 "+r1(fatGoal)+" kg";
-  $("bdTargetW").textContent="≈"+r1(targetW)+" kg";
+  $("bdTargetW").textContent="≈"+targetW.toFixed(1)+" kg";
   const prog=Math.max(0,Math.min(100,(s.bodyFat-curBF)/(s.bodyFat-p.targetBodyFat)*100));
   $("bdBFBar").style.width=prog+"%";
   $("bdBFStart").textContent="起點 "+s.bodyFat+"%";
@@ -3148,7 +3218,7 @@ function renderBodyHome(){
   band.style.left=pos(ph.lo)+"%"; band.style.width=(pos(ph.hi)-pos(ph.lo))+"%";
   dot.classList.toggle("hidden",a==null); if(a!=null)dot.style.left=pos(a)+"%";
   $("bdRangeMin").textContent=mn; $("bdRangeMax").textContent=mx;
-  $("bdRangeTxt").textContent=`規劃 ${(+ph.lo).toFixed(1)}～${(+ph.hi).toFixed(1)} kg`+(a!=null?`・你在 ${r1(a)}`:"");
+  $("bdRangeTxt").textContent=`月底目標 ${(+ph.lo).toFixed(1)}～${(+ph.hi).toFixed(1)} kg`+(a!=null?`・你在 ${r1(a)}`:"");
   $("bdPhaseTasks").innerHTML=ph.tasks.map(x=>`<li>🌱 <span>${esc(x)}</span></li>`).join("");
 
   const w=weekBounds(t),wk=docsSorted().filter(d=>d.date>=w.from&&d.date<=t);
@@ -3410,7 +3480,10 @@ function openBodyCheck(){
 // ---- 計畫設定 ----
 function openBodyPlanEditor(){
   const p=bodyPlan;
+  const lastCal=p.calibrations.at(-1);
   openForm("⚙️ 計畫設定",`
+    <button class="ghost-btn" id="bpCalibrate" style="width:100%;padding:12px;margin-bottom:6px">🔄 用早上體重重新校正</button>
+    <p class="bd-note" style="margin:0 0 10px">${lastCal?`上次校正 ${lastCal.date}：起點 ${(+lastCal.from.weight).toFixed(1)} → ${(+lastCal.to.weight).toFixed(1)} kg`:"起點或體脂是晚上量的話，用這個改成早上的數字"}</p>
     <div class="fgroup">
       <div class="frow"><label>開始日期</label><input id="bpStart" type="date" value="${p.startDate}"></div>
       <div class="frow"><label>起點體重</label><input id="bpW" type="number" step="0.1" value="${p.start.weight}"></div>
@@ -3424,6 +3497,7 @@ function openBodyPlanEditor(){
     </div>
     <p class="bd-note">熱量和三大營養素跟今日頁共用，到 ⚙️ 設定 → 每日目標修改，或透過進度檢查調整。</p>
     <div class="fsheet-actions"><button class="btn" id="bpSave">儲存</button></div>`);
+  $("bpCalibrate").onclick=openCalibrate;
   $("bpSave").onclick=async()=>{
     bodyPlan=normBodyPlan({...bodyPlan,startDate:$("bpStart").value,targetBodyFat:$("bpT").value,gymGoal:$("bpGym").value,
       start:{...bodyPlan.start,weight:$("bpW").value,bodyFat:$("bpBF").value,muscle:$("bpM").value,
@@ -3456,7 +3530,8 @@ function showBodyPage(id){
   if(bodyPlan)renderBodyAll();
 }
 async function startBodyPlan(){
-  bodyPlan=normBodyPlan({});
+  const base=normBodyPlan({}),c=calibratedStart(base);
+  bodyPlan=c&&!c.need?calibratedPlan(base,c).plan:base;
   $("bdStart").disabled=true;
   if(!await saveBodyPlan()){$("bdStart").disabled=false; return}
   await setCalorieGoal(1400,100,{fat:bodyPlan.macros.fat,carbs:bodyPlan.macros.carbs});
