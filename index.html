@@ -1517,7 +1517,7 @@ function render(){
 
 async function save(){
   if(!user)return;
-  clearTimeout(saveTimer);
+  clearTimeout(saveTimer); saveTimer=null;
   status("正在同步…");
   try{
     // expenses / incomes / saves are owned exclusively by the finance page —
@@ -1530,6 +1530,7 @@ async function save(){
   }catch(e){status("同步失敗，請確認 Firestore Rules")}
 }
 function schedule(){totals();clearTimeout(saveTimer);saveTimer=setTimeout(save,600)}
+const savePending=()=>saveTimer!=null;
 
 async function loadGoals(){
   if(!user)return;
@@ -3068,6 +3069,7 @@ async function commitBodyDay(date){
 function scheduleBodySave(date){
   clearTimeout(bodySaveTimers.get(date));
   bodySaveTimers.set(date,setTimeout(async()=>{
+    bodySaveTimers.delete(date);
     try{await commitBodyDay(date); bodyStatus("已儲存 ✿",true)}catch(e){bodyStatus("儲存失敗，請稍後再試")}
     renderBodyAll();
   },600));
@@ -3293,7 +3295,9 @@ async function renderBodyLog(){
   });
 }
 async function editBodyField(k,v){
-  const date=$("bdDate").value||today(),e=await bodyDay(date);
+  // Synchronous when the day is already loaded (the usual case), so there is no gap in
+  // which the edit exists nowhere — a flush on hide must always be able to see it.
+  const date=$("bdDate").value||today(),e=bodyByDate.get(date)||await bodyDay(date);
   if(v===undefined||v===null||v===""||v===false||(typeof v==="number"&&!(v>0)))delete e.body[k]; else e.body[k]=v;
   bodyStatus("儲存中…"); scheduleBodySave(date);
 }
@@ -3680,6 +3684,43 @@ document.querySelectorAll("[data-tpl-apply]").forEach(b=>b.onclick=()=>applyTemp
 $("recurBack").onclick=()=>closeRecurPage(false);
 $("recurAdd").onclick=()=>openRecurEditor(null);
 $("formSheet").onclick=e=>{if(e.target===$("formSheet")||e.target.closest("[data-form-close]"))closeForm()};
+
+// ---------- phone lifecycle ----------
+// Phones freeze a backgrounded page and may kill it without warning, so the 600ms
+// debounced saves are flushed the moment the page is hidden. setDoc lands in Firestore's
+// IndexedDB queue synchronously, so even if the page dies next, it uploads on next open.
+function flushPendingSaves(){
+  if(!user)return Promise.resolve();
+  const jobs=[];
+  if(savePending())jobs.push(save());
+  bodySaveTimers.forEach((t,date)=>{clearTimeout(t); bodySaveTimers.delete(date); jobs.push(commitBodyDay(date).catch(()=>{}))});
+  return Promise.all(jobs);
+}
+// A phone can also keep the page alive in the background for days. Coming back, reload
+// whatever is on screen (entries made on another device) and roll "today" forward if the
+// date changed while it was hidden — otherwise yesterday keeps showing as if it were today.
+let hiddenAt=0,hiddenToday="";
+async function refreshAfterResume(){
+  if(!user)return;
+  // Anything still pending must be written BEFORE reloading, or the reload replaces the
+  // in-memory edit and the late save then writes the fresh (older) copy over it.
+  await flushPendingSaves();
+  const t=today();
+  if(hiddenToday&&t!==hiddenToday)["date","finDate","bdDate"].forEach(k=>{if($(k).value===hiddenToday)$(k).value=t});
+  await day();
+  bodyLoaded=false;
+  const pane=document.querySelector(".pane.active");
+  if(pane&&pane.id==="financePane"){loadedYears=new Set(); financeByDate=new Map(); await openFinance()}
+  else if(pane&&pane.id==="bodyPane")await openBody();
+  else if(pane&&pane.id==="calendarPane")await calendar();
+  else if(pane&&pane.id==="insightsPane")await insights();
+}
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden"){hiddenAt=Date.now(); hiddenToday=today(); flushPendingSaves(); return}
+  // short glances (copying a number from another app) don't need a reload
+  if(hiddenAt&&Date.now()-hiddenAt>30000)refreshAfterResume().catch(()=>{});
+});
+window.addEventListener("pagehide",flushPendingSaves);
 
 $("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"; document.body.classList.add("settings-open")};
 $("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"; document.body.classList.remove("settings-open")};
