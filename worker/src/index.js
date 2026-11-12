@@ -142,39 +142,72 @@ function checkUid(uid, env) {
 
 // ---------------------------------------------------------------- model discovery
 
-let modelCache = { name: null, until: 0 };
+let modelCache = { list: null, until: 0 };
+// The model that last answered successfully goes first next time, so one overloaded
+// model costs a single extra round trip instead of one on every scan.
+let lastGood = { name: null, until: 0 };
+const MAX_ATTEMPTS = 6;
+// Models Google has shut off still appear in the list endpoint; remember them per isolate.
+const retired = new Set();
+// An overloaded model can hang for over a minute before answering 503. Give up on it
+// early so the next model still answers while the user is looking at the spinner.
+const ATTEMPT_TIMEOUT_MS = 20000;
+// Hedging: if the current model hasn't answered after this long, start the next one in
+// parallel and take whichever succeeds first. The "last good" memory below is per isolate
+// and Cloudflare recycles isolates often, so without this the slow path is the common one.
+// Costs a few extra free-tier requests on bad days (quota ~1,000/day vs ~3 scans/day).
+const HEDGE_MS = 6000;
 
 // The model id is discovered rather than hardcoded: Gemini's names move (2.5 / 3 / 3.5 flash
 // all exist in the wild) and a stale constant fails the whole feature with a 404. MODEL in
 // wrangler.toml overrides this when a specific one is wanted.
-async function pickModel(env) {
-  if (env.MODEL) return env.MODEL;
-  if (modelCache.name && Date.now() < modelCache.until) return modelCache.name;
-
-  const r = await fetch(`${GEMINI}/models?key=${env.GEMINI_API_KEY}&pageSize=200`);
-  if (!r.ok) throw new Error(`model list failed (${r.status}): ${await r.text()}`);
-  const body = await r.json();
-
-  const usable = (body.models || []).filter(
-    (m) =>
-      (m.supportedGenerationMethods || []).includes("generateContent") &&
-      /flash/i.test(m.name) &&
-      !/thinking|image-generation|tts|native-audio|embedding|live/i.test(m.name)
-  );
-  if (!usable.length) throw new Error("no flash model with generateContent on this key");
-
-  // Highest version number wins; "lite" loses a tie so the better model is preferred.
-  const score = (m) => {
-    const v = /gemini-(\d+(?:\.\d+)?)/.exec(m.name);
-    return (v ? parseFloat(v[1]) : 0) * 10 - (/lite/i.test(m.name) ? 1 : 0);
-  };
-  usable.sort((a, b) => score(b) - score(a));
-
-  const name = usable[0].name.replace(/^models\//, "");
-  modelCache = { name, until: Date.now() + 6 * 3600 * 1000 };
-  console.log("picked model", name);
-  return name;
+// Returns candidate models best-first. A single model can be "experiencing high demand"
+// (503) for hours, or out of free quota (429), while older flash models on the same key
+// work fine; handleScan walks this list instead of failing the whole feature.
+async function pickModels(env) {
+  if (env.MODEL) return [env.MODEL];
+  if (!(modelCache.list && Date.now() < modelCache.until)) {
+    const r = await fetch(`${GEMINI}/models?key=${env.GEMINI_API_KEY}&pageSize=200`);
+    if (!r.ok) throw new Error(`model list failed (${r.status}): ${await r.text()}`);
+    const body = await r.json();
+    const usable = (body.models || []).filter(
+      (m) =>
+        (m.supportedGenerationMethods || []).includes("generateContent") &&
+        /^models\/gemini-\d/.test(m.name) && /flash/i.test(m.name) &&
+        !/thinking|image|tts|native-audio|embedding|live/i.test(m.name)
+    );
+    if (!usable.length) throw new Error("no flash model with generateContent on this key");
+    // Highest version first; within a version, full beats lite and stable beats preview.
+    const score = (m) => {
+      const v = /gemini-(\d+(?:\.\d+)?)/.exec(m.name);
+      return (v ? parseFloat(v[1]) : 0) * 10 - (/lite/i.test(m.name) ? 2 : 0) - (/preview|exp/i.test(m.name) ? 1 : 0);
+    };
+    usable.sort((x, y) => score(y) - score(x));
+    // Alternate full and lite models. Overload hits a whole tier at once (seen 2026-11-12:
+    // every full 3.5–3.8 flash busy while every lite answered), so a strictly newest-first
+    // list would spend all its attempts inside the one tier that is down.
+    const names = usable.map((m) => m.name.replace(/^models\//, ""));
+    const full = names.filter((n) => !/lite/i.test(n)), lite = names.filter((n) => /lite/i.test(n));
+    const mixed = [];
+    for (let i = 0; i < Math.max(full.length, lite.length); i++) {
+      if (full[i]) mixed.push(full[i]);
+      if (lite[i]) mixed.push(lite[i]);
+    }
+    modelCache = { list: mixed, until: Date.now() + 6 * 3600 * 1000 };
+  }
+  const list = modelCache.list.filter((n) => !retired.has(n));
+  if (lastGood.name && Date.now() < lastGood.until && list.includes(lastGood.name))
+    list.splice(list.indexOf(lastGood.name), 1), list.unshift(lastGood.name);
+  return list;
 }
+async function pickModel(env) {
+  return (await pickModels(env))[0];
+}
+
+// Worth trying another model: overloaded, out of quota for this model, or a transient
+// server error. Anything else (bad image, schema, auth) would fail on every model too.
+const isRetired = (e) => /no longer available|not found|is not supported/i.test(e.message || "");
+const retryable = (e) => [429, 500, 502, 503, 504].includes(e.upstream) || isRetired(e) || /high demand|overloaded|unavailable/i.test(e.message || "");
 
 // ---------------------------------------------------------------- prompts & schemas
 
@@ -260,7 +293,9 @@ const PHOTO_SCHEMA = {
 // ---------------------------------------------------------------- Gemini
 
 async function callGemini(env, model, prompt, schema, image, mediaType) {
-  const r = await fetch(
+  let r;
+  try {
+  r = await fetch(
     `${GEMINI}/models/${encodeURIComponent(model)}:generateContent?key=${env.GEMINI_API_KEY}`,
     {
       method: "POST",
@@ -281,8 +316,15 @@ async function callGemini(env, model, prompt, schema, image, mediaType) {
           temperature: 0,
         },
       }),
+      signal: AbortSignal.timeout(ATTEMPT_TIMEOUT_MS),
     }
   );
+  } catch (e) {
+    const err = new Error(e.name === "TimeoutError" ? `${model} 超過 ${ATTEMPT_TIMEOUT_MS / 1000} 秒沒有回應` : e.message);
+    err.status = 502;
+    err.upstream = 504;   // treated as retryable: try the next model
+    throw err;
+  }
 
   const text = await r.text();
   if (!r.ok) {
@@ -322,7 +364,7 @@ async function callGemini(env, model, prompt, schema, image, mediaType) {
 
 // ---------------------------------------------------------------- handler
 
-async function handleScan(request, env, kind) {
+async function handleScan(request, env, kind, forceModel) {
   let body;
   try {
     body = await request.json();
@@ -338,11 +380,53 @@ async function handleScan(request, env, kind) {
   if (!ALLOWED_MEDIA.includes(mediaType))
     return { status: 400, body: { error: `mediaType must be one of ${ALLOWED_MEDIA.join(", ")}` } };
 
-  const model = await pickModel(env);
   const [prompt, schema] =
     kind === "label" ? [LABEL_PROMPT, LABEL_SCHEMA] : [PHOTO_PROMPT, PHOTO_SCHEMA];
-  const result = await callGemini(env, model, prompt, schema, image, mediaType);
-  return { status: 200, body: { kind, model, result } };
+  // ?model= pins one model (owner-only, behind the uid lock) for diagnosing which ones answer.
+  const models = forceModel ? [forceModel] : (await pickModels(env)).slice(0, MAX_ATTEMPTS);
+  const tried = [];
+  return await new Promise((resolve, reject) => {
+    let next = 0, running = 0, done = false, stop = false, lastErr, timer;
+    const finishFail = () => {
+      done = true;
+      clearTimeout(timer);
+      lastErr.message = `${lastErr.message}（已試過 ${tried.join("、")}）`;
+      reject(lastErr);
+    };
+    const hedge = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { launch(); }, HEDGE_MS);
+    };
+    function launch() {
+      if (done || stop || next >= models.length) return;
+      const model = models[next++];
+      running++;
+      hedge();
+      callGemini(env, model, prompt, schema, image, mediaType).then(
+        (result) => {
+          running--;
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          lastGood = { name: model, until: Date.now() + 3600 * 1000 };
+          resolve({ status: 200, body: { kind, model, tried, result } });
+        },
+        (e) => {
+          running--;
+          if (done) return;
+          lastErr = e;
+          tried.push(model + ":" + (e.upstream || "err"));
+          console.log("model failed", model, e.upstream, e.message);
+          if (isRetired(e)) retired.add(model);
+          // A bad image or schema fails on every model, so don't spend more requests on it.
+          if (!retryable(e)) stop = true;
+          else launch();   // a fast failure moves on right away instead of waiting out the hedge
+          if (running === 0 && (stop || next >= models.length)) finishFail();
+        }
+      );
+    }
+    launch();
+  });
 }
 
 export default {
@@ -378,6 +462,7 @@ export default {
         return json(
           {
             picked: await pickModel(env).catch((e) => "ERROR: " + e.message),
+            candidates: await pickModels(env).catch(() => []),
             uid: claims.sub,
             available: (body.models || [])
               .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
@@ -392,7 +477,7 @@ export default {
         return json({ error: "use POST" }, 405, cors);
 
       if (path === "/label" || path === "/photo") {
-        const { status, body } = await handleScan(request, env, path.slice(1));
+        const { status, body } = await handleScan(request, env, path.slice(1), url.searchParams.get("model"));
         return json(body, status, cors);
       }
 
