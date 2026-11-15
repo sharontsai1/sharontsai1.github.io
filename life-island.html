@@ -54,9 +54,9 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .metric:nth-child(4){background:#e4f1f2}
 .metric:nth-child(5){background:#f7ecd9}
 .metric:nth-child(6){background:#f9e7e3}
-.metric-label{font-size:10px;opacity:.72;font-weight:700}
+.metric-label{font-size:12px;opacity:.85;font-weight:700}
 .metric b{font-size:18px;line-height:1.3}
-.metric-sub{font-size:9px;opacity:.6}
+.metric-sub{font-size:11px;opacity:.78}
 .mini-progress{height:6px;background:#00000014;border-radius:6px;overflow:hidden;margin-top:4px}
 .mini-progress i{display:block;height:100%;background:var(--leaf);transition:width .3s}
 .mini-progress.warn i{background:var(--coral)}
@@ -66,18 +66,18 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .section{border:1px dashed var(--line);border-radius:18px;padding:14px;position:relative;z-index:1}
 .wide,.budget,.goalsbox{grid-column:span 2}
 .heading{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;margin:0 0 11px}
-.heading small{font-size:10px;font-weight:400;color:#9a8673;margin-left:auto}
+.heading small{font-size:12px;font-weight:400;color:#7a6a58;margin-left:auto}
 .item-list{display:grid;gap:7px}
 .scan-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
-.scan-btn{margin-top:0;font-size:11px;padding:8px 4px;text-align:center}
+.scan-btn{margin-top:0;font-size:12px;padding:8px 4px;text-align:center}
 .sheet-wrap{position:fixed;inset:0;z-index:60;background:#2b230055;backdrop-filter:blur(3px);
   display:flex;align-items:center;justify-content:center;padding:16px}
 .sheet{background:var(--paper);border:2px solid var(--line);border-radius:20px;box-shadow:var(--shadow);
   padding:16px;width:min(100%,440px);max-height:86vh;overflow:auto}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
 .sheet-head h3{font-size:15px;color:var(--deep);margin:0}
-.sheet-x{background:transparent;border:0;font-size:22px;color:#9b8877;line-height:1;padding:0 4px}
-.scan-wait{text-align:center;padding:18px 0;color:#9b8877;font-size:13px}
+.sheet-x{background:transparent;border:0;font-size:22px;color:#7a6a58;line-height:1;padding:0 4px}
+.scan-wait{text-align:center;padding:18px 0;color:#7a6a58;font-size:13px}
 .scan-spin{width:26px;height:26px;margin:0 auto 10px;border:3px solid var(--line);
   border-top-color:var(--leaf);border-radius:50%;animation:scanspin .8s linear infinite}
 @keyframes scanspin{to{transform:rotate(360deg)}}
@@ -94,7 +94,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
 .food{grid-template-columns:82px 1fr 62px 62px 62px 62px 30px;align-items:end}
 /* each number carries its own label, so a filled row still says which box is which */
-.nf{display:flex;flex-direction:column;gap:2px;font-size:10px;font-weight:700;color:#9b8877;min-width:0}
+.nf{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:700;color:#7a6a58;min-width:0}
 .nf input{font-size:14px;font-weight:400;color:var(--ink)}
 .food>select,.food>input,.food>.delete{align-self:end}
 .expense{grid-template-columns:1fr 92px 100px 86px 1fr 30px}
@@ -112,7 +112,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .cat-row.cat-row-income{grid-template-columns:1fr 30px}
 .acc-row{grid-template-columns:1fr 100px}
 .acc-set-row{grid-template-columns:1fr 84px 84px 30px}
-.acc-hint{grid-column:1/-1;text-align:right;font-size:10px;opacity:.65}
+.acc-hint{grid-column:1/-1;text-align:right;font-size:12px;opacity:.8}
 .acc-archived{opacity:.55}
 .neg{color:var(--coral)}
 
@@ -121,36 +121,36 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .bd-page.active{display:flex;flex-direction:column;gap:14px}
 .bd-hero{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 12px}
 .bd-hero div{background:var(--cream);border-radius:14px;padding:10px 8px;text-align:center}
-.bd-hero span{display:block;font-size:10px;font-weight:700;color:#8a7460}
+.bd-hero span{display:block;font-size:12px;font-weight:700;color:#8a7460}
 .bd-hero b{font-size:18px;color:var(--deep);white-space:nowrap}
-.bd-hero small{display:block;font-size:10px;color:#9b8877}
+.bd-hero small{display:block;font-size:12px;color:#7a6a58}
 .bd-bar{position:relative;height:12px;background:#e2d6c4;border-radius:9px;overflow:hidden;margin:6px 0 4px}
 .bd-bar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--leaf),var(--deep));border-radius:9px;transition:width .4s}
-.bd-bar-labels{display:flex;justify-content:space-between;font-size:10px;color:#9b8877}
-.bd-note{font-size:11px;color:#9b8877;margin:6px 0 0;line-height:1.6}
+.bd-bar-labels{display:flex;justify-content:space-between;font-size:12px;color:#7a6a58}
+.bd-note{font-size:12px;color:#7a6a58;margin:6px 0 0;line-height:1.6}
 .bd-trend{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .bd-trend b{font-size:26px;color:var(--deep)}
 .bd-pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}
 .bd-pill.good{background:#e5f1e5;color:var(--deep)}
 .bd-pill.flat{background:#fdf6e3;color:#8a6a1f}
 .bd-pill.bad{background:#fbe6e0;color:var(--coral)}
-.bd-pill.none{background:#f1ebe0;color:#9b8877}
+.bd-pill.none{background:#f1ebe0;color:#7a6a58}
 .bd-range{position:relative;height:26px;margin:12px 4px 6px;background:#f1ebe0;border-radius:8px}
 .bd-range .band{position:absolute;top:0;bottom:0;background:#cfe6cb;border-radius:8px}
 .bd-range .dot{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--deep);box-shadow:0 0 0 3px white}
-.bd-range-labels{display:flex;justify-content:space-between;font-size:10px;color:#9b8877;margin:0 4px}
+.bd-range-labels{display:flex;justify-content:space-between;font-size:12px;color:#7a6a58;margin:0 4px}
 .bd-tasks{margin:8px 0 0;padding:0;list-style:none;display:grid;gap:6px}
 .bd-tasks li{font-size:13px;display:flex;gap:8px;align-items:flex-start}
 .bd-week{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .bd-week div{background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:9px 11px}
-.bd-week span{display:block;font-size:11px;color:#8a7460;font-weight:700}
+.bd-week span{display:block;font-size:12px;color:#8a7460;font-weight:700}
 .bd-week b{font-size:17px}
-.bd-week small{font-size:11px;color:#9b8877;font-weight:400}
+.bd-week small{font-size:12px;color:#7a6a58;font-weight:400}
 .check-list{display:grid;gap:6px}
 .check-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:9px 11px;font-size:13px}
 .check-item .box{flex:none;width:22px;height:22px;border-radius:7px;border:2px solid #d9cdb9;display:grid;place-items:center;font-size:13px;color:white}
 .check-item.done .box{background:var(--leaf);border-color:var(--leaf)}
-.check-item small{margin-left:auto;font-size:11px;color:#9b8877}
+.check-item small{margin-left:auto;font-size:12px;color:#7a6a58}
 .chip-row{display:flex;gap:6px;flex-wrap:wrap}
 .chip{padding:8px 12px;border-radius:999px;background:#f3ebdd;color:#8a7460;font-size:13px;font-weight:700}
 .chip.active{background:var(--deep);color:white}
@@ -162,15 +162,15 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .tpl{display:grid;gap:6px}
 .tpl-row{display:flex;justify-content:space-between;gap:8px;font-size:13px;padding:7px 2px;border-bottom:1px dashed var(--line)}
 .tpl-row:last-child{border-bottom:0}
-.tpl-row span{color:#9b8877;font-size:12px;white-space:nowrap}
-.lift-tag{font-size:10px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px}
+.tpl-row span{color:#7a6a58;font-size:12px;white-space:nowrap}
+.lift-tag{font-size:12px;font-weight:700;border-radius:6px;padding:1px 6px;margin-left:4px}
 .lift-tag.up{background:#e5f1e5;color:var(--deep)}
 .lift-tag.down{background:#fbe6e0;color:var(--coral)}
 .lift-tag.add{background:#fdf0d5;color:#9a6a12}
 .lift-tag.flat{background:#f1ebe0;color:#8a7460}
 .ck-q{margin-bottom:12px}
 .ck-q>b{display:block;font-size:13px;margin-bottom:6px}
-.ck-q>b small{font-weight:400;color:#9b8877;font-size:11px}
+.ck-q>b small{font-weight:400;color:#7a6a58;font-size:12px}
 .ck-result{background:#edf6eb;border-radius:14px;padding:12px 14px;font-size:13px;line-height:1.7;margin-bottom:10px}
 .ck-result.warn{background:#fdf6e3}
 .ck-result.stop{background:#fbe6e0}
@@ -182,7 +182,7 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .bd-onboard dd{margin:0}
 .tpl-apply{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .tpl-apply .add{margin-top:0;flex:1}
-.part-load{grid-column:1/-1;display:flex;align-items:center;gap:5px;font-size:11px;color:#8a7460}
+.part-load{grid-column:1/-1;display:flex;align-items:center;gap:5px;font-size:12px;color:#8a7460}
 .part-load input{width:62px;padding:6px}
 /* transaction rows: read-only display; swipe left (touch) or tap to edit */
 .tx-list{display:grid;gap:7px}
@@ -199,15 +199,15 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .tx-save .tx-ico{background:#e6f4f8}
 .tx-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .tx-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tx-sub{font-size:11px;color:#9b8877;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-sub{font-size:12px;color:#7a6a58;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tx-amt{flex:none;font-size:15px;font-weight:700;color:var(--coral)}
 .tx-income .tx-amt{color:var(--deep)}
 .tx-save .tx-amt{color:var(--sea)}
 .tx-orphan .tx-main{background:#fffaf0;border-color:var(--sun)}
 .tx-pen{flex:none;width:28px;height:28px;border-radius:50%;background:var(--cream);color:#8a7460;font-size:13px;display:none}
 @media(hover:hover){.tx-pen{display:grid;place-items:center;opacity:0;transition:opacity .15s}.tx:hover .tx-pen{opacity:1}}
-.badge{display:inline-block;font-size:10px;font-weight:700;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:1px;background:#e6f4f8;color:#2a7f99}
-.swipe-hint{font-size:10px;color:#b3a291;font-weight:400}
+.badge{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:1px 5px;margin-left:4px;vertical-align:1px;background:#e6f4f8;color:#2a7f99}
+.swipe-hint{font-size:12px;color:#8a7460;font-weight:400}
 
 /* form sheet (edit transaction / edit recurring rule) */
 .fsheet-amount{display:flex;align-items:center;gap:6px;background:var(--cream);border-radius:14px;padding:10px 14px;margin:4px 0 12px}
@@ -243,12 +243,12 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .recur-off .tx-ico,.recur-off .tx-body,.recur-off .tx-amt{opacity:.45}
 .entry-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fffdf7;border:1px solid #ecdfcc;border-radius:14px;padding:12px 14px}
 .entry-card b{display:block;font-size:14px}
-.entry-card span{font-size:11px;color:#9b8877}
+.entry-card span{font-size:12px;color:#7a6a58}
 .entry-card .chev{margin-left:auto;font-size:18px;color:#b3a291}
-.switch{position:relative;flex:none;width:42px;height:24px;border-radius:99px;background:#d9cdb9;transition:background .2s}
-.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px #0003}
+.switch{position:relative;flex:none;width:52px;height:30px;border-radius:99px;background:#d9cdb9;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:white;transition:transform .2s;box-shadow:0 1px 3px #0003}
 .switch.on{background:var(--leaf)}
-.switch.on::after{transform:translateX(18px)}
+.switch.on::after{transform:translateX(22px)}
 
 /* finance section: bottom sub-nav + sub-pages */
 .fin-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
@@ -260,11 +260,11 @@ body.finance-mode,body.body-mode{padding-bottom:calc(78px + env(safe-area-inset-
 @media(min-width:721px){.fin-nav{left:50%;transform:translateX(-50%);width:min(1120px,calc(100% - 26px));
   border:2px solid #fffdfa;border-bottom:0;border-radius:20px 20px 0 0}}
 .fin-nav-btn{flex:1;max-width:150px;margin:0 auto;background:transparent;border-radius:14px;padding:6px 2px;
-  display:flex;flex-direction:column;align-items:center;gap:1px;color:#9a8673}
+  display:flex;flex-direction:column;align-items:center;gap:1px;color:#7a6a58}
 .fin-nav-btn.active{background:#edf6eb;color:var(--deep)}
 .fin-ico{font-size:19px;line-height:1}
-.fin-lab{font-size:11px;font-weight:700}
-.fin-sub{font-size:9px;opacity:.7}
+.fin-lab{font-size:12px;font-weight:700}
+.fin-sub{font-size:11px;opacity:.8}
 .fin-page{display:none}
 /* flex+gap so stacked cards keep the same 14px rhythm the .insights grid gives elsewhere */
 .fin-page.active{display:flex;flex-direction:column;gap:14px}
@@ -274,7 +274,7 @@ body.finance-mode,body.body-mode{padding-bottom:calc(78px + env(safe-area-inset-
 .seg-btn.active{background:white;color:var(--deep);box-shadow:0 2px 8px #795c3022}
 .plan-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px}
 .plan-cell{display:flex;flex-direction:column;gap:2px}
-.plan-cell span{font-size:9px;font-weight:700;color:#897464}
+.plan-cell span{font-size:11px;font-weight:700;color:#7a6a58}
 .plan-cell input{padding:6px;font-size:12px}
 .sinking-row{margin-bottom:12px}
 .allocate-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#f8efe1;border-radius:14px;padding:11px 14px;margin-bottom:17px;font-size:13px}
@@ -290,13 +290,23 @@ body.finance-mode,body.body-mode{padding-bottom:calc(78px + env(safe-area-inset-
 .add.small{margin-top:2px;padding:6px 9px}
 .total{font-size:12px;text-align:right;margin:8px 1px 0;display:flex;justify-content:flex-end;gap:6px 14px;flex-wrap:wrap}
 .total b{color:var(--deep);font-size:15px}
-.label{display:block;font-size:10px;font-weight:700;color:#897464;margin:2px 0 4px}
+.label{display:block;font-size:12px;font-weight:700;color:#7a6a58;margin:2px 0 4px}
 .moods{display:flex;justify-content:space-between;gap:4px}
 .mood{background:#fff7e7;border:2px solid transparent;border-radius:50%;width:44px;height:44px;padding:0;font-size:19px;display:flex;align-items:center;justify-content:center;flex-direction:column}
 .mood small{display:none}
 .mood.active{background:#dff0db;border-color:var(--leaf);transform:translateY(-2px) rotate(-4deg)}
 textarea{min-height:80px;resize:vertical}
-.status{font-size:11px;color:#8f7c6b}
+.status{font-size:12px;color:#7a6a58}
+/* every save/error message goes through the floating toast instead; the inline lines stay in the DOM only so status() can keep writing to them */
+#finStatus,#bodyStatus{display:none}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,16px);z-index:90;
+  max-width:min(92vw,420px);display:flex;align-items:center;gap:10px;background:#3b3226ee;color:#fff;border-radius:999px;
+  padding:10px 18px;font-size:14px;font-weight:700;line-height:1.35;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.err{background:#a83228f2}
+.toast button{pointer-events:auto;flex:none;background:#ffffff2e;color:#fff;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;min-height:36px}
+body.finance-mode .toast,body.body-mode .toast{bottom:calc(88px + env(safe-area-inset-bottom))}
+body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 .status.ok{color:var(--deep)}
 .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0 15px}
 .month-picker{border:0;background:var(--cream);border-radius:10px;padding:8px 10px;font-weight:700}
@@ -314,6 +324,7 @@ textarea{min-height:80px;resize:vertical}
 .cup.filled{opacity:1}
 
 /* sleep ring */
+.sleep-wrap>div:last-child{flex:1;min-width:150px}
 .sleep-wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .ring{width:74px;height:74px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;
   background:conic-gradient(var(--sea) calc(var(--p,0)*1%),#e2d6c4 0)}
@@ -327,7 +338,7 @@ textarea{min-height:80px;resize:vertical}
 .week-mini .chart{height:150px;min-width:0}
 
 .chart-card h2{font-size:16px;margin:0}
-.chart-card p{font-size:11px;margin:3px 0 11px;color:#958170}
+.chart-card p{font-size:12px;margin:3px 0 11px;color:#7a6a58}
 .chart{height:220px;position:relative}
 .chart-card.wide .chart{height:260px}
 .legend-note{font-size:13px;color:#8a7460;margin:2px 0 14px;font-weight:700}
@@ -352,7 +363,7 @@ textarea{min-height:80px;resize:vertical}
 .summary-row:last-child{border-bottom:0}
 .summary-row b{font-size:15px;color:var(--deep)}
 .cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
-.dow{text-align:center;font-size:12px;font-weight:700;color:#9a8673;padding-bottom:2px}
+.dow{text-align:center;font-size:12px;font-weight:700;color:#7a6a58;padding-bottom:2px}
 .cal-day{min-height:96px;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px;text-align:left;
   display:flex;flex-direction:column;gap:3px;min-width:0}
 .cal-day.muted{opacity:.38}
@@ -370,10 +381,10 @@ textarea{min-height:80px;resize:vertical}
 .kw-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .kw-row label{flex:none;font-size:12px;font-weight:700;color:#8a7460}
 .entry-preview{margin-top:14px;background:#f7efe1;border-radius:15px;padding:13px;font-size:13px;line-height:1.7}
-.footer{text-align:center;font-size:11px;opacity:.6;margin:19px}
-.empty{font-size:12px;color:#9b8877;padding:5px 0}
+.footer{text-align:center;font-size:12px;opacity:.7;margin:19px}
+.empty{font-size:12px;color:#7a6a58;padding:5px 0}
 @media(max-width:720px){
-  body{background:linear-gradient(180deg,var(--skylight) 0 165px,var(--cream) 165px)}
+  body{background:linear-gradient(180deg,var(--skylight) 0 76px,var(--cream) 76px)}
   .page{width:min(100% - 18px,600px);padding-top:12px}
   .user-name{display:none}
   .card{padding:14px}
@@ -401,7 +412,7 @@ textarea{min-height:80px;resize:vertical}
   .expense.has-kind .expense-note{grid-area:note}
   .expense.has-kind .delete{grid-area:del;justify-self:end}
   .orphan-row{grid-template-columns:1fr}
-  .cat-row{grid-template-columns:1fr 70px 26px}
+  .cat-row{grid-template-columns:1fr 96px 36px}
   .acc-row{grid-template-columns:1fr 86px}
   .acc-set-row{grid-template-columns:1fr 1fr}
   .allocate-bar{flex-direction:column;align-items:stretch;text-align:center}
@@ -419,18 +430,36 @@ textarea{min-height:80px;resize:vertical}
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .calendar-mark{font-size:9px;letter-spacing:-1px}
   .tabs{width:100%;justify-content:space-between;gap:3px;padding:4px}
-  .tab{padding:8px 6px;font-size:11px}
+  .tab{min-height:44px;padding:0 4px;font-size:12px}
   .datebar{flex-wrap:wrap}
   .date-control{width:100%;justify-content:space-between}
   .budget-grid{grid-template-columns:1fr}
   .sleep-wrap{gap:10px}
+  /* compact one-row header and an edge-to-edge page */
+  .top{padding:2px 2px 12px;gap:8px}
+  .mascot{width:40px;height:40px}
+  h1{font-size:19px}
+  .subtitle{display:none}
+  #mainCard{background:transparent;border:0;box-shadow:none;padding:0}
+  #mainCard::before{display:none}
+  /* 16px stops iOS Safari from zooming the page whenever a field is focused */
+  input,select,textarea,.item input,.item select,.nf input,.frow input,.frow select,.plan-cell input,.month-picker{font-size:16px}
+  input:not([type=checkbox]):not([type=radio]),select{min-height:40px}
+  input[type=checkbox]{width:22px;height:22px}
+  /* tap targets: 44px (hit area only, where the visual should stay small) */
+  .nav{width:44px;height:44px}
+  .btn,.ghost,.ghost-btn,.add,.today,.seg-btn,.chip,.flow-chip{min-height:44px}
+  .sheet-x{min-width:44px;min-height:44px;margin:-10px -10px -10px 0}
+  .delete{position:relative}
+  .delete::after{content:"";position:absolute;inset:-8px}
+  .delete.small::after{inset:-10px}
 }
 </style></head>
 <body>
 <main class="page">
 <header class="top">
   <div class="brand"><img class="mascot" src="quokka-heart.png" alt="矮袋鼠"><div><h1>矮袋鼠小手帳</h1><p class="subtitle">抱抱一下，記錄軟軟的每一天。</p></div></div>
-  <div class="user"><img id="avatar" class="avatar hidden"><span id="userName" class="user-name">準備同步中</span><button id="settingsBtn" class="nav hidden" title="設定">⚙️</button><button id="signIn" class="btn hidden">Google 登入</button><button id="signOut" class="ghost hidden">登出</button></div>
+  <div class="user"><img id="avatar" class="avatar hidden"><span id="userName" class="user-name">準備同步中</span><button id="settingsBtn" class="nav hidden" title="設定">⚙️</button><button id="signIn" class="btn hidden">Google 登入</button></div>
 </header>
 
 <section class="card" id="mainCard">
@@ -472,7 +501,7 @@ textarea{min-height:80px;resize:vertical}
     <section class="section"><h2 class="heading">🌙 睡眠 <small>目標 7 小時</small></h2>
       <div class="sleep-wrap">
         <div class="ring" id="sleepRing" style="--p:0"><i id="sleepRingText">0h</i></div>
-        <div><label class="label">昨晚睡了多久？</label><input id="sleep" type="number" min="0" max="24" step=".5" placeholder="例如：7.5（小時）"><p class="metric-sub" id="sleepMsg" style="margin-top:6px"></p></div>
+        <div><label class="label">昨晚睡了多久？</label><input id="sleep" type="number" inputmode="decimal" min="0" max="24" step=".5" placeholder="例如 7.5"><p class="metric-sub" id="sleepMsg" style="margin-top:6px"></p></div>
       </div>
     </section>
 
@@ -505,7 +534,6 @@ textarea{min-height:80px;resize:vertical}
       <div class="kw-row"><label for="keyword">🏷 今日關鍵字</label><input id="keyword" maxlength="12" placeholder="例：爬山、看展、加班"></div>
       <textarea id="note" placeholder="今天有什麼想記下來的事？"></textarea></section>
   </div>
-  <div class="save-row"><span id="status" class="status">修改會自動儲存</span><button id="save" class="btn">儲存今天的手帳 ✿</button></div>
 </div>
 
 <div class="pane" id="insightsPane">
@@ -549,7 +577,7 @@ textarea{min-height:80px;resize:vertical}
 
   <div id="bdDash" class="hidden" style="display:contents">
     <section class="card tape-sea">
-      <h2 class="heading">🎯 離 25% 還有多遠 <small><button class="ghost-btn" id="bdPlanBtn" style="padding:4px 10px;font-size:11px">⚙️ 計畫設定</button></small></h2>
+      <h2 class="heading">🎯 離 25% 還有多遠 <small><button class="ghost-btn" id="bdPlanBtn" style="padding:4px 10px;font-size:12px">⚙️ 計畫設定</button></small></h2>
       <div class="bd-hero">
         <div><span>目前體脂</span><b id="bdBF">—</b><small id="bdBFDate"></small></div>
         <div><span>已減脂肪</span><b id="bdFatLost">—</b><small id="bdFatGoal"></small></div>
@@ -727,8 +755,8 @@ textarea{min-height:80px;resize:vertical}
       <h3 class="heading" style="font-size:13px;margin-bottom:8px">🗄 未分類 <small>帳戶功能之前的紀錄</small></h3>
       <p class="metric-sub" style="margin:0 0 8px">這些金額仍然計入總額。可以搬到上面的帳戶，再把這裡歸零。</p>
       <div class="budget-grid">
-        <div class="budget-box"><b>未分類存款</b><input id="assetBank" type="number" min="0" placeholder="0"></div>
-        <div class="budget-box"><b>未分類投資</b><input id="assetInvestment" type="number" min="0" placeholder="0"></div>
+        <div class="budget-box"><b>未分類存款</b><input id="assetBank" type="number" inputmode="decimal" min="0" placeholder="0"></div>
+        <div class="budget-box"><b>未分類投資</b><input id="assetInvestment" type="number" inputmode="decimal" min="0" placeholder="0"></div>
       </div>
       <div class="item ledger-add" style="margin-top:8px">
         <select id="assetMigrateTarget"></select>
@@ -738,7 +766,7 @@ textarea{min-height:80px;resize:vertical}
     </div>
 
     <div class="budget-grid">
-      <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" min="0" placeholder="0"></div>
+      <div class="budget-box"><b>剩餘負債總額</b><input id="assetLiability" type="number" inputmode="decimal" min="0" placeholder="0"></div>
       <div class="budget-box"><b>這次盤點的淨資產</b>
         <div class="networth-total" style="margin:4px 0 0"><b id="assetFormNet">$0</b></div>
         <div class="metric-sub" id="assetFormNetSub"></div>
@@ -760,7 +788,7 @@ textarea{min-height:80px;resize:vertical}
 <div class="fin-page" id="finEntry">
   <section class="section wide"><h2 class="heading">＋ 新增紀錄 <small>可選任意日期</small></h2>
     <div class="item ledger-add">
-      <input type="number" min="0" id="finAmount" placeholder="金額">
+      <input type="number" inputmode="decimal" min="0" id="finAmount" placeholder="金額">
       <input type="date" id="finDate">
       <select id="finFlow">
         <option value="variable">支出（變動）</option>
@@ -830,8 +858,8 @@ textarea{min-height:80px;resize:vertical}
       </div>
       <div class="section wide"><h3 class="heading" style="font-size:13px;margin-bottom:8px">💱 匯率 <small>1 外幣 = ? 台幣</small></h3>
         <div class="budget-grid">
-          <div class="budget-box"><b>美金 USD</b><input id="rateUSD" type="number" step="0.0001" min="0" placeholder="31.8"></div>
-          <div class="budget-box"><b>日圓 JPY</b><input id="rateJPY" type="number" step="0.0001" min="0" placeholder="0.205"></div>
+          <div class="budget-box"><b>美金 USD</b><input id="rateUSD" type="number" inputmode="decimal" step="0.0001" min="0" placeholder="31.8"></div>
+          <div class="budget-box"><b>日圓 JPY</b><input id="rateJPY" type="number" inputmode="decimal" step="0.0001" min="0" placeholder="0.205"></div>
         </div>
         <button class="add small" id="refreshRates">🔄 更新匯率</button>
         <p class="metric-sub" id="ratesUpdatedNote" style="margin:6px 0 0"></p>
@@ -857,17 +885,20 @@ textarea{min-height:80px;resize:vertical}
   <section class="card tape-coral goalsbox" style="margin-top:14px">
     <h2 class="heading">🎯 每日目標 <small>套用在每一天的進度條上</small></h2>
     <div class="goals-grid">
-      <div class="goal-box"><b>熱量 kcal</b><input id="goalCalorie" type="number" min="0" placeholder="例如 2000"></div>
-      <div class="goal-box"><b>蛋白質 g</b><input id="goalProtein" type="number" min="0" placeholder="例如 100"></div>
-      <div class="goal-box"><b>脂肪 g</b><input id="goalFat" type="number" min="0" placeholder="例如 45"></div>
-      <div class="goal-box"><b>碳水 g</b><input id="goalCarbs" type="number" min="0" placeholder="例如 149"></div>
-      <div class="goal-box"><b>喝水 ml</b><input id="goalWater" type="number" min="0" placeholder="例如 2000"></div>
-      <div class="goal-box"><b>睡眠 小時</b><input id="goalSleep" type="number" min="0" step=".5" placeholder="例如 7"></div>
+      <div class="goal-box"><b>熱量 kcal</b><input id="goalCalorie" type="number" inputmode="decimal" min="0" placeholder="例如 2000"></div>
+      <div class="goal-box"><b>蛋白質 g</b><input id="goalProtein" type="number" inputmode="decimal" min="0" placeholder="例如 100"></div>
+      <div class="goal-box"><b>脂肪 g</b><input id="goalFat" type="number" inputmode="decimal" min="0" placeholder="例如 45"></div>
+      <div class="goal-box"><b>碳水 g</b><input id="goalCarbs" type="number" inputmode="decimal" min="0" placeholder="例如 149"></div>
+      <div class="goal-box"><b>喝水 ml</b><input id="goalWater" type="number" inputmode="decimal" min="0" placeholder="例如 2000"></div>
+      <div class="goal-box"><b>睡眠 小時</b><input id="goalSleep" type="number" inputmode="decimal" min="0" step=".5" placeholder="例如 7"></div>
     </div>
     <button class="btn" id="saveGoals" style="margin-top:10px">儲存目標</button>
   </section>
 
   <p class="metric-sub" style="margin-top:14px">💰 記帳的分類與預算請到「財務 → 設定」調整。</p>
+  <section class="card" style="margin-top:14px"><h2 class="heading">👤 帳號</h2>
+    <button id="signOut" class="ghost hidden" style="width:100%;border:1px solid var(--line)">登出</button>
+  </section>
 </div>
 
 <p class="footer">資料只屬於登入的你 ☁︎ 自動同步中</p>
@@ -913,6 +944,8 @@ textarea{min-height:80px;resize:vertical}
     <div id="formBody"></div>
   </div>
 </div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAct" class="hidden"></button></div>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -1042,11 +1075,27 @@ function normAccounts(c={}){return{
 // ---------- small helpers ----------
 // #status lives inside todayPane, so the finance pages need their own copy or
 // every message (including "已新增到 X 月的紀錄") is invisible there.
-function status(msg,ok){
+// One floating message line for the whole app. Progress and load chatter is skipped so the
+// toast only means "this just saved" or "this needs you".
+let toastTimer;
+const QUIET_MSG=/^(正在|已載入|這天還是空白|儲存中)/;
+function toast(msg,ok,act){
+  const t=$("toast"); if(!t)return;
+  $("toastMsg").textContent=msg;
+  const b=$("toastAct");
+  b.classList.toggle("hidden",!act);
+  if(act){b.textContent=act.label; b.onclick=()=>{t.classList.remove("show"); act.fn()}}
+  t.classList.toggle("err",!ok);
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),ok?1600:act?8000:4500);
+}
+function status(msg,ok,act){
   ["status","finStatus"].forEach(elId=>{
     const el=$(elId); if(!el)return;
     el.textContent=msg; el.className="status"+(ok?" ok":"");
   });
+  if(!QUIET_MSG.test(msg))toast(msg,ok,act);
 }
 function pct(v,t){return t?Math.min(100,Math.round(v/t*100)):0}
 function setBar(barId,wrapId,v,t,warnOverTarget){
@@ -1247,7 +1296,7 @@ function confirmSheet(title, pre, rows, src, confidence) {
     pre +
     '<div class="scan-fields">' + rows.map((r, i) =>
       '<label class="scan-field"><span>' + esc(r.label) + '</span>' +
-      '<input id="sf' + i + '" ' + (r.type === "number" ? 'type="number" min="0" step="any"' : "") +
+      '<input id="sf' + i + '" ' + (r.type === "number" ? 'type="number" inputmode="decimal" min="0" step="any"' : "") +
       ' value="' + esc(String(r.value)) + '"' + (r.hint ? ' placeholder="' + esc(r.hint) + '"' : "") + "></label>"
     ).join("") +
     '<label class="scan-field"><span>餐別</span><select id="sfMeal">' +
@@ -1380,7 +1429,7 @@ async function tierLabel(file) {
     (packs > 1 ? "　← 整包吃完就是 " + Math.round(kcal * packs) + " kcal" : "") +
     (r.note ? "<br>" + esc(r.note) : "") + "</p>" +
     '<div class="scan-fields"><label class="scan-field"><span>你吃了幾份？</span>' +
-    '<input id="sfServ" type="number" min="0" step="any" value="1"></label></div>' +
+    '<input id="sfServ" type="number" inputmode="decimal" min="0" step="any" value="1"></label></div>' +
     '<div class="scan-actions"><button class="btn" id="sfServGo">換算</button>' +
     '<button class="add" data-scan-close>取消</button></div>');
 
@@ -1468,7 +1517,7 @@ function exercises(){
     <div class="exercise-row">
       <div class="exercise-main">
         <select data-i="${i}" data-f="type">${EX_TYPES.map(v=>`<option ${x.type===v?"selected":""}>${v}</option>`).join("")}</select>
-        <input data-i="${i}" data-f="minutes" type="number" min="0" value="${x.minutes||""}" placeholder="分鐘（選填）">
+        <input data-i="${i}" data-f="minutes" type="number" inputmode="decimal" min="0" value="${x.minutes||""}" placeholder="分鐘（選填）">
         <button class="delete" data-del="${i}">×</button>
       </div>
       ${x.type==="重訓"?`
@@ -1527,7 +1576,7 @@ async function save(){
     await setDoc(doc(db,"users",user.uid,"journal",data.date),{...rest,updatedAt:serverTimestamp()},{merge:true});
     status("已自動同步 ✿",true);
     if($("insightsPane").classList.contains("active"))insights();
-  }catch(e){status("同步失敗，請確認 Firestore Rules")}
+  }catch(e){status("同步失敗",false,{label:"重試",fn:save})}
 }
 function schedule(){totals();clearTimeout(saveTimer);saveTimer=setTimeout(save,600)}
 const savePending=()=>saveTimer!=null;
@@ -1572,7 +1621,7 @@ function catRowHtml(group,i,c){
   const isIncome=group==="income";
   return `<div class="item cat-row ${isIncome?"cat-row-income":""}">
     <input data-group="${group}" data-i="${i}" data-f="name" value="${esc(c.name)}" placeholder="分類名稱">
-    ${isIncome?"":`<input data-group="${group}" data-i="${i}" data-f="budget" type="number" min="0" value="${c.budget||""}" placeholder="月預算">`}
+    ${isIncome?"":`<input data-group="${group}" data-i="${i}" data-f="budget" type="number" inputmode="decimal" min="0" value="${c.budget||""}" placeholder="月預算">`}
     <button class="delete small" data-delcat="${group}:${i}">×</button>
   </div>`;
 }
@@ -1582,13 +1631,13 @@ function sinkingRowHtml(i,c){
   return `<div class="section sinking-row">
     <div class="item cat-row">
       <input data-group="sinking" data-i="${i}" data-f="name" value="${esc(c.name)}" placeholder="袋子名稱（例：旅遊）">
-      <input data-group="sinking" data-i="${i}" data-f="goal" type="number" min="0" value="${c.goal||""}" placeholder="年度目標">
+      <input data-group="sinking" data-i="${i}" data-f="goal" type="number" inputmode="decimal" min="0" value="${c.goal||""}" placeholder="年度目標">
       <button class="delete small" data-delcat="sinking:${i}">×</button>
     </div>
     <label class="label">已存金額（年初起始）</label>
-    <input data-group="sinking" data-i="${i}" data-f="initSaved" type="number" min="0" value="${c.initSaved||""}" placeholder="0">
+    <input data-group="sinking" data-i="${i}" data-f="initSaved" type="number" inputmode="decimal" min="0" value="${c.initSaved||""}" placeholder="0">
     <label class="label">每月預計存入</label>
-    <div class="plan-grid">${c.plan.map((v,j)=>`<label class="plan-cell"><span>${MONTH_LABELS[j]}</span><input data-i="${i}" data-plan="${j}" type="number" min="0" value="${v||""}" placeholder="0"></label>`).join("")}</div>
+    <div class="plan-grid">${c.plan.map((v,j)=>`<label class="plan-cell"><span>${MONTH_LABELS[j]}</span><input data-i="${i}" data-plan="${j}" type="number" inputmode="decimal" min="0" value="${v||""}" placeholder="0"></label>`).join("")}</div>
     <div class="budget-stat">目前水位 $${st.level.toLocaleString()} ／ 目標 $${(+c.goal||0).toLocaleString()}</div>
     <p class="metric-sub" style="margin:4px 0 0">水位依目前的計畫金額重新計算，改計畫會連動過去的月份。</p>
   </div>`;
@@ -2415,7 +2464,7 @@ function snapNeedsRates(a){
 function assetRowHtml(acc,amount,orphan){
   return `<div class="item acc-row${acc.archived?" acc-archived":""}">
     <span><b>${esc(acc.name||"（未命名）")}</b><br><span class="metric-sub">${orphan?"⚠️ 已刪除的帳戶":acc.currency+(acc.archived?"・已封存":"")}</span></span>
-    <input data-acc="${acc.id}" type="number" step="${acc.currency==="TWD"?"1":"0.01"}" value="${amount||""}" placeholder="0">
+    <input data-acc="${acc.id}" type="number" inputmode="decimal" step="${acc.currency==="TWD"?"1":"0.01"}" value="${amount||""}" placeholder="0">
     <span class="acc-hint" data-hint="${acc.id}"></span>
   </div>`;
 }
@@ -3039,7 +3088,7 @@ async function setCalorieGoal(kcal,protein,macros){
   $("goalFat").value=goals.fat||""; $("goalCarbs").value=goals.carbs||"";
   if(data)totals();
 }
-function bodyStatus(msg,ok){const el=$("bodyStatus"); el.textContent=msg; el.className="status"+(ok?" ok":"")}
+function bodyStatus(msg,ok){const el=$("bodyStatus"); el.textContent=msg; el.className="status"+(ok?" ok":""); if(!QUIET_MSG.test(msg))toast(msg,ok)}
 
 // ---- data ----
 const dayNum=s=>Math.round(Date.parse(s+"T00:00:00Z")/864e5);
@@ -3187,7 +3236,7 @@ function renderBodyHome(){
   if(bodyPlanMissing){
     const c=calibratedStart(normBodyPlan({}));
     $("bdOnboardStart").innerHTML=c&&!c.need
-      ?`早上平均 ${c.weight.toFixed(1)} kg・體脂 ${c.bodyFat||32.5}%${c.bodyFat?"":"（暫定）"}<br><span class="metric-sub" style="font-size:11px">依你記錄的早上體重自動校正</span>`
+      ?`早上平均 ${c.weight.toFixed(1)} kg・體脂 ${c.bodyFat||32.5}%${c.bodyFat?"":"（暫定）"}<br><span class="metric-sub" style="font-size:12px">依你記錄的早上體重自動校正</span>`
       :"57.2 kg・體脂 32.5%・骨骼肌 20.8 kg";
     return;
   }
@@ -3490,10 +3539,10 @@ function openBodyPlanEditor(){
     <p class="bd-note" style="margin:0 0 10px">${lastCal?`上次校正 ${lastCal.date}：起點 ${(+lastCal.from.weight).toFixed(1)} → ${(+lastCal.to.weight).toFixed(1)} kg`:"起點或體脂是晚上量的話，用這個改成早上的數字"}</p>
     <div class="fgroup">
       <div class="frow"><label>開始日期</label><input id="bpStart" type="date" value="${p.startDate}"></div>
-      <div class="frow"><label>起點體重</label><input id="bpW" type="number" step="0.1" value="${p.start.weight}"></div>
-      <div class="frow"><label>起點體脂</label><input id="bpBF" type="number" step="0.1" value="${p.start.bodyFat}"></div>
-      <div class="frow"><label>起點肌肉</label><input id="bpM" type="number" step="0.1" value="${p.start.muscle}"></div>
-      <div class="frow"><label>目標體脂</label><input id="bpT" type="number" step="0.1" value="${p.targetBodyFat}"></div>
+      <div class="frow"><label>起點體重</label><input id="bpW" type="number" inputmode="decimal" step="0.1" value="${p.start.weight}"></div>
+      <div class="frow"><label>起點體脂</label><input id="bpBF" type="number" inputmode="decimal" step="0.1" value="${p.start.bodyFat}"></div>
+      <div class="frow"><label>起點肌肉</label><input id="bpM" type="number" inputmode="decimal" step="0.1" value="${p.start.muscle}"></div>
+      <div class="frow"><label>目標體脂</label><input id="bpT" type="number" inputmode="decimal" step="0.1" value="${p.targetBodyFat}"></div>
     </div>
     <div class="fgroup">
       <div class="frow"><label>每週重訓</label><select id="bpGym">${[1,2,3].map(n=>`<option${n===p.gymGoal?" selected":""}>${n}</option>`).join("")}</select></div>
@@ -3572,7 +3621,7 @@ async function calendar(){
 }
 
 // ---------- events ----------
-$("addFood").onclick=()=>{data.foods.push(normFood()); render(); save()};
+$("addFood").onclick=()=>{data.foods.push(normFood({meal:mealByClock()})); render(); save()};
 $("scanBarcode").onclick=()=>startScan("barcode");
 $("scanLabel").onclick=()=>startScan("label");
 $("scanPhoto").onclick=()=>startScan("photo");
@@ -3589,7 +3638,6 @@ $("water250").onclick=()=>{data.water=(+data.water||0)+250; totals(); waterCups(
 $("water500").onclick=()=>{data.water=(+data.water||0)+500; totals(); waterCups(data.water); save()};
 $("waterReset").onclick=()=>{data.water=0; totals(); waterCups(0); save()};
 document.querySelectorAll(".mood").forEach(b=>b.onclick=()=>{data.mood=+b.dataset.mood; render(); save()});
-$("save").onclick=save;
 $("prevDay").onclick=()=>moveDay(-1);
 $("nextDay").onclick=()=>moveDay(1);
 $("today").onclick=()=>{$("date").value=today(); day()};
@@ -3749,7 +3797,7 @@ onAuthStateChanged(auth,async u=>{
   $("avatar").src=u.photoURL||""; $("avatar").classList.remove("hidden");
   $("signIn").classList.add("hidden"); $("signOut").classList.remove("hidden");
   $("settingsBtn").classList.remove("hidden");
-  $("signOut").onclick=()=>signOut(auth);
+  $("signOut").onclick=()=>{if(confirm("要登出嗎？登出後這支手機上就看不到資料，需要重新登入。"))signOut(auth)};
   $("date").value=today();
   $("insightMonth").value=month(new Date());
   $("finMonth").value=month(new Date());
