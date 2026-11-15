@@ -36,7 +36,8 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .card.tape-coral::before{background:var(--coral)}
 
 .tabs{display:flex;gap:7px;margin-bottom:15px;padding:5px;background:#eee2cf;border-radius:17px;width:max-content}
-.tab{background:transparent;padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700}
+.tab{background:transparent;padding:9px 16px;border-radius:12px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+.tab-ico{line-height:1}
 .tab.active{background:white;color:var(--deep);box-shadow:0 2px 8px #795c3022}
 .pane{display:none}
 .pane.active{display:block}
@@ -92,6 +93,11 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .food-db{border-left:3px solid var(--leaf)}
 .food-ai{border-left:3px solid var(--sun)}
 .item{display:grid;gap:7px;align-items:center;background:#fffdf7;border:1px solid #ecdfcc;border-radius:12px;padding:8px}
+.tx-food .tx-amt{color:var(--ink)}
+.tx-food .tx-amt small{font-size:11px;font-weight:400;color:#7a6a58}
+.tx-food .tx-ico{background:#fff2dc}
+.tx-food.food-db .tx-main{border-left:3px solid var(--leaf)}
+.tx-food.food-ai .tx-main{border-left:3px solid var(--sun)}
 .food{grid-template-columns:82px 1fr 62px 62px 62px 62px 30px;align-items:end}
 /* each number carries its own label, so a filled row still says which box is which */
 .nf{display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:700;color:#7a6a58;min-width:0}
@@ -250,21 +256,20 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .switch.on{background:var(--leaf)}
 .switch.on::after{transform:translateX(22px)}
 
-/* finance section: bottom sub-nav + sub-pages */
-.fin-nav{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
-  background:#fffdf8f2;backdrop-filter:blur(6px);border-top:2px solid var(--line);
-  padding:6px 4px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px #2b230012}
-body.finance-mode #financeNav,body.body-mode #bodyNav{display:flex}
-body.settings-open .fin-nav{display:none}
-body.finance-mode,body.body-mode{padding-bottom:calc(78px + env(safe-area-inset-bottom))}
-@media(min-width:721px){.fin-nav{left:50%;transform:translateX(-50%);width:min(1120px,calc(100% - 26px));
-  border:2px solid #fffdfa;border-bottom:0;border-radius:20px 20px 0 0}}
-.fin-nav-btn{flex:1;max-width:150px;margin:0 auto;background:transparent;border-radius:14px;padding:6px 2px;
-  display:flex;flex-direction:column;align-items:center;gap:1px;color:#7a6a58}
-.fin-nav-btn.active{background:#edf6eb;color:var(--deep)}
-.fin-ico{font-size:19px;line-height:1}
-.fin-lab{font-size:12px;font-weight:700}
-.fin-sub{font-size:11px;opacity:.8}
+/* sub-pages of 體態 / 財務: a sticky segmented control at the top of the pane */
+.fin-nav{position:sticky;top:0;z-index:30;display:flex;gap:6px;padding:6px;margin:0 0 14px;
+  background:#eee2cff0;backdrop-filter:blur(6px);border-radius:16px}
+.fin-nav-btn{flex:1;min-width:0;min-height:44px;border-radius:12px;padding:0 4px;display:flex;align-items:center;justify-content:center;
+  gap:4px;background:transparent;color:#7a6a58;font-size:13px;font-weight:700;white-space:nowrap}
+.fin-nav-btn.active{background:white;color:var(--deep);box-shadow:0 2px 8px #795c3022}
+.fin-ico{font-size:15px;line-height:1}
+.fin-lab{font-size:13px;font-weight:700}
+.fin-sub{display:none}
+/* floating "+ 記一筆" on every 財務 page */
+.fab{display:none;position:fixed;right:16px;bottom:24px;z-index:45;height:56px;padding:0 22px;border-radius:999px;
+  background:var(--leaf);color:#fff;font-size:16px;font-weight:700;align-items:center;gap:6px;
+  box-shadow:0 4px 0 var(--deep),0 8px 18px #2b230030}
+body.finance-mode .fab{display:flex}
 .fin-page{display:none}
 /* flex+gap so stacked cards keep the same 14px rhythm the .insights grid gives elsewhere */
 .fin-page.active{display:flex;flex-direction:column;gap:14px}
@@ -305,7 +310,6 @@ textarea{min-height:80px;resize:vertical}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .toast.err{background:#a83228f2}
 .toast button{pointer-events:auto;flex:none;background:#ffffff2e;color:#fff;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:700;min-height:36px}
-body.finance-mode .toast,body.body-mode .toast{bottom:calc(88px + env(safe-area-inset-bottom))}
 body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 .status.ok{color:var(--deep)}
 .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:3px 0 15px}
@@ -399,8 +403,8 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
   .food .delete{grid-area:del;justify-self:end;align-self:center}
   .food input[type=number]{padding:7px 5px}
   .expense{grid-template-columns:1fr 88px 65px 29px}
-  .sheet-wrap{align-items:flex-end;padding:0}
-  .sheet{width:100%;max-width:none;border-radius:20px 20px 0 0;max-height:92vh}
+  .sheet-wrap{align-items:flex-end;padding:0 0 var(--kb,0px)}
+  .sheet{width:100%;max-width:none;border-radius:20px 20px 0 0;max-height:calc(100vh - var(--kb,0px) - 16px);padding-bottom:calc(16px + env(safe-area-inset-bottom))}
   .scan-field{grid-template-columns:92px 1fr}
   .expense:not(.has-kind) [data-f=name]{grid-column:auto}
   .expense .expense-note{grid-column:span 3}
@@ -429,8 +433,16 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
   .cal-kw{font-size:9px;line-height:1.25;padding:1px 2px;border-radius:4px;white-space:normal;word-break:break-all;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .calendar-mark{font-size:9px;letter-spacing:-1px}
-  .tabs{width:100%;justify-content:space-between;gap:3px;padding:4px}
-  .tab{min-height:44px;padding:0 4px;font-size:12px}
+  /* main navigation lives where the thumb is */
+  #mainCard>.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;width:auto;margin:0;gap:2px;border-radius:0;
+    justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+    background:#fffdf8f2;backdrop-filter:blur(6px);border-top:2px solid var(--line);box-shadow:0 -6px 20px #2b230012}
+  .tab{flex:1;min-width:0;min-height:52px;padding:4px 0;flex-direction:column;justify-content:center;gap:1px;font-size:12px}
+  .tab-ico{font-size:20px}
+  .tab.active{background:#edf6eb;box-shadow:none}
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  .fab{bottom:calc(88px + env(safe-area-inset-bottom))}
   .datebar{flex-wrap:wrap}
   .date-control{width:100%;justify-content:space-between}
   .budget-grid{grid-template-columns:1fr}
@@ -464,11 +476,11 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 
 <section class="card" id="mainCard">
 <nav class="tabs">
-  <button class="tab active" data-pane="todayPane">☀️ 今日</button>
-  <button class="tab" data-pane="bodyPane">💪 體態</button>
-  <button class="tab" data-pane="insightsPane">📊 洞察</button>
-  <button class="tab" data-pane="financePane">💰 財務</button>
-  <button class="tab" data-pane="calendarPane">📖 日記曆</button>
+  <button class="tab active" data-pane="todayPane"><span class="tab-ico">☀️</span><span class="tab-lab">今日</span></button>
+  <button class="tab" data-pane="bodyPane"><span class="tab-ico">💪</span><span class="tab-lab">體態</span></button>
+  <button class="tab" data-pane="insightsPane"><span class="tab-ico">📊</span><span class="tab-lab">洞察</span></button>
+  <button class="tab" data-pane="financePane"><span class="tab-ico">💰</span><span class="tab-lab">財務</span></button>
+  <button class="tab" data-pane="calendarPane"><span class="tab-ico">📖</span><span class="tab-lab">日記曆</span></button>
 </nav>
 
 <div class="pane active" id="todayPane">
@@ -487,8 +499,7 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 
   <div class="day-grid">
     <section class="section wide"><h2 class="heading">🍙 飲食紀錄 <small>熱量與蛋白質一起記</small></h2>
-      <div id="foodList" class="item-list"></div>
-      <button class="add" id="addFood">＋ 新增食物</button>
+      <button class="btn" id="addFood" style="width:100%">＋ 新增食物</button>
       <div class="scan-row">
         <button class="add scan-btn" id="scanBarcode">🔖 掃條碼</button>
         <button class="add scan-btn" id="scanLabel">🏷 營養標示</button>
@@ -496,6 +507,7 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
       </div>
       <input type="file" accept="image/*" id="scanFile" class="hidden">
       <div class="total"><span>熱量　<b id="foodTotal">0 kcal</b></span><span>蛋白質　<b id="foodProteinTotal">0 g</b></span><span>脂肪　<b id="foodFatTotal">0 g</b></span><span>碳水　<b id="foodCarbsTotal">0 g</b></span></div>
+      <div id="foodList" class="tx-list" style="margin-top:10px"></div>
     </section>
 
     <section class="section"><h2 class="heading">🌙 睡眠 <small>目標 7 小時</small></h2>
@@ -561,6 +573,12 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 
 <div class="pane" id="bodyPane">
 <p id="bodyStatus" class="status"></p>
+<nav id="bodyNav" class="fin-nav">
+  <button class="fin-nav-btn active" data-bsub="bdHome"><span class="fin-ico">🎯</span><span class="fin-lab">總覽</span><span class="fin-sub">目標</span></button>
+  <button class="fin-nav-btn" data-bsub="bdLog"><span class="fin-ico">📝</span><span class="fin-lab">記錄</span><span class="fin-sub">每天</span></button>
+  <button class="fin-nav-btn" data-bsub="bdLift"><span class="fin-ico">🏋️</span><span class="fin-lab">重訓</span><span class="fin-sub">進度</span></button>
+  <button class="fin-nav-btn" data-bsub="bdTrend"><span class="fin-ico">📈</span><span class="fin-lab">趨勢</span><span class="fin-sub">圖表</span></button>
+</nav>
 
 <div class="bd-page active" id="bdHome">
   <section class="card tape-sea hidden bd-onboard" id="bdOnboard">
@@ -673,6 +691,12 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 
 <div class="pane" id="financePane">
 <p id="finStatus" class="status"></p>
+<nav id="financeNav" class="fin-nav">
+  <button class="fin-nav-btn active" data-sub="finHome"><span class="fin-ico">🏠</span><span class="fin-lab">帳戶</span><span class="fin-sub">我的</span></button>
+  <button class="fin-nav-btn" data-sub="finAssets"><span class="fin-ico">💎</span><span class="fin-lab">資產盤點</span><span class="fin-sub">底氣</span></button>
+  <button class="fin-nav-btn" data-sub="finEntry"><span class="fin-ico">🧾</span><span class="fin-lab">記帳</span><span class="fin-sub">留位置</span></button>
+  <button class="fin-nav-btn" data-sub="finSettings"><span class="fin-ico">🗂</span><span class="fin-lab">設定</span><span class="fin-sub">整理</span></button>
+</nav>
 
 <div class="fin-page active" id="finHome">
   <div class="datebar"><b>💰 我的帳戶</b>
@@ -786,24 +810,8 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 </div>
 
 <div class="fin-page" id="finEntry">
-  <section class="section wide"><h2 class="heading">＋ 新增紀錄 <small>可選任意日期</small></h2>
-    <div class="item ledger-add">
-      <input type="number" inputmode="decimal" min="0" id="finAmount" placeholder="金額">
-      <input type="date" id="finDate">
-      <select id="finFlow">
-        <option value="variable">支出（變動）</option>
-        <option value="fixed">支出（固定）</option>
-        <option value="sinking">支出（花掉預存金）</option>
-        <option value="save">存入預備金</option>
-        <option value="income">收入</option>
-      </select>
-      <select id="finCategory"></select>
-      <input type="text" id="finName" placeholder="項目">
-      <input type="text" id="finNote" placeholder="備註">
-    </div>
-    <button class="add" id="finAddEntry">＋ 新增紀錄</button>
-  </section>
-  <section class="section wide"><h2 class="heading">🕘 最近新增</h2><div id="finRecent"></div></section>
+  <button class="btn" id="finOpenNew" style="width:100%;font-size:16px">＋ 記一筆</button>
+  <section class="section wide"><h2 class="heading">🕘 最近新增 <small class="swipe-hint">點一筆可編輯・左滑刪除</small></h2><div id="finRecent"></div></section>
 </div>
 
 <div class="fin-page" id="finSettings">
@@ -904,20 +912,6 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
 <p class="footer">資料只屬於登入的你 ☁︎ 自動同步中</p>
 </main>
 
-<nav id="financeNav" class="fin-nav">
-  <button class="fin-nav-btn active" data-sub="finHome"><span class="fin-ico">🏠</span><span class="fin-lab">帳戶</span><span class="fin-sub">我的</span></button>
-  <button class="fin-nav-btn" data-sub="finAssets"><span class="fin-ico">💎</span><span class="fin-lab">資產盤點</span><span class="fin-sub">底氣</span></button>
-  <button class="fin-nav-btn" data-sub="finEntry"><span class="fin-ico">🧾</span><span class="fin-lab">記帳</span><span class="fin-sub">留位置</span></button>
-  <button class="fin-nav-btn" data-sub="finSettings"><span class="fin-ico">🗂</span><span class="fin-lab">設定</span><span class="fin-sub">整理</span></button>
-</nav>
-
-<nav id="bodyNav" class="fin-nav">
-  <button class="fin-nav-btn active" data-bsub="bdHome"><span class="fin-ico">🎯</span><span class="fin-lab">總覽</span><span class="fin-sub">目標</span></button>
-  <button class="fin-nav-btn" data-bsub="bdLog"><span class="fin-ico">📝</span><span class="fin-lab">記錄</span><span class="fin-sub">每天</span></button>
-  <button class="fin-nav-btn" data-bsub="bdLift"><span class="fin-ico">🏋️</span><span class="fin-lab">重訓</span><span class="fin-sub">進度</span></button>
-  <button class="fin-nav-btn" data-bsub="bdTrend"><span class="fin-ico">📈</span><span class="fin-lab">趨勢</span><span class="fin-sub">圖表</span></button>
-</nav>
-
 <div class="sheet-wrap hidden" id="scanSheet">
   <div class="sheet">
     <div class="sheet-head"><h3 id="scanTitle"></h3><button class="sheet-x" data-scan-close>×</button></div>
@@ -944,6 +938,8 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
     <div id="formBody"></div>
   </div>
 </div>
+
+<button class="fab" id="fabAdd">＋ 記一筆</button>
 
 <div id="toast" class="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button id="toastAct" class="hidden"></button></div>
 
@@ -1081,6 +1077,8 @@ let toastTimer;
 const QUIET_MSG=/^(正在|已載入|這天還是空白|儲存中)/;
 function toast(msg,ok,act){
   const t=$("toast"); if(!t)return;
+  // the "已自動同步" that follows a delete must not wipe the 復原 button the user is reaching for
+  if(!act&&ok&&t.classList.contains("show")&&!$("toastAct").classList.contains("hidden"))return;
   $("toastMsg").textContent=msg;
   const b=$("toastAct");
   b.classList.toggle("hidden",!act);
@@ -1088,7 +1086,7 @@ function toast(msg,ok,act){
   t.classList.toggle("err",!ok);
   t.classList.add("show");
   clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove("show"),ok?1600:act?8000:4500);
+  toastTimer=setTimeout(()=>t.classList.remove("show"),act?6000:ok?1600:4500);
 }
 function status(msg,ok,act){
   ["status","finStatus"].forEach(elId=>{
@@ -1163,18 +1161,63 @@ function bindDelete(containerId,field){
 const FOOD_SRC_LABEL={manual:"手動輸入",barcode:"條碼・食品資料庫實際數據",
   "ai-label":"AI 讀營養標示（估計值）","ai-photo":"AI 照片估算（估計值，誤差大）"};
 const foodSrcClass=src=>src==="barcode"?" food-db":(src==="ai-label"||src==="ai-photo")?" food-ai":"";
+const MEAL_ICON={"早餐":"🌅","午餐":"🍱","晚餐":"🍲","點心":"🍪"};
+function foodRowHtml(x){
+  const bits=[x.meal];
+  if(x.protein)bits.push("蛋白質 "+Math.round(x.protein*10)/10);
+  if(x.fat)bits.push("脂肪 "+Math.round(x.fat*10)/10);
+  if(x.carbs)bits.push("碳水 "+Math.round(x.carbs*10)/10);
+  const est=x.src==="ai-label"||x.src==="ai-photo";
+  return `<div class="tx tx-food${foodSrcClass(x.src)}" data-fid="${esc(x.id)}">
+    <div class="tx-actions"><button class="tx-act-edit" data-act="edit">編輯</button><button class="tx-act-del" data-act="del">刪除</button></div>
+    <div class="tx-main" data-act="open" role="button" tabindex="0">
+      <span class="tx-ico">${MEAL_ICON[x.meal]||"🍙"}</span>
+      <span class="tx-body"><span class="tx-name">${esc(x.name||"未命名")}${est?'<span class="badge" style="background:#fdf0d5;color:#9a6a12">估計</span>':""}</span><span class="tx-sub">${esc(bits.join("・"))}</span></span>
+      <span class="tx-amt">${Math.round(x.cal||0)}<small> kcal</small></span>
+    </div></div>`;
+}
 function foods(){
-  $("foodList").innerHTML=data.foods.map((x,i)=>`
-    <div class="item food${foodSrcClass(x.src)}" title="${esc(FOOD_SRC_LABEL[x.src]||FOOD_SRC_LABEL.manual)}">
-      <select data-i="${i}" data-f="meal">${MEALS.map(v=>`<option ${x.meal===v?"selected":""}>${v}</option>`).join("")}</select>
-      <input data-i="${i}" data-f="name" value="${esc(x.name)}" placeholder="吃了什麼？">
-      <label class="nf nf-cal">熱量 kcal<input data-i="${i}" data-f="cal" type="number" inputmode="decimal" min="0" value="${x.cal||""}" placeholder="—"></label>
-      <label class="nf nf-protein">蛋白質 g<input data-i="${i}" data-f="protein" type="number" inputmode="decimal" min="0" step="any" value="${x.protein||""}" placeholder="—"></label>
-      <label class="nf nf-fat">脂肪 g<input data-i="${i}" data-f="fat" type="number" inputmode="decimal" min="0" step="any" value="${x.fat||""}" placeholder="—"></label>
-      <label class="nf nf-carbs">碳水 g<input data-i="${i}" data-f="carbs" type="number" inputmode="decimal" min="0" step="any" value="${x.carbs||""}" placeholder="—"></label>
-      <button class="delete" data-del="${i}">×</button>
-    </div>`).join("")||'<div class="empty">還沒有紀錄，新增第一筆食物吧。</div>';
-  inputs("foodList",data.foods); bindDelete("foodList","foods");
+  $("foodList").innerHTML=data.foods.map(foodRowHtml).join("")||'<div class="empty">還沒有紀錄，按上面的「新增食物」或掃描。</div>';
+  bindTxList($("foodList"),{open:d=>openFoodEditor(d.fid),del:d=>deleteFood(d.fid)});
+}
+function deleteFood(fid){
+  const i=data.foods.findIndex(f=>f.id===fid); if(i<0)return;
+  const [gone]=data.foods.splice(i,1),day=data.date;
+  render(); save();
+  // swipe-delete has no confirm step, so it gets an undo instead
+  status("已刪除「"+(gone.name||"這筆食物")+"」",true,{label:"復原",fn:()=>{
+    if(data.date!==day)return;
+    data.foods.splice(Math.min(i,data.foods.length),0,gone); render(); save();
+  }});
+}
+// One sheet for both adding and editing; nothing touches data.foods until 儲存/加入.
+function openFoodEditor(fid){
+  const cur=fid?data.foods.find(f=>f.id===fid):null;
+  if(fid&&!cur)return;
+  const isNew=!cur,f=cur||normFood({meal:mealByClock()});
+  let meal=f.meal;
+  const row=(label,id,val,ph)=>`<div class="frow"><label style="width:84px">${label}</label><input id="${id}" type="number" inputmode="decimal" min="0" step="any" value="${val||""}" placeholder="${ph}"></div>`;
+  openForm(isNew?"新增食物":"編輯食物",`
+    <div class="fsheet-amount"><span>🔥</span><input id="fdCal" type="number" inputmode="decimal" min="0" step="any" value="${f.cal||""}" placeholder="熱量"><span style="font-size:14px">kcal</span></div>
+    <div class="chip-row" id="fdMeal" style="margin-bottom:12px">${MEALS.map(m=>`<button type="button" class="chip${m===meal?" active":""}" data-meal="${m}">${m}</button>`).join("")}</div>
+    <div class="fgroup">
+      <div class="frow"><label style="width:84px">名稱</label><input id="fdName" value="${esc(f.name)}" placeholder="吃了什麼？"></div>
+      ${row("蛋白質 g","fdPro",f.protein,"—")}${row("脂肪 g","fdFat",f.fat,"—")}${row("碳水 g","fdCarbs",f.carbs,"—")}
+    </div>
+    ${!isNew&&f.src&&f.src!=="manual"?`<p class="fsheet-hint${f.src.startsWith("ai")?" warn":""}">${esc(FOOD_SRC_LABEL[f.src]||"")}</p>`:""}
+    <p class="fsheet-hint warn hidden" id="fdErr"></p>
+    <div class="fsheet-actions">${isNew?"":'<button class="btn-danger" id="fdDel">刪除</button>'}<button class="btn" id="fdSave">${isNew?"加入":"儲存"}</button></div>`);
+  $("fdMeal").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{meal=c.dataset.meal; $("fdMeal").querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===c))});
+  if(!isNew)armDelete($("fdDel"),()=>{closeForm(); deleteFood(cur.id)});
+  $("fdSave").onclick=()=>{
+    const name=$("fdName").value.trim(),cal=+$("fdCal").value||0;
+    if(!name&&!cal){$("fdErr").textContent="至少要有名稱或熱量"; $("fdErr").classList.remove("hidden"); return}
+    const vals={meal,name,cal,protein:+$("fdPro").value||0,fat:+$("fdFat").value||0,carbs:+$("fdCarbs").value||0};
+    if(isNew)data.foods.push(normFood(vals)); else Object.assign(cur,vals);
+    closeForm(); render(); save();
+  };
+  // synchronous focus keeps iOS inside the tap gesture, so the keyboard actually opens
+  (isNew?$("fdName"):$("fdCal")).focus();
 }
 
 // ---------- 飲食掃描（條碼 / 營養標示 / 食物照）----------
@@ -1273,11 +1316,13 @@ function openSheet(title, html) {
   $("scanTitle").textContent = title;
   $("scanBody").innerHTML = html;
   $("scanSheet").classList.remove("hidden");
+  openLayer("scan", hideSheet);
 }
-function closeSheet() {
+function hideSheet() {
   $("scanSheet").classList.add("hidden");
   $("scanBody").innerHTML = "";
 }
+function closeSheet() { hideSheet(); dropLayer("scan"); }
 const sheetBusy = (title, msg) =>
   openSheet(title, '<div class="scan-wait"><div class="scan-spin"></div><p>' + esc(msg) + "</p></div>");
 const sheetError = (title, msg) =>
@@ -1739,7 +1784,6 @@ async function saveCategories(){
   }catch(e){
     status("分類儲存失敗，請確認 Firestore Rules 已加入 settings 集合");
   }
-  updateFinanceCategoryOptions();
   if($("financePane").classList.contains("active"))renderFinance();
 }
 
@@ -2302,11 +2346,13 @@ function openForm(title,html){
   $("formTitle").textContent=title;
   $("formBody").innerHTML=html;
   $("formSheet").classList.remove("hidden");
+  openLayer("form",hideForm);
 }
-function closeForm(){
+function hideForm(){
   $("formSheet").classList.add("hidden");
   $("formBody").innerHTML="";
 }
+function closeForm(){ hideForm(); dropLayer("form"); }
 function flowChipsHtml(sel,flows){
   return `<div class="flow-chips">${flows.map(f=>
     `<button type="button" class="flow-chip${f===sel?" active":""}" data-flow="${f}">${FLOW_META[f].ico} ${FLOW_META[f].label}</button>`).join("")}</div>`;
@@ -2381,6 +2427,42 @@ function openTxEditor(date,field,txId){
     }
     closeForm(); renderFinance();
     status(newDate.slice(0,7)===finMonth()?"已更新 ✿":`已更新，這筆移到 ${newDate.slice(0,7)} 了`,true);
+  };
+}
+
+const lastTxCat={};   // last category used per flow this session, so repeat entries start there
+function openTxNew(){
+  if(!user||!categories)return;
+  let flow="variable";
+  openForm("記一筆",`
+    <div class="fsheet-amount"><span>$</span><input id="txAmt" type="number" inputmode="decimal" min="0" placeholder="0"></div>
+    ${flowChipsHtml(flow,FLOWS)}
+    <div class="fgroup">
+      <div class="frow"><label>分類</label><select id="txCat">${catOptionsHtml(flow,lastTxCat[flow]||"")}</select></div>
+      <div class="frow"><label>項目</label><input id="txName" placeholder="例：午餐"></div>
+      <div class="frow"><label>日期</label><input id="txDate" type="date" value="${today()}"></div>
+      <div class="frow"><label>備註</label><input id="txNote" placeholder="選填"></div>
+    </div>
+    <p class="fsheet-hint warn hidden" id="txErr"></p>
+    <div class="fsheet-actions"><button class="btn" id="txSave">記下來</button></div>`);
+  bindFlowChips(f=>{flow=f; $("txCat").innerHTML=catOptionsHtml(f,lastTxCat[f]||"")});
+  $("txAmt").focus();
+  $("txSave").onclick=async()=>{
+    const err=m=>{$("txErr").textContent=m; $("txErr").classList.remove("hidden")};
+    const amount=+$("txAmt").value||0;
+    if(!amount)return err("請輸入金額");
+    const category=$("txCat").value;
+    if(!category)return err("這個類型還沒有分類，請先到設定新增");
+    const date=$("txDate").value||today();
+    $("txSave").disabled=true;
+    await ensureYear(date.slice(0,4));
+    const day=await getOrLoadDay(date);
+    const entry=makeEntry(flow,{name:$("txName").value.trim(),amount,category,note:$("txNote").value.trim(),addedAt:Date.now()});
+    day[fieldOfFlow(flow)].push(entry);
+    await commitFinanceDay(date);
+    lastTxCat[flow]=category;
+    closeForm(); renderFinance();
+    status(date.slice(0,7)===finMonth()?"已新增 ✿":`已新增到 ${date.slice(0,7)} 的紀錄`,true);
   };
 }
 
@@ -2869,21 +2951,18 @@ function openRecurPage(){
   renderRecurPage();
   $("recurPage").classList.add("open"); $("recurPage").setAttribute("aria-hidden","false");
   document.body.style.overflow="hidden";
-  history.pushState({recur:1},"");   // so the phone's back gesture closes the page
+  openLayer("recur",hideRecurPage);
   loadRecurring().then(renderRecurPage);
 }
-function closeRecurPage(fromPop){
+function hideRecurPage(){
   if(!$("recurPage").classList.contains("open"))return;
-  closeForm(); closeSwipe();
+  hideForm(); closeSwipe();
   $("recurPage").classList.remove("open"); $("recurPage").setAttribute("aria-hidden","true");
   document.body.style.overflow="";
-  if(!fromPop&&history.state&&history.state.recur)history.back();
   renderRecurSummary();
 }
-window.addEventListener("popstate",()=>{
-  if(!$("formSheet").classList.contains("hidden")){closeForm(); if($("recurPage").classList.contains("open"))history.pushState({recur:1},""); return}
-  closeRecurPage(true);
-});
+// dropLayer("recur") also drops a form layer sitting above it, so one rewind covers both
+function closeRecurPage(){ hideRecurPage(); dropLayer("recur"); }
 
 function openRecurEditor(rid){
   const existing=rid?findRule(rid):null;
@@ -2944,16 +3023,6 @@ function openRecurEditor(rid){
 }
 
 // ---- 記帳 page ----
-function updateFinanceCategoryOptions(){
-  if(!categories)return;
-  const f=$("finFlow").value;
-  const list=f==="income"?categories.income
-    :f==="fixed"?categories.fixed
-    :(f==="sinking"||f==="save")?((categories&&categories.sinking)||[])
-    :categories.variable;
-  $("finCategory").innerHTML=list.map(c=>`<option>${esc(c.name)}</option>`).join("")
-    ||'<option value="">（請先到設定新增分類）</option>';
-}
 // Sorted by when the row was created, not by its date, so a back-dated entry
 // still shows up here right after you add it. Rows saved before addedAt existed
 // fall back to their date, which keeps the old ordering for existing data.
@@ -2980,7 +3049,6 @@ function renderFinance(){
   renderBudgetBoxes(s.fixedSpent,s.variableSpent,s.orphans);
   renderSinkingGrid();
   if(isFinPage("finHome"))renderFinDonut(s);
-  updateFinanceCategoryOptions();
   renderFinanceList(); renderFinRecent(); renderAssetsPage();
 }
 async function openFinance(){
@@ -2988,7 +3056,6 @@ async function openFinance(){
   if(!accountsCfg)await loadAccounts();
   if(!$("finMonth").value)$("finMonth").value=month(new Date());
   if(!$("assetMonth").value)$("assetMonth").value=$("finMonth").value;
-  if(!$("finDate").value)$("finDate").value=today();
   await loadFinanceData();
   runRecurringAndReport();
   fillAssetForm($("assetMonth").value);
@@ -3003,7 +3070,7 @@ async function moveFinanceMonth(n){
 }
 function showFinancePage(subId){
   document.querySelectorAll(".fin-page").forEach(p=>p.classList.toggle("active",p.id===subId));
-  document.querySelectorAll(".fin-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.sub===subId));
+  document.querySelectorAll("#financeNav .fin-nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.sub===subId));
   window.scrollTo({top:0});
   if(!categories)return;
   if(subId==="finHome")renderFinDonut(financeStats(finMonth()));
@@ -3621,7 +3688,7 @@ async function calendar(){
 }
 
 // ---------- events ----------
-$("addFood").onclick=()=>{data.foods.push(normFood({meal:mealByClock()})); render(); save()};
+$("addFood").onclick=()=>openFoodEditor(null);
 $("scanBarcode").onclick=()=>startScan("barcode");
 $("scanLabel").onclick=()=>startScan("label");
 $("scanPhoto").onclick=()=>startScan("photo");
@@ -3652,24 +3719,56 @@ $("addCatIncome").onclick=()=>addCategoryRow("income");
 $("addCatSinking").onclick=()=>addCategoryRow("sinking");
 $("prevMonth").onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()-1); calendar()};
 $("nextMonth").onclick=()=>{calendarMonth.setMonth(calendarMonth.getMonth()+1); calendar()};
-// Scoped to the top tab bar on purpose: a bare ".tab" would also catch anything
-// inside the panes and blank every pane (b.dataset.pane would be undefined).
-document.querySelectorAll("#mainCard>.tabs .tab").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll("#mainCard>.tabs .tab").forEach(x=>x.classList.toggle("active",x===b));
-  document.querySelectorAll(".pane").forEach(x=>x.classList.toggle("active",x.id===b.dataset.pane));
-  document.body.classList.toggle("finance-mode",b.dataset.pane==="financePane");
-  document.body.classList.toggle("body-mode",b.dataset.pane==="bodyPane");
-  if(b.dataset.pane==="bodyPane")openBody();
-  if(b.dataset.pane==="insightsPane")insights();
-  if(b.dataset.pane==="financePane")openFinance();
-  if(b.dataset.pane==="calendarPane")calendar();
+// ---------- back gesture ----------
+// Every overlay (sheet, settings, 自動記帳 page) and the first move away from 今日 owns ONE
+// history entry, so the phone's back gesture/button closes the top overlay, then returns to
+// 今日, instead of leaving the site. Programmatic closes drop their entry with history.go(-n)
+// and tell the popstate handler to ignore the resulting event (skipPops).
+const layers=[];
+let skipPops=0,tabPushed=false;
+function openLayer(id,hide){
+  if(layers.some(l=>l.id===id))return;
+  history.pushState({layer:id},"");
+  layers.push({id,hide});
+}
+// Drops a layer and any layers above it from the stack and rewinds history by that many entries.
+function dropLayer(id){
+  const i=layers.findIndex(l=>l.id===id); if(i<0)return;
+  const n=layers.length-i; layers.length=i;
+  skipPops++; history.go(-n);
+  setTimeout(()=>{if(skipPops>0)skipPops--},800);   // no popstate arrived (e.g. nothing to rewind): don't swallow the next real one
+}
+window.addEventListener("popstate",()=>{
+  if(skipPops>0){skipPops--;return}
+  const top=layers.pop();
+  if(top){top.hide(); return}
+  if(tabPushed){tabPushed=false; showMainTab("todayPane",false)}
 });
 
-document.querySelectorAll(".fin-nav-btn").forEach(b=>b.onclick=()=>showFinancePage(b.dataset.sub));
+// Scoped to the main tab bar on purpose: a bare ".tab" would also catch anything
+// inside the panes and blank every pane (b.dataset.pane would be undefined).
+function showMainTab(pane,userDriven){
+  closeSwipe();
+  document.querySelectorAll("#mainCard>.tabs .tab").forEach(x=>x.classList.toggle("active",x.dataset.pane===pane));
+  document.querySelectorAll(".pane").forEach(x=>x.classList.toggle("active",x.id===pane));
+  document.body.classList.toggle("finance-mode",pane==="financePane");
+  document.body.classList.toggle("body-mode",pane==="bodyPane");
+  window.scrollTo({top:0});
+  if(userDriven){
+    if(pane!=="todayPane"&&!tabPushed){history.pushState({tab:1},""); tabPushed=true}
+    else if(pane==="todayPane"&&tabPushed){tabPushed=false; skipPops++; history.back(); setTimeout(()=>{if(skipPops>0)skipPops--},800)}
+  }
+  if(pane==="bodyPane")openBody();
+  if(pane==="insightsPane")insights();
+  if(pane==="financePane")openFinance();
+  if(pane==="calendarPane")calendar();
+}
+document.querySelectorAll("#mainCard>.tabs .tab").forEach(b=>b.onclick=()=>showMainTab(b.dataset.pane,true));
+
+document.querySelectorAll("#financeNav .fin-nav-btn").forEach(b=>b.onclick=()=>showFinancePage(b.dataset.sub));
 $("finMonth").onchange=()=>{ensureYear(yearOf(finMonth())).then(renderFinance)};
 $("finPrev").onclick=()=>moveFinanceMonth(-1);
 $("finNext").onclick=()=>moveFinanceMonth(1);
-$("finFlow").onchange=updateFinanceCategoryOptions;
 $("finBreakdownToggle").onclick=()=>{
   const box=$("finBreakdown"),open=box.classList.toggle("hidden");
   $("finBreakdownToggle").textContent=open?"查看組成 ▾":"收起組成 ▴";
@@ -3679,25 +3778,8 @@ $("finDonutMode").querySelectorAll(".seg-btn").forEach(b=>b.onclick=()=>{
   $("finDonutMode").querySelectorAll(".seg-btn").forEach(x=>x.classList.toggle("active",x===b));
   if(categories)renderFinDonut(financeStats(finMonth()));
 });
-$("finAddEntry").onclick=async()=>{
-  if(!user||!categories)return;
-  const date=$("finDate").value||today(),flow=$("finFlow").value;
-  const amount=+$("finAmount").value||0;
-  if(!amount)return status("請先輸入金額");
-  const cat=$("finCategory").value;
-  if(!cat)return status("請先到設定新增分類");
-  await ensureYear(date.slice(0,4));
-  const entry=await getOrLoadDay(date);
-  const name=$("finName").value,note=$("finNote").value,addedAt=Date.now();
-  if(flow==="income")entry.incomes.push(normIncome({name,amount,category:cat,note,addedAt}));
-  else if(flow==="save")entry.saves.push(normSave({name,bag:cat,amount,note,addedAt}));
-  else entry.expenses.push(normExpense({name,amount,category:cat,note,kind:flow,addedAt}));
-  await commitFinanceDay(date);
-  $("finAmount").value=""; $("finName").value=""; $("finNote").value="";
-  renderFinance();
-  const dm=date.slice(0,7);
-  status(dm===finMonth()?"已新增 ✿":`已新增到 ${dm} 的紀錄`,true);
-};
+$("finOpenNew").onclick=()=>openTxNew();
+$("fabAdd").onclick=()=>openTxNew();
 $("assetMonth").onchange=()=>fillAssetForm($("assetMonth").value);
 $("assetUseTodayRate").onchange=updateAssetFormPreview;
 $("assetMigrateBank").onclick=()=>migrateLegacy("bank");
@@ -3729,9 +3811,16 @@ $("bdTplSeg").querySelectorAll(".seg-btn").forEach(b=>b.onclick=()=>{
   $("bdTplSeg").querySelectorAll(".seg-btn").forEach(x=>x.classList.toggle("active",x===b)); renderBodyLift();
 });
 document.querySelectorAll("[data-tpl-apply]").forEach(b=>b.onclick=()=>applyTemplate(b.dataset.tplApply));
-$("recurBack").onclick=()=>closeRecurPage(false);
+$("recurBack").onclick=()=>closeRecurPage();
 $("recurAdd").onclick=()=>openRecurEditor(null);
 $("formSheet").onclick=e=>{if(e.target===$("formSheet")||e.target.closest("[data-form-close]"))closeForm()};
+
+// ---------- keyboard-aware sheets ----------
+if(window.visualViewport){
+  const vv=window.visualViewport;
+  const upd=()=>document.documentElement.style.setProperty("--kb",Math.max(0,Math.round(window.innerHeight-vv.height-vv.offsetTop))+"px");
+  vv.addEventListener("resize",upd); vv.addEventListener("scroll",upd);
+}
 
 // ---------- phone lifecycle ----------
 // Phones freeze a backgrounded page and may kill it without warning, so the 600ms
@@ -3754,7 +3843,7 @@ async function refreshAfterResume(){
   // in-memory edit and the late save then writes the fresh (older) copy over it.
   await flushPendingSaves();
   const t=today();
-  if(hiddenToday&&t!==hiddenToday)["date","finDate","bdDate"].forEach(k=>{if($(k).value===hiddenToday)$(k).value=t});
+  if(hiddenToday&&t!==hiddenToday)["date","bdDate"].forEach(k=>{if($(k).value===hiddenToday)$(k).value=t});
   await day();
   bodyLoaded=false;
   const pane=document.querySelector(".pane.active");
@@ -3770,8 +3859,9 @@ document.addEventListener("visibilitychange",()=>{
 });
 window.addEventListener("pagehide",flushPendingSaves);
 
-$("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"; document.body.classList.add("settings-open")};
-$("settingsBack").onclick=()=>{$("settingsScreen").style.display="none"; $("mainCard").style.display="block"; document.body.classList.remove("settings-open")};
+function hideSettings(){$("settingsScreen").style.display="none"; $("mainCard").style.display="block"; document.body.classList.remove("settings-open")}
+$("settingsBtn").onclick=()=>{$("mainCard").style.display="none"; $("settingsScreen").style.display="block"; document.body.classList.add("settings-open"); window.scrollTo({top:0}); openLayer("settings",hideSettings)};
+$("settingsBack").onclick=()=>{hideSettings(); dropLayer("settings")};
 
 // ---------- auth ----------
 const app=initializeApp(firebaseConfig);
@@ -3802,7 +3892,6 @@ onAuthStateChanged(auth,async u=>{
   $("insightMonth").value=month(new Date());
   $("finMonth").value=month(new Date());
   $("assetMonth").value=month(new Date());
-  $("finDate").value=today();
   await loadGoals();
   await loadCategories();
   await loadAccounts();
