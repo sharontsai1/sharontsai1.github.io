@@ -536,9 +536,9 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
       </div>
     </section>
 
-    <section class="section wide"><h2 class="heading">🏃 運動 <small>不記時長，記做了什麼</small></h2>
+    <section class="section wide"><h2 class="heading">🏃 運動 <small>做了什麼、多久</small></h2>
+      <button class="btn" id="addExercise" style="width:100%;margin-bottom:10px">＋ 新增運動</button>
       <div id="exerciseList" class="item-list"></div>
-      <button class="add" id="addExercise">＋ 新增運動</button>
       <div class="tpl-apply hidden" id="tplApply"><button class="add" data-tpl-apply="A">📋 套用 A 日課表</button><button class="add" data-tpl-apply="B">📋 套用 B 日課表</button></div>
     </section>
 
@@ -1557,48 +1557,75 @@ async function onScanFile(e) {
   }
 }
 
+const EX_ICON={"跑步":"🏃","健走":"🚶","瑜伽":"🧘","游泳":"🏊","重訓":"🏋️","排球":"🏐","其他":"💪"};
+const partText=p=>[p.muscle,p.movement,(p.kg||p.reps||p.sets)?[p.kg?p.kg+"kg":"",p.reps?"×"+p.reps:"",p.sets?"×"+p.sets+"組":""].join(""):""].filter(Boolean).join(" ");
+function exerciseRowHtml(x){
+  const parts=x.parts.map(partText).filter(Boolean);
+  const sub=x.type==="重訓"?(parts.length?parts.slice(0,2).join("、")+(parts.length>2?" 等"+parts.length+"個動作":""):"還沒填動作"):(x.minutes?"":"沒填時間");
+  return `<div class="tx tx-food" data-fid="${esc(x.id)}">
+    <div class="tx-actions"><button class="tx-act-edit" data-act="edit">編輯</button><button class="tx-act-del" data-act="del">刪除</button></div>
+    <div class="tx-main" data-act="open" role="button" tabindex="0">
+      <span class="tx-ico">${EX_ICON[x.type]||"💪"}</span>
+      <span class="tx-body"><span class="tx-name">${esc(x.type)}</span>${sub?`<span class="tx-sub">${esc(sub)}</span>`:""}</span>
+      <span class="tx-amt">${x.minutes?x.minutes+"<small> 分</small>":""}</span>
+    </div></div>`;
+}
 function exercises(){
-  $("exerciseList").innerHTML=data.exercises.map((x,i)=>`
-    <div class="exercise-row">
-      <div class="exercise-main">
-        <select data-i="${i}" data-f="type">${EX_TYPES.map(v=>`<option ${x.type===v?"selected":""}>${v}</option>`).join("")}</select>
-        <input data-i="${i}" data-f="minutes" type="number" inputmode="decimal" min="0" value="${x.minutes||""}" placeholder="分鐘（選填）">
-        <button class="delete" data-del="${i}">×</button>
-      </div>
-      ${x.type==="重訓"?`
-      <div class="parts">
-        ${x.parts.map((p,j)=>`
-          <div class="part-row">
-            <select data-pi="${i}" data-pj="${j}" data-pf="muscle">${MUSCLES.map(v=>`<option ${p.muscle===v?"selected":""}>${v}</option>`).join("")}</select>
-            <input data-pi="${i}" data-pj="${j}" data-pf="movement" value="${esc(p.movement)}" placeholder="動作，例如：臥推">
-            <button class="delete small" data-delpart="${i}:${j}">×</button>
-            <div class="part-load">
-              <input data-pi="${i}" data-pj="${j}" data-pf="kg" type="number" inputmode="decimal" step="0.5" min="0" value="${p.kg||""}" placeholder="重量"><span>kg ×</span>
-              <input data-pi="${i}" data-pj="${j}" data-pf="reps" type="number" inputmode="numeric" min="0" value="${p.reps||""}" placeholder="次數"><span>下 ×</span>
-              <input data-pi="${i}" data-pj="${j}" data-pf="sets" type="number" inputmode="numeric" min="0" value="${p.sets||""}" placeholder="組"><span>組</span>
-            </div>
-          </div>`).join("")||'<div class="empty">還沒有動作，新增第一個吧。</div>'}
-        <button class="add small" data-addpart="${i}">＋ 新增動作</button>
-      </div>`:""}
-    </div>`).join("")||'<div class="empty">今天想怎麼活動身體？</div>';
-
-  $("exerciseList").querySelectorAll("[data-i]").forEach(el=>el.onchange=el.oninput=()=>{
-    const i=+el.dataset.i,f=el.dataset.f;
-    data.exercises[i][f]=el.type==="number"?(+el.value||0):el.value;
-    if(f==="type")render(); else schedule();
+  $("exerciseList").innerHTML=data.exercises.map(exerciseRowHtml).join("")||'<div class="empty">今天想怎麼活動身體？</div>';
+  bindTxList($("exerciseList"),{open:d=>openExerciseEditor(d.fid),del:d=>deleteExercise(d.fid)});
+}
+function deleteExercise(fid){
+  const i=data.exercises.findIndex(f=>f.id===fid); if(i<0)return;
+  const [gone]=data.exercises.splice(i,1),day=data.date;
+  render(); save();
+  status("已刪除「"+gone.type+"」",true,{label:"復原",fn:()=>{
+    if(data.date!==day)return;
+    data.exercises.splice(Math.min(i,data.exercises.length),0,gone); render(); save();
+  }});
+}
+// Same sheet pattern as food: edits happen on a draft and only reach data.exercises on 儲存/加入.
+function openExerciseEditor(fid){
+  const cur=fid?data.exercises.find(f=>f.id===fid):null;
+  if(fid&&!cur)return;
+  const isNew=!cur,d=normExercise(cur?JSON.parse(JSON.stringify(cur)):{type:"重訓"});
+  const partsHtml=()=>d.type!=="重訓"?"":`<div class="parts" style="margin-top:12px">${d.parts.map((p,j)=>`
+    <div class="part-row">
+      <select data-pj="${j}" data-pf="muscle">${MUSCLES.map(v=>`<option ${p.muscle===v?"selected":""}>${v}</option>`).join("")}</select>
+      <input data-pj="${j}" data-pf="movement" value="${esc(p.movement)}" placeholder="動作，例如：臥推">
+      <button class="delete small" data-delpart="${j}">×</button>
+      <div class="part-load">
+        <input data-pj="${j}" data-pf="kg" type="number" inputmode="decimal" step="0.5" min="0" value="${p.kg||""}" placeholder="重量"><span>kg ×</span>
+        <input data-pj="${j}" data-pf="reps" type="number" inputmode="numeric" min="0" value="${p.reps||""}" placeholder="次數"><span>下 ×</span>
+        <input data-pj="${j}" data-pf="sets" type="number" inputmode="numeric" min="0" value="${p.sets||""}" placeholder="組"><span>組</span>
+      </div></div>`).join("")||'<div class="empty">還沒有動作，新增第一個吧。</div>'}
+    <button class="add small" id="exAddPart" type="button">＋ 新增動作</button></div>`;
+  openForm(isNew?"新增運動":"編輯運動",`
+    <div class="chip-row" id="exType" style="margin-bottom:12px">${EX_TYPES.map(m=>`<button type="button" class="chip${m===d.type?" active":""}" data-t="${m}">${EX_ICON[m]} ${m}</button>`).join("")}</div>
+    <div class="fgroup"><div class="frow"><label style="width:84px">時間（分）</label><input id="exMin" type="number" inputmode="numeric" min="0" step="any" value="${d.minutes||""}" placeholder="選填"></div></div>
+    <div id="exParts">${partsHtml()}</div>
+    <div class="fsheet-actions">${isNew?"":'<button class="btn-danger" id="exDel">刪除</button>'}<button class="btn" id="exSave">${isNew?"加入":"儲存"}</button></div>`);
+  const bindParts=()=>{
+    const box=$("exParts");
+    box.querySelectorAll("[data-pf]").forEach(el=>el.oninput=el.onchange=()=>{
+      const p=d.parts[+el.dataset.pj],f=el.dataset.pf;
+      p[f]=["kg","reps","sets"].includes(f)?(+el.value||0):el.value;
+    });
+    box.querySelectorAll("[data-delpart]").forEach(b=>b.onclick=()=>{d.parts.splice(+b.dataset.delpart,1); redraw()});
+    const add=$("exAddPart"); if(add)add.onclick=()=>{d.parts.push(normPart()); redraw()};
+  };
+  const redraw=()=>{$("exParts").innerHTML=partsHtml(); bindParts()};
+  bindParts();
+  $("exType").querySelectorAll(".chip").forEach(c=>c.onclick=()=>{
+    d.type=c.dataset.t; $("exType").querySelectorAll(".chip").forEach(x=>x.classList.toggle("active",x===c)); redraw();
   });
-  $("exerciseList").querySelectorAll("[data-pi]").forEach(el=>el.oninput=el.onchange=()=>{
-    const i=+el.dataset.pi,j=+el.dataset.pj,f=el.dataset.pf;
-    data.exercises[i].parts[j][f]=["kg","reps","sets"].includes(f)?(+el.value||0):el.value; schedule();
-  });
-  $("exerciseList").querySelectorAll("[data-addpart]").forEach(b=>b.onclick=()=>{
-    data.exercises[+b.dataset.addpart].parts.push(normPart()); render(); save();
-  });
-  $("exerciseList").querySelectorAll("[data-delpart]").forEach(b=>b.onclick=()=>{
-    const[i,j]=b.dataset.delpart.split(":").map(Number);
-    data.exercises[i].parts.splice(j,1); render(); save();
-  });
-  bindDelete("exerciseList","exercises");
+  if(!isNew)armDelete($("exDel"),()=>{closeForm(); deleteExercise(cur.id)});
+  $("exSave").onclick=()=>{
+    d.minutes=+$("exMin").value||0;
+    const out=normExercise(d);
+    if(out.type!=="重訓")out.parts=[];
+    if(isNew)data.exercises.push(out); else Object.assign(cur,out);
+    closeForm(); render(); save();
+  };
 }
 
 function render(){
@@ -3697,7 +3724,7 @@ $("scanFile").onchange=onScanFile;
 $("scanSheet").onclick=e=>{
   if(e.target===$("scanSheet")||e.target.closest("[data-scan-close]"))closeSheet();
 };
-$("addExercise").onclick=()=>{data.exercises.push(normExercise()); render(); save()};
+$("addExercise").onclick=()=>openExerciseEditor(null);
 $("sleep").oninput=e=>{data.sleep=+e.target.value||0; schedule()};
 $("note").oninput=e=>{data.note=e.target.value; schedule()};
 $("keyword").oninput=e=>{data.keyword=e.target.value.trim(); schedule()};
