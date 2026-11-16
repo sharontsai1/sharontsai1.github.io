@@ -69,6 +69,12 @@ h1{font-size:clamp(21px,4vw,29px);margin:0}
 .heading{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:700;margin:0 0 11px}
 .heading small{font-size:12px;font-weight:400;color:#7a6a58;margin-left:auto}
 .item-list{display:grid;gap:7px}
+.scan-thumbs{display:flex;gap:8px;margin-bottom:10px}
+.scan-thumbs figure{margin:0;flex:1;min-width:0}
+.scan-thumbs img{width:100%;height:96px;object-fit:cover;border-radius:12px;display:block;border:1px solid var(--line)}
+.scan-thumbs figcaption{font-size:12px;color:#7a6a58;margin-top:3px;text-align:center}
+.scan-tip{font-size:12px;color:#7a6a58;margin:8px 0 2px;line-height:1.5}
+.scan-sub{font-size:13px;font-weight:700;margin:12px 0 6px}
 .scan-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:7px}
 .scan-btn{margin-top:0;font-size:12px;padding:8px 4px;text-align:center}
 .sheet-wrap{position:fixed;inset:0;z-index:60;background:#2b230055;backdrop-filter:blur(3px);
@@ -505,6 +511,7 @@ body.settings-open .toast{bottom:calc(20px + env(safe-area-inset-bottom))}
         <button class="add scan-btn" id="scanLabel">🏷 營養標示</button>
         <button class="add scan-btn" id="scanPhoto">🍽 食物照估算</button>
       </div>
+      <button class="add" id="scanLeftover" style="width:100%;margin-top:7px">🍽 吃剩了？拍吃前＋吃剩，只算吃進去的</button>
       <input type="file" accept="image/*" id="scanFile" class="hidden">
       <div class="total"><span>熱量　<b id="foodTotal">0 kcal</b></span><span>蛋白質　<b id="foodProteinTotal">0 g</b></span><span>脂肪　<b id="foodFatTotal">0 g</b></span><span>碳水　<b id="foodCarbsTotal">0 g</b></span></div>
       <div id="foodList" class="tx-list" style="margin-top:10px"></div>
@@ -1295,14 +1302,14 @@ async function lookupBarcode(code) {
   return j && j.product ? j.product : null;
 }
 
-async function callScan(kind, shot) {
+async function callScan(kind, shot, extra) {
   if (!SCAN_API) throw new Error("還沒設定掃描服務，請先部署 Worker");
   if (!user) throw new Error("請先登入");
   const token = await user.getIdToken();
   const r = await fetch(SCAN_API.replace(/\/+$/, "") + "/" + kind, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-    body: JSON.stringify({ image: shot.base64, mediaType: shot.mediaType }),
+    body: JSON.stringify(kind === "leftover" ? extra : { image: shot.base64, mediaType: shot.mediaType, ...(extra || {}) }),
   });
   let j = null;
   try { j = await r.json(); } catch (e) {}
@@ -1335,7 +1342,7 @@ const confLabel = c =>
 
 // The confirmation sheet every tier funnels into. `pre` is the tier-specific explanation
 // above the editable fields.
-function confirmSheet(title, pre, rows, src, confidence) {
+function confirmSheet(title, pre, rows, src, confidence, onAccept) {
   const meal = mealByClock();
   openSheet(title,
     pre +
@@ -1362,6 +1369,7 @@ function confirmSheet(title, pre, rows, src, confidence) {
       src, confidence: num(confidence, 0),
     }));
     closeSheet();
+    if (onAccept) onAccept();
     render(); save();
     status("已加入「" + (name || "未命名") + "」", true);
   };
@@ -1496,33 +1504,162 @@ async function tierLabel(file) {
 }
 
 // ---- tier 3: photo estimate ----
+// Accuracy comes from three things the picture alone cannot give: a scale object next to
+// the food, a sentence from the person who ate it, and (for leftovers) a before/after pair.
+const REF_OPTS = [["none", "不放"], ["card", "💳 卡片"], ["coin", "🪙 10 元"], ["chopsticks", "🥢 筷子"], ["spoon", "🥄 湯匙"]];
+const loadRef = () => { try { return localStorage.getItem("li_scanRef") || "none"; } catch (e) { return "none"; } };
+const saveRef = v => { try { localStorage.setItem("li_scanRef", v); } catch (e) {} };
+const thumbHtml = (items) =>
+  '<div class="scan-thumbs">' + items.map(t => '<figure><img src="' + t.src + '" alt=""><figcaption>' + esc(t.cap) + "</figcaption></figure>").join("") + "</div>";
+
+// photo(s) already taken -> ask for the scale object and a note, then call onGo({ref, hint})
+function prepSheet(title, thumbs, intro, goLabel, onGo, hintValue) {
+  let ref = loadRef();
+  openSheet(title,
+    thumbHtml(thumbs) + (intro ? '<p class="metric-sub">' + esc(intro) + "</p>" : "") +
+    '<div class="scan-sub">照片裡有放比例尺嗎？</div>' +
+    '<div class="chip-row" id="spRef">' + REF_OPTS.map(([k, l]) =>
+      '<button type="button" class="chip' + (k === ref ? " active" : "") + '" data-ref="' + k + '">' + l + "</button>").join("") + "</div>" +
+    '<p class="scan-tip">信用卡／悠遊卡、10 元硬幣、筷子放在食物旁邊，AI 能用它換算碗盤和食物的實際大小。</p>' +
+    '<label class="scan-field"><span>補充說明（選填）</span><input id="spHint" maxlength="120" value="' + esc(hintValue || "") + '" placeholder="例：雞腿便當，飯吃半碗，去皮"></label>' +
+    '<p class="scan-tip">照片看不出來的事寫在這裡：吃了多少、少油、無糖、有沒有去皮。</p>' +
+    '<div class="scan-actions"><button class="btn" id="spGo">' + esc(goLabel) + '</button><button class="add" data-scan-close>取消</button></div>');
+  $("spRef").querySelectorAll(".chip").forEach(c => c.onclick = () => {
+    ref = c.dataset.ref;
+    $("spRef").querySelectorAll(".chip").forEach(x => x.classList.toggle("active", x === c));
+  });
+  $("spGo").onclick = () => {
+    saveRef(ref);
+    onGo({ ref: ref === "none" ? undefined : ref, hint: ($("spHint").value || "").trim() });
+  };
+}
+
 async function tierPhoto(file) {
-  sheetBusy("🍽 食物照估算", "正在辨識食物與估算份量…");
+  sheetBusy("🍽 食物照估算", "正在處理照片…");
   const shot = await downscale(file);
-  const { result: r } = await callScan("photo", shot);
+  prepSheet("🍽 食物照估算", [{ src: shot.dataUrl, cap: "這餐" }],
+    "斜 45° 俯拍、整份入鏡，會比較準。", "開始估算", async ctx => {
+      sheetBusy("🍽 食物照估算", "正在辨識食物與估算份量…");
+      try {
+        const { result: r } = await callScan("photo", shot, ctx);
+        photoResult(r);
+      } catch (err) { sheetError("掃描失敗", err.message || String(err)); }
+    });
+}
+
+function photoResult(r) {
   if (!r.ok) {
     return sheetError("🍽 食物照估算", r.note || "這張照片裡看不出食物。");
   }
-
   const lo = Math.round(num(r.total_kcal_low, 0)), hi = Math.round(num(r.total_kcal_high, 0));
   const items = Array.isArray(r.items) ? r.items : [];
+  const base = [num(r.total_kcal, 0), num(r.total_protein_g, 0), num(r.total_fat_g, 0), num(r.total_carbs_g, 0)];
   confirmSheet("🍽 食物估算",
     '<p class="scan-src ai">⚠ 這是<b>估計值</b>，不是實測。信心度：' + confLabel(num(r.confidence, 0)) + "</p>" +
     (items.length
       ? '<div class="summary-list">' + items.map(it =>
-          '<div class="summary-row"><span>' + esc(it.name || "—") + "</span><b>" +
+          '<div class="summary-row"><span>' + esc(it.name || "—") + (num(it.grams, 0) ? '<small style="opacity:.7">　約 ' + Math.round(it.grams) + " g</small>" : "") + "</span><b>" +
           Math.round(num(it.kcal, 0)) + " kcal</b></div>").join("") + "</div>"
       : "") +
     '<p class="metric-sub">' +
     (lo && hi && hi > lo ? "合理範圍 <b>" + lo + "–" + hi + "</b> kcal　" : "") +
-    (r.note ? "<br>" + esc(r.note) : "") + "</p>",
+    (r.note ? "<br>" + esc(r.note) : "") + "</p>" +
+    '<div class="scan-sub">我吃了…（沒吃完時用）</div>' +
+    '<div class="chip-row" id="sfEat">' + [["全部", 1], ["¾", 0.75], ["½", 0.5], ["¼", 0.25]].map(([l, f]) =>
+      '<button type="button" class="chip' + (f === 1 ? " active" : "") + '" data-f="' + f + '">' + l + "</button>").join("") + "</div>",
     [
       { label: "名稱", value: r.meal_name || "" },
-      { label: "熱量 kcal", value: Math.round(num(r.total_kcal, 0)), type: "number" },
-      { label: "蛋白質 g", value: Math.round(num(r.total_protein_g, 0) * 10) / 10, type: "number" },
-      { label: "脂肪 g", value: Math.round(num(r.total_fat_g, 0) * 10) / 10, type: "number" },
-      { label: "碳水 g", value: Math.round(num(r.total_carbs_g, 0) * 10) / 10, type: "number" },
+      { label: "熱量 kcal", value: Math.round(base[0]), type: "number" },
+      { label: "蛋白質 g", value: Math.round(base[1] * 10) / 10, type: "number" },
+      { label: "脂肪 g", value: Math.round(base[2] * 10) / 10, type: "number" },
+      { label: "碳水 g", value: Math.round(base[3] * 10) / 10, type: "number" },
     ], "ai-photo", num(r.confidence, 0));
+  $("sfEat").querySelectorAll(".chip").forEach(c => c.onclick = () => {
+    const f = +c.dataset.f;
+    $("sfEat").querySelectorAll(".chip").forEach(x => x.classList.toggle("active", x === c));
+    [1, 2, 3, 4].forEach((n, i) => { $("sf" + n).value = n === 1 ? Math.round(base[i] * f) : Math.round(base[i] * f * 10) / 10; });
+  });
+}
+
+// ---- leftovers: a photo before eating, a photo of what is left ----
+// The "before" shot is kept in this browser (not Firestore) so it survives closing the page
+// while the person eats. It is only sent to the scan service together with the "after" shot.
+const PENDING_KEY = "li_pendingMeal";
+let pendingMeal = null;
+function loadPending() {
+  if (pendingMeal) return pendingMeal;
+  try { pendingMeal = JSON.parse(localStorage.getItem(PENDING_KEY) || "null"); } catch (e) {}
+  if (pendingMeal && Date.now() - (pendingMeal.ts || 0) > 12 * 3600 * 1000) { clearPending(); }
+  return pendingMeal;
+}
+function storePending(p) { pendingMeal = p; try { localStorage.setItem(PENDING_KEY, JSON.stringify(p)); } catch (e) {} }
+function clearPending() { pendingMeal = null; try { localStorage.removeItem(PENDING_KEY); } catch (e) {} }
+
+async function tierLeftBefore(file) {
+  sheetBusy("🍽 吃前照片", "正在處理照片…");
+  const shot = await downscale(file);
+  prepSheet("🍽 吃前照片", [{ src: shot.dataUrl, cap: "吃前" }],
+    "先存起來，吃完再回來按「吃剩了？」拍剩下的。", "存起來，開動！", ctx => {
+      storePending({ ts: Date.now(), image: shot.base64, mediaType: shot.mediaType, ref: ctx.ref, hint: ctx.hint, dataUrl: shot.dataUrl });
+      closeSheet();
+      status("吃前照片已存好，吃完按「吃剩了？」", true);
+    });
+}
+
+function leftStep2(p) {
+  let hint = p.hint || "";
+  openSheet("🍽 吃剩了？",
+    thumbHtml([{ src: p.dataUrl, cap: "吃前（" + new Date(p.ts).toTimeString().slice(0, 5) + "）" }]) +
+    '<p class="metric-sub">吃完了嗎？拍下剩下的部分（吃光就拍空盤）。盡量跟吃前用同樣的角度。</p>' +
+    '<label class="scan-field"><span>補充說明（選填）</span><input id="lfHint" maxlength="120" value="' + esc(hint) + '" placeholder="例：只吃了雞腿，菜沒動"></label>' +
+    '<div class="scan-actions"><button class="btn" id="lfShoot">📷 拍／選吃剩的照片</button>' +
+    '<button class="add" id="lfRedo">重拍吃前照片</button>' +
+    '<button class="add" id="lfDrop">放棄這餐</button></div>');
+  $("lfShoot").onclick = () => {
+    leftHint = ($("lfHint").value || "").trim();
+    scanKind = "leftover-after";
+    const el = $("scanFile"); el.value = ""; el.click();
+  };
+  $("lfRedo").onclick = () => { clearPending(); closeSheet(); startScan("leftover"); };
+  $("lfDrop").onclick = () => { clearPending(); closeSheet(); status("已放棄這餐的照片", true); };
+}
+let leftHint = "";
+
+async function tierLeftAfter(file) {
+  const p = loadPending();
+  if (!p) return sheetError("🍽 吃剩了？", "找不到吃前照片，請從「吃剩了？」重新開始。");
+  sheetBusy("🍽 吃剩了？", "正在比對吃前和吃剩…");
+  const shot = await downscale(file);
+  const { result: r } = await callScan("leftover", null, {
+    before: { image: p.image, mediaType: p.mediaType },
+    after: { image: shot.base64, mediaType: shot.mediaType },
+    ref: p.ref, hint: leftHint || p.hint || undefined,
+  });
+  if (!r.ok) return sheetError("🍽 吃剩了？", r.note || "看不出這餐的食物。");
+  const items = Array.isArray(r.items) ? r.items : [];
+  const eaten = Math.round(num(r.eaten_kcal, 0)), served = Math.round(num(r.served_kcal, 0));
+  const leftPct = Math.round(Math.min(1, Math.max(0, num(r.left_fraction, 0))) * 100);
+  const lo = Math.round(num(r.eaten_kcal_low, 0)), hi = Math.round(num(r.eaten_kcal_high, 0));
+  const name = (r.meal_name || "") + (r.meal_name && leftPct >= 5 ? "（吃了約 " + (100 - leftPct) + "%）" : "");
+  confirmSheet("🍽 實際吃進去的量",
+    thumbHtml([{ src: p.dataUrl, cap: "吃前" }, { src: shot.dataUrl, cap: "吃剩" }]) +
+    '<p class="scan-src ai">⚠ 這是<b>估計值</b>，不是實測。信心度：' + confLabel(num(r.confidence, 0)) + "</p>" +
+    '<p class="metric-sub" style="font-size:14px;color:var(--ink)">整份 <b>' + served + "</b> kcal　→　剩 <b>" + leftPct + "%</b>　→　吃進去 <b>" + eaten + "</b> kcal</p>" +
+    (items.length
+      ? '<div class="summary-list">' + items.map(it => {
+          const lf = Math.min(1, Math.max(0, num(it.left_fraction, 0)));
+          return '<div class="summary-row"><span>' + esc(it.name || "—") + '<small style="opacity:.7">　吃了 ' + Math.round((1 - lf) * 100) + "%</small></span><b>" +
+            Math.round(num(it.kcal_eaten, 0)) + " kcal</b></div>";
+        }).join("") + "</div>"
+      : "") +
+    '<p class="metric-sub">' + (lo && hi && hi > lo ? "合理範圍 <b>" + lo + "–" + hi + "</b> kcal" : "") + (r.note ? "<br>" + esc(r.note) : "") + "</p>",
+    [
+      { label: "名稱", value: name },
+      { label: "熱量 kcal", value: eaten, type: "number" },
+      { label: "蛋白質 g", value: Math.round(num(r.eaten_protein_g, 0) * 10) / 10, type: "number" },
+      { label: "脂肪 g", value: Math.round(num(r.eaten_fat_g, 0) * 10) / 10, type: "number" },
+      { label: "碳水 g", value: Math.round(num(r.eaten_carbs_g, 0) * 10) / 10, type: "number" },
+    ], "ai-photo", num(r.confidence, 0), clearPending);
 }
 
 // ---- entry point ----
@@ -1534,6 +1671,11 @@ function startScan(kind) {
   if (kind !== "barcode" && !SCAN_API) {
     status("還沒設定掃描服務（Worker 未部署）");
     return;
+  }
+  if (kind === "leftover") {
+    const p = loadPending();
+    if (p) { leftStep2(p); return; }
+    kind = "leftover-before";
   }
   scanKind = kind;
   const el = $("scanFile");
@@ -1548,6 +1690,8 @@ async function onScanFile(e) {
   try {
     if (scanKind === "barcode") await tierBarcode(file);
     else if (scanKind === "label") await tierLabel(file);
+    else if (scanKind === "leftover-before") await tierLeftBefore(file);
+    else if (scanKind === "leftover-after") await tierLeftAfter(file);
     else await tierPhoto(file);
   } catch (err) {
     sheetError("掃描失敗", err.message || String(err));
@@ -3719,6 +3863,7 @@ $("addFood").onclick=()=>openFoodEditor(null);
 $("scanBarcode").onclick=()=>startScan("barcode");
 $("scanLabel").onclick=()=>startScan("label");
 $("scanPhoto").onclick=()=>startScan("photo");
+$("scanLeftover").onclick=()=>startScan("leftover");
 $("scanFile").onchange=onScanFile;
 // delegated so every [data-scan-close] rendered into the sheet works without rebinding
 $("scanSheet").onclick=e=>{

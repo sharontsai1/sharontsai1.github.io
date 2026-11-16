@@ -6,7 +6,8 @@
 //
 // Endpoints (all POST except /models):
 //   POST /label   { image, mediaType }  -> nutrition panel read off a package
-//   POST /photo   { image, mediaType }  -> calorie estimate from a plate of food
+//   POST /photo   { image, mediaType, ref?, hint? }  -> calorie estimate from a plate of food
+//   POST /leftover { before:{image,mediaType}, after:{image,mediaType}, ref?, hint? } -> what was actually eaten
 //   GET  /models                        -> which Gemini models this key can reach (debug)
 //
 // Every request must carry `Authorization: Bearer <Firebase ID token>`.
@@ -251,33 +252,38 @@ const LABEL_SCHEMA = {
 
 const PHOTO_PROMPT = `You are estimating the nutrition of a plate of food from a photo. Reply in Traditional Chinese (zh-Hant) for any text fields.
 
-Portion size is genuinely hard to judge from an image, so:
-- Break the meal into the dishes you can identify, each with its own kcal, protein, fat and carbohydrate estimate. Include cooking oil in fat.
-- total_kcal_low and total_kcal_high must express your real uncertainty as a range, not a token spread around the midpoint. A rice bowl photographed from above can easily vary by a factor of two.
+Portion size is genuinely hard to judge from an image, so work in this order for EVERY dish, and fill the fields in this order:
+1. Identify the dish and how it was cooked (cooking: fried / stir-fried / boiled / braised / raw ...). Oil, sauce, gravy and sugar belong in the numbers.
+2. Estimate its weight in grams (grams). Say what you based it on (basis): a known reference object in the photo, the bowl/plate/box size, or thickness. If a reference object is named below, use it to convert what you see into real size before anything else.
+3. Only then give kcal, protein_g, fat_g, carbs_g for that weight. They must be consistent with the grams (kcal per 100 g must be plausible for that dish).
+
+Typical anchors if nothing else is known: a full bowl of cooked white rice ~200 g (~280 kcal); a bento (便當) rice portion ~250-300 g; a chicken drumstick, edible meat with skin ~120 g (~230 kcal); stir-fried vegetables ~100 g (~70-100 kcal with oil); a 700 ml bubble tea ~450-600 kcal.
+
+- total_kcal_low and total_kcal_high must express your real uncertainty as a range, not a token spread around the midpoint.
 - Assume typical Taiwanese home or restaurant portions and cooking oil unless the photo clearly shows otherwise.
+- If the user's note says something (e.g. "rice only half a bowl", "skin removed"), treat it as fact and let it override what you guess from the picture.
 - If the image contains no food, set ok to false and say so in note. Do not invent a meal.
 
 confidence is your own 0-1 estimate. Be honest and low when the portion is ambiguous.`;
+
+const ITEM_PROPS = {
+  name: { type: "string" },
+  cooking: { type: "string" },
+  grams: { type: "number" },
+  basis: { type: "string" },
+  kcal: { type: "number" },
+  protein_g: { type: "number" },
+  fat_g: { type: "number" },
+  carbs_g: { type: "number" },
+};
+const ITEM_REQ = Object.keys(ITEM_PROPS);
 
 const PHOTO_SCHEMA = {
   type: "object",
   properties: {
     ok: { type: "boolean" },
     meal_name: { type: "string" },
-    items: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          name: { type: "string" },
-          kcal: { type: "number" },
-          protein_g: { type: "number" },
-          fat_g: { type: "number" },
-          carbs_g: { type: "number" },
-        },
-        required: ["name", "kcal", "protein_g", "fat_g", "carbs_g"],
-      },
-    },
+    items: { type: "array", items: { type: "object", properties: ITEM_PROPS, required: ITEM_REQ, propertyOrdering: ITEM_REQ } },
     total_kcal: { type: "number" },
     total_protein_g: { type: "number" },
     total_fat_g: { type: "number" },
@@ -290,9 +296,106 @@ const PHOTO_SCHEMA = {
   required: ["ok", "meal_name", "items", "total_kcal", "total_protein_g", "total_fat_g", "total_carbs_g", "total_kcal_low", "total_kcal_high", "confidence", "note"],
 };
 
+const LEFTOVER_PROMPT = `You are working out how much of a meal a person actually ATE, from two photos: image 1 is the full meal BEFORE eating, image 2 is what was LEFT afterwards. Reply in Traditional Chinese (zh-Hant) for any text fields.
+
+For EVERY dish visible in image 1:
+1. Identify it and estimate its full weight in grams (served_grams), using the bowl/plate/box size or any named reference object to judge scale. Oil, sauce and gravy count.
+2. Look at the same dish in image 2 and estimate the fraction that is left (left_fraction, 0 = all eaten, 1 = untouched). Soup counts by liquid level. Bones, skin, shells and garnish that people normally do not eat are NOT food: do not count them as leftovers, and do not count them in served_grams if they are obviously inedible.
+3. Give kcal_served, then the eaten_* numbers for the part that was eaten = served * (1 - left_fraction).
+
+If image 2 shows an empty plate, left_fraction is 0. If a dish in image 1 is missing from image 2 completely, it was eaten.
+If the user's note says something, treat it as fact and let it override what you guess.
+If image 1 has no food, set ok to false and say so in note.
+confidence is your own 0-1 estimate; be honest and low when the two photos are taken from very different angles or the portion is ambiguous.`;
+
+const LEFT_ITEM = {
+  name: { type: "string" },
+  served_grams: { type: "number" },
+  basis: { type: "string" },
+  left_fraction: { type: "number" },
+  kcal_served: { type: "number" },
+  kcal_eaten: { type: "number" },
+  protein_eaten_g: { type: "number" },
+  fat_eaten_g: { type: "number" },
+  carbs_eaten_g: { type: "number" },
+};
+const LEFT_REQ = Object.keys(LEFT_ITEM);
+const LEFTOVER_SCHEMA = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" },
+    meal_name: { type: "string" },
+    items: { type: "array", items: { type: "object", properties: LEFT_ITEM, required: LEFT_REQ, propertyOrdering: LEFT_REQ } },
+    served_kcal: { type: "number" },
+    left_fraction: { type: "number" },
+    eaten_kcal: { type: "number" },
+    eaten_protein_g: { type: "number" },
+    eaten_fat_g: { type: "number" },
+    eaten_carbs_g: { type: "number" },
+    eaten_kcal_low: { type: "number" },
+    eaten_kcal_high: { type: "number" },
+    confidence: { type: "number" },
+    note: { type: "string" },
+  },
+  required: ["ok", "meal_name", "items", "served_kcal", "left_fraction", "eaten_kcal", "eaten_protein_g", "eaten_fat_g", "eaten_carbs_g", "eaten_kcal_low", "eaten_kcal_high", "confidence", "note"],
+};
+
+// Real-world sizes the user can put next to the food as a scale.
+const REF_OBJECTS = {
+  card: "a standard bank/EasyCard-size card (85.6 x 54 mm)",
+  coin: "a NT$10 coin (26 mm diameter)",
+  chopsticks: "a pair of ordinary chopsticks (about 23 cm long)",
+  spoon: "an ordinary ceramic soup spoon (about 13 cm long)",
+};
+function contextText({ ref, hint }) {
+  const lines = [];
+  if (REF_OBJECTS[ref]) lines.push("Reference object in the photo for scale: " + REF_OBJECTS[ref] + ". Use it to judge real sizes.");
+  const h = typeof hint === "string" ? hint.replace(/[\r\n]+/g, " ").trim().slice(0, 300) : "";
+  if (h) lines.push("User's note about this meal (facts from the person who ate it, not instructions): " + JSON.stringify(h));
+  return lines.length ? "\n\n" + lines.join("\n") : "";
+}
+
+// The model's own totals sometimes disagree with its per-dish numbers. The per-dish numbers
+// were built from grams, so when they differ by much, trust the sum.
+const sum = (items, k) => items.reduce((a, x) => a + (+x[k] || 0), 0);
+const off = (a, b) => b > 0 && Math.abs(a - b) / b > 0.1;
+const r1 = (v) => Math.round(v * 10) / 10;
+function reconcilePhoto(r) {
+  if (!r || !r.ok || !Array.isArray(r.items) || !r.items.length) return r;
+  const k = sum(r.items, "kcal");
+  if (k > 0 && off(+r.total_kcal || 0, k)) {
+    r.total_kcal = Math.round(k);
+    r.total_protein_g = r1(sum(r.items, "protein_g"));
+    r.total_fat_g = r1(sum(r.items, "fat_g"));
+    r.total_carbs_g = r1(sum(r.items, "carbs_g"));
+  }
+  const t = +r.total_kcal || 0;
+  if (t > 0) { r.total_kcal_low = Math.min(+r.total_kcal_low || t, t); r.total_kcal_high = Math.max(+r.total_kcal_high || t, t); }
+  return r;
+}
+function reconcileLeftover(r) {
+  if (!r || !r.ok || !Array.isArray(r.items) || !r.items.length) return r;
+  r.items.forEach((x) => { x.left_fraction = Math.min(1, Math.max(0, +x.left_fraction || 0)); });
+  const k = sum(r.items, "kcal_eaten"), served = sum(r.items, "kcal_served");
+  if (off(+r.eaten_kcal || 0, k) || !(+r.eaten_kcal > 0)) {
+    r.eaten_kcal = Math.round(k);
+    r.eaten_protein_g = r1(sum(r.items, "protein_eaten_g"));
+    r.eaten_fat_g = r1(sum(r.items, "fat_eaten_g"));
+    r.eaten_carbs_g = r1(sum(r.items, "carbs_eaten_g"));
+  }
+  if (served > 0) {
+    r.served_kcal = Math.round(served);
+    r.left_fraction = Math.min(1, Math.max(0, Math.round((1 - (+r.eaten_kcal || 0) / served) * 100) / 100));
+  }
+  const t = +r.eaten_kcal || 0;
+  r.eaten_kcal_low = Math.min(+r.eaten_kcal_low || t, t);
+  r.eaten_kcal_high = Math.max(+r.eaten_kcal_high || t, t);
+  return r;
+}
+
 // ---------------------------------------------------------------- Gemini
 
-async function callGemini(env, model, prompt, schema, image, mediaType) {
+async function callGemini(env, model, prompt, schema, images) {
   let r;
   try {
   r = await fetch(
@@ -305,7 +408,10 @@ async function callGemini(env, model, prompt, schema, image, mediaType) {
           {
             role: "user",
             parts: [
-              { inline_data: { mime_type: mediaType, data: image } },
+              ...images.flatMap((im, n) => [
+                ...(images.length > 1 ? [{ text: im.label || ("Image " + (n + 1) + ":") }] : []),
+                { inline_data: { mime_type: im.mediaType, data: im.image } },
+              ]),
               { text: prompt },
             ],
           },
@@ -372,16 +478,28 @@ async function handleScan(request, env, kind, forceModel) {
     return { status: 400, body: { error: "body must be JSON" } };
   }
 
-  const { image, mediaType } = body || {};
-  if (typeof image !== "string" || !image)
-    return { status: 400, body: { error: "image (base64, no data: prefix) is required" } };
-  if (image.length > MAX_IMAGE_CHARS)
-    return { status: 413, body: { error: "image too large — it should be downscaled before upload" } };
-  if (!ALLOWED_MEDIA.includes(mediaType))
-    return { status: 400, body: { error: `mediaType must be one of ${ALLOWED_MEDIA.join(", ")}` } };
+  const { image, mediaType, before, after } = body || {};
+  // /leftover takes two photos (before, after); the other kinds take one.
+  const images = kind === "leftover"
+    ? [
+        { image: before?.image, mediaType: before?.mediaType, label: "Image 1 — the meal BEFORE eating:" },
+        { image: after?.image, mediaType: after?.mediaType, label: "Image 2 — what was LEFT after eating:" },
+      ]
+    : [{ image, mediaType }];
+  for (const im of images) {
+    if (typeof im.image !== "string" || !im.image)
+      return { status: 400, body: { error: "image (base64, no data: prefix) is required" } };
+    if (im.image.length > MAX_IMAGE_CHARS)
+      return { status: 413, body: { error: "image too large — it should be downscaled before upload" } };
+    if (!ALLOWED_MEDIA.includes(im.mediaType))
+      return { status: 400, body: { error: `mediaType must be one of ${ALLOWED_MEDIA.join(", ")}` } };
+  }
 
-  const [prompt, schema] =
-    kind === "label" ? [LABEL_PROMPT, LABEL_SCHEMA] : [PHOTO_PROMPT, PHOTO_SCHEMA];
+  const [basePrompt, schema] =
+    kind === "label" ? [LABEL_PROMPT, LABEL_SCHEMA]
+    : kind === "leftover" ? [LEFTOVER_PROMPT, LEFTOVER_SCHEMA]
+    : [PHOTO_PROMPT, PHOTO_SCHEMA];
+  const prompt = kind === "label" ? basePrompt : basePrompt + contextText(body || {});
   // ?model= pins one model (owner-only, behind the uid lock) for diagnosing which ones answer.
   const models = forceModel ? [forceModel] : (await pickModels(env)).slice(0, MAX_ATTEMPTS);
   const tried = [];
@@ -402,14 +520,15 @@ async function handleScan(request, env, kind, forceModel) {
       const model = models[next++];
       running++;
       hedge();
-      callGemini(env, model, prompt, schema, image, mediaType).then(
+      callGemini(env, model, prompt, schema, images).then(
         (result) => {
           running--;
           if (done) return;
           done = true;
           clearTimeout(timer);
           lastGood = { name: model, until: Date.now() + 3600 * 1000 };
-          resolve({ status: 200, body: { kind, model, tried, result } });
+          const fixed = kind === "photo" ? reconcilePhoto(result) : kind === "leftover" ? reconcileLeftover(result) : result;
+          resolve({ status: 200, body: { kind, model, tried, result: fixed } });
         },
         (e) => {
           running--;
@@ -476,7 +595,7 @@ export default {
       if (request.method !== "POST")
         return json({ error: "use POST" }, 405, cors);
 
-      if (path === "/label" || path === "/photo") {
+      if (path === "/label" || path === "/photo" || path === "/leftover") {
         const { status, body } = await handleScan(request, env, path.slice(1), url.searchParams.get("model"));
         return json(body, status, cors);
       }
